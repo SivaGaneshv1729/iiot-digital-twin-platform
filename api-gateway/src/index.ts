@@ -3,6 +3,10 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import http from 'http';
 import { Server } from 'socket.io';
+import morgan from 'morgan';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './swagger';
+
 import machinesRouter from './routes/machines';
 import productionRouter from './routes/production';
 import aiRouter from './routes/ai';
@@ -20,6 +24,12 @@ const PORT = process.env.PORT || 4000;
 
 app.use(cors());
 app.use(express.json());
+
+// Enterprise Observability: Log all HTTP requests
+app.use(morgan('dev'));
+
+// Enterprise Documentation: Mount Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { customCss: '.swagger-ui .topbar { display: none }' }));
 
 // Create HTTP server
 const server = http.createServer(app);

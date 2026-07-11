@@ -1,10 +1,23 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { query } from '../db';
 import { requireAdmin } from '../middleware/auth';
 
 const router = Router();
 
-router.get('/', async (req, res) => {
+/**
+ * @openapi
+ * /api/machines:
+ *   get:
+ *     summary: Retrieve a list of all factory machines
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A JSON array of machines
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/', async (req: Request, res: Response) => {
     try {
         const result = await query('SELECT * FROM machines ORDER BY id ASC');
         res.json(result.rows);
