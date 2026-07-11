@@ -194,7 +194,7 @@ export const Quality = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={pieData} cx="50%" cy="50%" innerRadius={35} outerRadius={50} paddingAngle={5} dataKey="value">
-                    {pieData.map((_entry, index) => (
+                    {pieData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                     ))}
                   </Pie>
@@ -225,7 +225,7 @@ export const Quality = () => {
                   <YAxis dataKey="name" type="category" stroke="#64748b" tick={{fill: '#64748b', fontSize: 11}} width={90} />
                   <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} />
                   <Bar dataKey="count" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={16}>
-                    {defectTypeData.map((entry, index) => (
+                    {defectTypeData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={index === 0 ? '#ef4444' : '#f59e0b'} />
                     ))}
                   </Bar>

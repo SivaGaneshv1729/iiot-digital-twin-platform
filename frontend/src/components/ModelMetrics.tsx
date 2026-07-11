@@ -3,11 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { BrainCircuit } from 'lucide-react';
 import './ModelMetrics.css';
 
-interface MetricsData {
-  epochs: number[];
-  loss: number[];
-  accuracy: number[];
-}
+
 
 export const ModelMetrics = () => {
   const [data, setData] = useState<{ epoch: number, loss: number, accuracy: number }[]>([]);
