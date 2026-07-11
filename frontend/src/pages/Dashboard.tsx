@@ -3,10 +3,12 @@ import {
   ComposedChart, Line, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
 import { 
-  Activity, Zap, Wifi, TrendingUp, DollarSign, Leaf, CheckCircle, Clock
+  Activity, Zap, Wifi, TrendingUp, DollarSign, Leaf, CheckCircle, Clock, Download
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { useTranslation } from 'react-i18next';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { ModelMetrics } from '../components/ModelMetrics';
 import { DigitalTwin } from '../components/DigitalTwin';
 import { MachineHistoryModal } from '../components/MachineHistoryModal';
@@ -46,6 +48,25 @@ export const Dashboard = () => {
   
   const [chartData, setChartData] = useState(INITIAL_CHART_DATA);
   const [actions, setActions] = useState(INITIAL_ACTIONS);
+
+  const generatePDF = async () => {
+    const dashboardElement = document.querySelector('.dashboard-container') as HTMLElement;
+    if (!dashboardElement) return;
+
+    try {
+      // Temporarily add a class or style to ensure perfect rendering if needed
+      const canvas = await html2canvas(dashboardElement, { scale: 2, backgroundColor: '#0a0a0f' });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`SmartFactory_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error("Error generating PDF", error);
+    }
+  };
 
   // Live Chart Simulation (for presentations)
   useEffect(() => {
@@ -112,9 +133,21 @@ export const Dashboard = () => {
           <p className="subtitle">{t('Bridging AI Telemetry with Business Financial Impact')}</p>
         </div>
         
-        <div className={`connection-badge ${isConnected ? 'connected' : 'disconnected'}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '20px', background: isConnected ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: isConnected ? '#10b981' : '#ef4444', border: `1px solid ${isConnected ? '#10b981' : '#ef4444'}` }}>
-          <Wifi size={16} className={isConnected ? 'pulse' : ''} />
-          <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{isConnected ? t('IoT Stream Live') : t('IoT Disconnected')}</span>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <button 
+            onClick={generatePDF} 
+            className="glass-panel"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid #3b82f6' }}
+            title={t('Download PDF Report')}
+          >
+            <Download size={16} />
+            <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{t('Export PDF')}</span>
+          </button>
+          
+          <div className={`connection-badge ${isConnected ? 'connected' : 'disconnected'}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '20px', background: isConnected ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: isConnected ? '#10b981' : '#ef4444', border: `1px solid ${isConnected ? '#10b981' : '#ef4444'}` }}>
+            <Wifi size={16} className={isConnected ? 'pulse' : ''} />
+            <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{isConnected ? t('IoT Stream Live') : t('IoT Disconnected')}</span>
+          </div>
         </div>
       </div>
 
