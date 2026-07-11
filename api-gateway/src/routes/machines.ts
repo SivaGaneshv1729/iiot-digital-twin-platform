@@ -50,12 +50,18 @@ router.post('/:id/status', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
+        const user = (req as any).user;
         
         if (!['Running', 'Idle', 'Maintenance'].includes(status)) {
             return res.status(400).json({ error: 'Invalid status' });
         }
         
         await query('UPDATE machines SET status = $1 WHERE id = $2', [status, id]);
+        
+        // Log the action in the audit ledger
+        const actionText = `Set Machine M-${100+parseInt(id)} to ${status}`;
+        await query('INSERT INTO audit_logs (user_id, action) VALUES ($1, $2)', [user.id, actionText]);
+
         res.json({ message: `Machine ${id} status updated to ${status}` });
     } catch (err) {
         console.error('Error updating machine status:', err);

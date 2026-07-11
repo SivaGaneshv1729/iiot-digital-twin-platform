@@ -9,6 +9,7 @@ import aiRouter from './routes/ai';
 import authRouter from './routes/auth';
 import inventoryRouter from './routes/inventory';
 import qualityRouter from './routes/quality';
+import auditRouter from './routes/audit';
 import { authenticateToken } from './middleware/auth';
 import { query } from './db';
 
@@ -119,6 +120,7 @@ app.use('/api/production', authenticateToken, productionRouter);
 app.use('/api/inventory', authenticateToken, inventoryRouter);
 app.use('/api/quality', authenticateToken, qualityRouter);
 app.use('/api/ai', authenticateToken, aiRouter);
+app.use('/api/audit', authenticateToken, auditRouter);
 
 server.listen(PORT, () => {
     console.log(`API Gateway & Socket.io Server running on http://localhost:${PORT}`);
