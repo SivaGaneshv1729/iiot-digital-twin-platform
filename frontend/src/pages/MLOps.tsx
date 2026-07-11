@@ -3,6 +3,13 @@ import { Cpu, RotateCcw, Activity } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import './MLOps.css';
 
+/**
+ * @component MLOps
+ * @description Advanced Machine Learning Operations (MLOps) Dashboard.
+ * Monitors the continuous learning lifecycle of the backend PyTorch Neural Networks.
+ * Visualizes Training Convergence (BCE Loss vs. Accuracy) and provides an administrative
+ * interface to remotely trigger deep learning backpropagation loops on the Edge Server.
+ */
 export const MLOps = () => {
   const [metrics, setMetrics] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
