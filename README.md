@@ -12,13 +12,15 @@ Featuring a WebGL 3D Digital Twin, Real-Time WebSockets Telemetry, Time-Series A
 
 ---
 
-## 🌟 Core Enterprise Features (Phases 1-13)
+## 🌟 Core Enterprise Features (Phases 1-15)
 
 *   **🌐 3D Digital Twin (WebGL):** Real-time 3D visualization of the factory floor using `Three.js` and `React Three Fiber`. Machines physically react and glow (Green/Red) based on live IoT health status. Includes raycasting interactivity for dynamic data fetching on mesh click.
 *   **⚡ Real-Time Data Streaming (Redis Pub/Sub):** Bi-directional WebSockets (`Socket.io`) backed by a Redis Message Broker, streaming live machine telemetry directly to the dashboard, eliminating REST polling.
 *   **📈 Time-Series Historical Analytics:** Automated ingestion pipeline from Redis to PostgreSQL `telemetry_history` tables. Visualized on the frontend via interactive `Recharts` glassmorphism modals.
+*   **📦 Dynamic Supply Chain ERP:** IoT Edge Simulator executes live SQL decrements against the `inventory` table based on production output. Connected via WebSockets to a live-updating `Recharts` BarChart dashboard.
 *   **📋 Compliance Audit Logging:** Immutable database ledger tracking all administrative actions. Features a dedicated glassmorphism dashboard for real-time monitoring of user activity and system overrides.
-*   **🧠 Deep Learning Predictive Maintenance:** A `PyTorch` Feed-Forward Neural Network trained to predict machine failure probabilities based on live sensor data.
+*   **🧠 Deep Learning Predictive Maintenance:** A PyTorch Feed-Forward Neural Network trained to predict point-in-time machine failure probabilities based on sensor data.
+*   **🔮 Time-Series AI Forecasting:** A PyTorch LSTM Neural Network simulating advanced forecasting of future thermodynamic trajectories, visualized via dual-line graphs in React.
 *   **🏭 Full-Stack Microservices:**
     *   **Frontend:** React, Vite, Tailwind CSS, Recharts, Three.js
     *   **API Gateway:** Node.js, Express, TypeScript, JWT Auth
