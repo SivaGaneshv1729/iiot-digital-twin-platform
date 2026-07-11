@@ -26,5 +26,8 @@
     "frontend/src/**/*.{ts,tsx}": [
       "npx oxlint"
     ]
+  },
+  "dependencies": {
+    "puppeteer": "^25.3.0"
   }
 }
