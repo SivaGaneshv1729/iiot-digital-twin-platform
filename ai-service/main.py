@@ -24,24 +24,38 @@ class ChatRequest(BaseModel):
 
 @app.get("/health", response_model=HealthResponse)
 def health_check():
+    """Returns the health status of the AI microservice."""
     return {"status": "ok", "message": "AI Service is running"}
 
 @app.post("/predict/maintenance")
 def predict_maintenance(req: MaintenanceRequest):
+    """
+    Predicts the point-in-time failure probability of a machine
+    using the PyTorch Feed-Forward Neural Network.
+    """
     prob = predictor.predict_failure_probability(req.temperature, req.running_hours)
     return {"failure_probability": prob}
 
 @app.get("/predict/metrics")
 def get_model_metrics():
+    """Retrieves the training convergence metrics (loss/accuracy) for the MLOps dashboard."""
     return predictor.get_metrics()
 
 @app.post("/train")
 def trigger_retraining():
+    """
+    Manually triggers the PyTorch continuous learning loop.
+    Re-initializes the Adam optimizer and runs backpropagation for 150 epochs.
+    """
     new_metrics = predictor.retrain()
     return {"message": "PyTorch Retraining Complete", "metrics": new_metrics}
 
 @app.post("/forecast/temperature")
 def forecast_temperature(req: ForecastRequest):
+    """
+    Uses the PyTorch LSTM network to forecast the future thermodynamic 
+    trajectory of a machine based on its historical time-series sequence.
+    """
     forecast = forecaster.forecast_next_n_points(req.history)
     return {"forecast": forecast}
 
