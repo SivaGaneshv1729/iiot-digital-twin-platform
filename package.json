@@ -1,0 +1,30 @@
+{
+  "name": "projectx",
+  "version": "1.0.0",
+  "description": "![CI/CD Pipeline](https://github.com/SivaGaneshv1729/iiot-digital-twin-platform/actions/workflows/ci.yml/badge.svg) ![Tests: Passing](https://img.shields.io/badge/Tests-Passing-brightgreen.svg) ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg) ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white) ![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB) ![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?logo=pytorch&logoColor=white) ![Three.js](https://img.shields.io/badge/Three.js-black?logo=three.js&logoColor=white)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SivaGaneshv1729/iiot-digital-twin-platform.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SivaGaneshv1729/iiot-digital-twin-platform/issues"
+  },
+  "homepage": "https://github.com/SivaGaneshv1729/iiot-digital-twin-platform#readme",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3"
+  },
+  "lint-staged": {
+    "frontend/src/**/*.{ts,tsx}": [
+      "cd frontend && npx oxlint"
+    ]
+  }
+}
