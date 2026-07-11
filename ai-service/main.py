@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Dict, Any
 from models.maintenance_model import predictor
+from models.forecast_model import forecaster
 from services.llm_service import generate_factory_insights
 
 app = FastAPI(title="SmartFactory AI Service", version="1.0.0")
@@ -13,6 +14,9 @@ class HealthResponse(BaseModel):
 class MaintenanceRequest(BaseModel):
     temperature: float
     running_hours: int
+
+class ForecastRequest(BaseModel):
+    history: list[float]
 
 class ChatRequest(BaseModel):
     question: str
@@ -30,6 +34,11 @@ def predict_maintenance(req: MaintenanceRequest):
 @app.get("/predict/metrics")
 def get_model_metrics():
     return predictor.get_metrics()
+
+@app.post("/forecast/temperature")
+def forecast_temperature(req: ForecastRequest):
+    forecast = forecaster.forecast_next_n_points(req.history)
+    return {"forecast": forecast}
 
 @app.post("/chat")
 def chat(req: ChatRequest):

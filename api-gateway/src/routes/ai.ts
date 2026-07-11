@@ -23,6 +23,26 @@ router.post('/predict/maintenance', async (req, res) => {
     }
 });
 
+router.post('/forecast/temperature', async (req, res) => {
+    try {
+        const response = await fetch(`${AI_SERVICE_URL}/forecast/temperature`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(req.body)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`AI Service returned ${response.status}`);
+        }
+        
+        const data = await response.json();
+        res.json(data);
+    } catch (err) {
+        console.error('Error in forecast temperature:', err);
+        res.status(500).json({ error: 'Failed to contact AI service for forecasting' });
+    }
+});
+
 router.post('/chat', async (req, res) => {
     try {
         const response = await fetch(`${AI_SERVICE_URL}/chat`, {
