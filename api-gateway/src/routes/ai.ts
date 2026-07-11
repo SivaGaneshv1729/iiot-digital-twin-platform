@@ -77,4 +77,20 @@ router.get('/metrics', async (req, res) => {
     }
 });
 
+router.post('/train', async (req, res) => {
+    try {
+        const response = await fetch(`${AI_SERVICE_URL}/train`, {
+            method: 'POST'
+        });
+        if (!response.ok) {
+            throw new Error(`AI Service returned ${response.status}`);
+        }
+        const data = await response.json();
+        res.json(data);
+    } catch (err) {
+        console.error('Error triggering training:', err);
+        res.status(500).json({ error: 'Failed to trigger model training' });
+    }
+});
+
 export default router;
