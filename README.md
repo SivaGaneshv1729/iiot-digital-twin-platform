@@ -7,20 +7,24 @@
 ![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?logo=pytorch&logoColor=white)
 ![Three.js](https://img.shields.io/badge/Three.js-black?logo=three.js&logoColor=white)
 
-An Enterprise-Grade **Industrial IoT (IIoT) Platform** featuring a WebGL 3D Digital Twin, Real-Time WebSockets Telemetry, and a PyTorch Deep Learning backend for Predictive Maintenance.
+An Enterprise-Grade **Industrial IoT (IIoT) Platform** engineered by **Siva Ganesh**. 
+Featuring a WebGL 3D Digital Twin, Real-Time WebSockets Telemetry, Time-Series Analytics, and a PyTorch Deep Learning backend for Predictive Maintenance.
 
 ---
 
-## 🌟 Core Features
+## 🌟 Core Enterprise Features (Phases 1-12)
 
-*   **🌐 3D Digital Twin (WebGL):** Real-time 3D visualization of the factory floor using `Three.js` and `React Three Fiber`. Machines physically react and glow (Green/Red) based on live IoT health status.
-*   **⚡ Real-Time Data Streaming:** Bi-directional WebSockets (`Socket.io`) streaming live machine telemetry (temperature, vibration, running hours) directly to the dashboard, eliminating REST polling.
-*   **🧠 Deep Learning Predictive Maintenance:** A `PyTorch` Feed-Forward Neural Network trained to predict machine failure probabilities based on live sensor data. Includes an MLOps dashboard visualizing real-time training loss and accuracy metrics.
+*   **🌐 3D Digital Twin (WebGL):** Real-time 3D visualization of the factory floor using `Three.js` and `React Three Fiber`. Machines physically react and glow (Green/Red) based on live IoT health status. Includes raycasting interactivity for dynamic data fetching on mesh click.
+*   **⚡ Real-Time Data Streaming (Redis Pub/Sub):** Bi-directional WebSockets (`Socket.io`) backed by a Redis Message Broker, streaming live machine telemetry directly to the dashboard, eliminating REST polling.
+*   **📈 Time-Series Historical Analytics:** Automated ingestion pipeline from Redis to PostgreSQL `telemetry_history` tables. Visualized on the frontend via interactive `Recharts` glassmorphism modals.
+*   **🧠 Deep Learning Predictive Maintenance:** A `PyTorch` Feed-Forward Neural Network trained to predict machine failure probabilities based on live sensor data.
 *   **🏭 Full-Stack Microservices:**
     *   **Frontend:** React, Vite, Tailwind CSS, Recharts, Three.js
     *   **API Gateway:** Node.js, Express, TypeScript, JWT Auth
     *   **AI Engine:** Python, FastAPI, PyTorch, Google Gemini
     *   **Database:** PostgreSQL (Primary Data) & Redis (Caching/Broker)
+*   **🛡️ Role-Based Access Control (RBAC):** Strict JWT middleware separating `Admin` and `Operator` privileges. Operators have read-only views, while Admins can remotely start/stop machines.
+*   **🌍 Enterprise Localization (i18n):** Native support for Japanese (日本語) and English UI localization, optimized for global manufacturing environments.
 *   **🤖 LLM Factory Assistant:** Integrated Natural Language Processing chatbot capable of analyzing factory output and providing strategic insights.
 *   **🚀 Enterprise DevOps:** Fully containerized architecture with multi-stage `Docker` builds, orchestrated via `docker-compose`, and automated CI/CD pipelines via `GitHub Actions`.
 
@@ -31,8 +35,8 @@ An Enterprise-Grade **Industrial IoT (IIoT) Platform** featuring a WebGL 3D Digi
 ```mermaid
 graph TD
     UI[Frontend: React + WebGL 3D] <==>|WebSockets / REST| API[API Gateway: Express/Node.js]
-    API <--> DB[(PostgreSQL)]
-    API <--> Cache[(Redis)]
+    API <--> DB[(PostgreSQL Timeseries)]
+    API <--> Cache[(Redis Pub/Sub)]
     API <--> AI[AI Service: FastAPI/PyTorch]
     AI --> Model((Deep Learning Model))
     AI --> LLM((Gemini LLM API))
@@ -44,7 +48,7 @@ graph TD
 
 | Domain | Technologies |
 | :--- | :--- |
-| **Frontend UI** | React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons |
+| **Frontend UI** | React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons, i18next |
 | **3D Graphics** | Three.js, React Three Fiber, React Three Drei |
 | **Backend API** | Node.js 20, Express, Socket.io, JSON Web Tokens |
 | **AI / ML Backend** | Python 3.11, FastAPI, PyTorch, Scikit-learn, Google GenAI |
@@ -58,14 +62,17 @@ graph TD
 ### Prerequisites
 *   Node.js (v20+)
 *   Python (3.10+)
-*   PostgreSQL
+*   PostgreSQL & Redis
 *   Docker & Docker Compose (Optional for containerized run)
 
 ### 1. Database Setup
-Ensure PostgreSQL is running locally on port `5432` with credentials: `user` / `password`.
+Ensure PostgreSQL is running locally on port `5432` and Redis on `6379`.
 ```bash
-# The database schema is located in:
-database/init.sql
+# Seed the initial tables
+psql -U admin -d smartfactory -f database/init.sql
+# Run the API Gateway migrations for Time-Series & Roles
+node api-gateway/migrate.js
+node api-gateway/seed_operator.js
 ```
 
 ### 2. Run API Gateway
@@ -81,7 +88,6 @@ cd ai-service
 pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
-*(Note: To enable the LLM Chatbot, add `GEMINI_API_KEY=your_key` to an `.env` file in the `ai-service` directory).*
 
 ### 4. Run Frontend
 ```bash
@@ -90,9 +96,9 @@ npm install
 npm run dev
 ```
 
-Visit `http://localhost:5173` and log in with the default seeded admin account:
-*   **Username:** `admin`
-*   **Password:** `hashedpassword`
+Visit `http://localhost:5173` and log in with:
+*   **Admin Access:** `admin` / `hashedpassword` (Full Control)
+*   **Operator Access:** `operator` / `hashedpassword` (Read-Only)
 
 ---
 
@@ -105,6 +111,12 @@ docker-compose -f docker-compose.prod.yml up --build -d
 ```
 
 ---
+
+## 👨‍💻 Credits & Author
+
+**Siva Ganesh**  
+*Lead Full-Stack IIoT Engineer*  
+Engineered from the ground up to demonstrate advanced proficiency in Microservices Architecture, Real-Time WebGL Graphics, Time-Series Data Engineering, and Applied Deep Learning for Japanese Enterprise Manufacturing.
 
 ## 🛡️ License
 
