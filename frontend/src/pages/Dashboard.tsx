@@ -5,6 +5,7 @@ import { io } from 'socket.io-client';
 import { useTranslation } from 'react-i18next';
 import { ModelMetrics } from '../components/ModelMetrics';
 import { DigitalTwin } from '../components/DigitalTwin';
+import { MachineHistoryModal } from '../components/MachineHistoryModal';
 import './Dashboard.css';
 
 const mockChartData = [
@@ -21,6 +22,7 @@ export const Dashboard = () => {
   const [summary, setSummary] = useState({ active_machines: 0, total_target: 0, total_completed: 0, efficiency: 0 });
   const [isConnected, setIsConnected] = useState(false);
   const [liveMachines, setLiveMachines] = useState<any[]>([]);
+  const [selectedMachineId, setSelectedMachineId] = useState<number | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -69,7 +71,8 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      <DigitalTwin machines={liveMachines} />
+      <DigitalTwin machines={liveMachines} onSelectMachine={setSelectedMachineId} />
+      <MachineHistoryModal machineId={selectedMachineId} onClose={() => setSelectedMachineId(null)} />
 
       {/* OEE Metrics Grid */}
       <h3 style={{ marginBottom: '16px', color: 'var(--text-secondary)' }}>{t('Overall Equipment Effectiveness')}</h3>

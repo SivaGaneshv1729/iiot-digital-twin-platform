@@ -14,10 +14,11 @@ interface Machine {
 
 interface DigitalTwinProps {
   machines: Machine[];
+  onSelectMachine?: (id: number) => void;
 }
 
 // Reusable 3D Machine component
-const Machine3D = ({ machine, position }: { machine: Machine, position: [number, number, number] }) => {
+const Machine3D = ({ machine, position, onClick }: { machine: Machine, position: [number, number, number], onClick?: () => void }) => {
   const meshRef = useRef<THREE.Mesh>(null);
 
   // Animate the machine slightly (bobbing up and down)
@@ -40,7 +41,12 @@ const Machine3D = ({ machine, position }: { machine: Machine, position: [number,
   }
 
   return (
-    <group position={position}>
+    <group 
+      position={position} 
+      onClick={(e) => { e.stopPropagation(); onClick && onClick(); }}
+      onPointerOver={() => document.body.style.cursor = 'pointer'}
+      onPointerOut={() => document.body.style.cursor = 'auto'}
+    >
       {/* The main body of the machine */}
       <Box args={[1.5, 2, 1.5]} ref={meshRef} position={[0, 1, 0]} castShadow receiveShadow>
         <meshStandardMaterial 
@@ -60,7 +66,7 @@ const Machine3D = ({ machine, position }: { machine: Machine, position: [number,
   );
 };
 
-export const DigitalTwin = ({ machines }: DigitalTwinProps) => {
+export const DigitalTwin = ({ machines, onSelectMachine }: DigitalTwinProps) => {
   // Map machines to fixed positions on the grid
   const positions: [number, number, number][] = [
     [-3, 0, -3],
@@ -110,6 +116,7 @@ export const DigitalTwin = ({ machines }: DigitalTwinProps) => {
             key={machine.id} 
             machine={machine} 
             position={positions[index % positions.length]} 
+            onClick={() => onSelectMachine && onSelectMachine(machine.id)}
           />
         ))}
       </Canvas>
