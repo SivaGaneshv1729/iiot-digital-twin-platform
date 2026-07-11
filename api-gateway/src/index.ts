@@ -91,6 +91,17 @@ setInterval(async () => {
         // Publish to Redis instead of emitting directly
         redisPublisher.publish(TELEMETRY_CHANNEL, JSON.stringify(machines));
 
+        // Periodically log to telemetry_history (every 10 seconds to save DB writes)
+        // We'll use a simple static counter or just Math.random to throttle DB writes
+        if (Math.random() < 0.2) {
+            for (const m of machines) {
+                await query(
+                    'INSERT INTO telemetry_history (machine_id, temperature, status) VALUES ($1, $2, $3)',
+                    [m.id, m.temperature, m.status]
+                );
+            }
+        }
+
     } catch (err) {
         console.error('Error generating mock telemetry:', err);
     }
