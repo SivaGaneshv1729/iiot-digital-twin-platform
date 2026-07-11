@@ -4,6 +4,14 @@ import torch.optim as optim
 import numpy as np
 
 class FailurePredictionNet(nn.Module):
+    """
+    Feed-Forward Neural Network (FFNN) for Predictive Maintenance.
+    
+    Architecture:
+    - Input: [temperature, running_hours] (Normalized)
+    - Hidden Layers: 16 neurons (ReLU) -> 8 neurons (ReLU)
+    - Output: 1 neuron (Sigmoid) representing Failure Probability (0.0 to 1.0)
+    """
     def __init__(self):
         super(FailurePredictionNet, self).__init__()
         # Input features: [temperature, running_hours]
@@ -15,6 +23,10 @@ class FailurePredictionNet(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
+        """
+        Forward pass through the Feed-Forward network.
+        Applies non-linear transformations to predict failure chance.
+        """
         x = self.relu1(self.fc1(x))
         x = self.relu2(self.fc2(x))
         x = self.sigmoid(self.out(x))
