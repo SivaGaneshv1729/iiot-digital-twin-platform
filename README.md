@@ -1,102 +1,111 @@
-# SmartFactory-Nexus 🏭🤖
+# 🏭 SmartFactory-Nexus (IIoT Digital Twin Platform)
 
-> **Next-Generation Smart Manufacturing Intelligence Platform**
+![CI/CD Pipeline](https://github.com/SivaGaneshv1729/iiot-digital-twin-platform/actions/workflows/ci.yml/badge.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
+![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?logo=pytorch&logoColor=white)
+![Three.js](https://img.shields.io/badge/Three.js-black?logo=three.js&logoColor=white)
 
-SmartFactory-Nexus is an enterprise-grade web application combining modern full-stack engineering, Machine Learning, and Generative AI. It acts as a comprehensive Manufacturing Execution System (MES) capable of real-time monitoring, predictive maintenance, inventory management, and intelligent quality control.
-
-![SmartFactory-Nexus Architecture](https://img.shields.io/badge/Architecture-Microservices-blue)
-![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB?logo=react)
-![Node.js](https://img.shields.io/badge/Gateway-Express.js-339933?logo=node.js)
-![Python](https://img.shields.io/badge/AI_Service-FastAPI-009688?logo=fastapi)
-![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-4169E1?logo=postgresql)
+An Enterprise-Grade **Industrial IoT (IIoT) Platform** featuring a WebGL 3D Digital Twin, Real-Time WebSockets Telemetry, and a PyTorch Deep Learning backend for Predictive Maintenance.
 
 ---
 
 ## 🌟 Core Features
 
-- **Fleet Dashboard**: Real-time telemetry monitoring for connected CNC machines and assembly line equipment.
-- **Predictive Maintenance (AI)**: Integrates a Scikit-Learn `RandomForestClassifier` trained dynamically in memory to predict machine failure probabilities based on temperature and running hours.
-- **Factory Assistant (LLM)**: A context-aware chatbot powered by the `google-genai` SDK. It fetches live factory statistics from PostgreSQL and injects them into the LLM prompt to answer production questions.
-- **Inventory Management**: Real-time raw material and component tracking with automatic low-stock warnings.
-- **Quality Control & Vision**: Batch inspection tracking featuring a mock Computer Vision feed (simulating YOLOv8) to identify defects on the assembly line.
-- **Enterprise Security**: JWT-based authentication system protecting API routes and dashboard views.
+*   **🌐 3D Digital Twin (WebGL):** Real-time 3D visualization of the factory floor using `Three.js` and `React Three Fiber`. Machines physically react and glow (Green/Red) based on live IoT health status.
+*   **⚡ Real-Time Data Streaming:** Bi-directional WebSockets (`Socket.io`) streaming live machine telemetry (temperature, vibration, running hours) directly to the dashboard, eliminating REST polling.
+*   **🧠 Deep Learning Predictive Maintenance:** A `PyTorch` Feed-Forward Neural Network trained to predict machine failure probabilities based on live sensor data. Includes an MLOps dashboard visualizing real-time training loss and accuracy metrics.
+*   **🏭 Full-Stack Microservices:**
+    *   **Frontend:** React, Vite, Tailwind CSS, Recharts, Three.js
+    *   **API Gateway:** Node.js, Express, TypeScript, JWT Auth
+    *   **AI Engine:** Python, FastAPI, PyTorch, Google Gemini
+    *   **Database:** PostgreSQL (Primary Data) & Redis (Caching/Broker)
+*   **🤖 LLM Factory Assistant:** Integrated Natural Language Processing chatbot capable of analyzing factory output and providing strategic insights.
+*   **🚀 Enterprise DevOps:** Fully containerized architecture with multi-stage `Docker` builds, orchestrated via `docker-compose`, and automated CI/CD pipelines via `GitHub Actions`.
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecture Topology
 
-The platform utilizes a modern microservice architecture orchestrated by Docker Compose:
-
-1. **Frontend (React/TypeScript/Vite)**: 
-   - Renders a stunning dark-mode, glassmorphism UI.
-   - Communicates solely with the API Gateway.
-2. **API Gateway (Express/Node.js)**: 
-   - Acts as the central router and auth validator.
-   - Manages direct connections to the PostgreSQL database for CRUD operations.
-   - Proxies AI-related requests to the Python FastAPI service.
-3. **AI Service (FastAPI/Python)**:
-   - Hosts the ML predictive models.
-   - Interfaces with the Gemini LLM.
-4. **Database (PostgreSQL)**:
-   - Stores telemetry, inventory, users, and quality control data.
+```mermaid
+graph TD
+    UI[Frontend: React + WebGL 3D] <==>|WebSockets / REST| API[API Gateway: Express/Node.js]
+    API <--> DB[(PostgreSQL)]
+    API <--> Cache[(Redis)]
+    API <--> AI[AI Service: FastAPI/PyTorch]
+    AI --> Model((Deep Learning Model))
+    AI --> LLM((Gemini LLM API))
+```
 
 ---
 
-## 🚀 Getting Started
+## 🛠️ Technology Stack
+
+| Domain | Technologies |
+| :--- | :--- |
+| **Frontend UI** | React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons |
+| **3D Graphics** | Three.js, React Three Fiber, React Three Drei |
+| **Backend API** | Node.js 20, Express, Socket.io, JSON Web Tokens |
+| **AI / ML Backend** | Python 3.11, FastAPI, PyTorch, Scikit-learn, Google GenAI |
+| **Databases** | PostgreSQL 15, Redis 7 |
+| **DevOps / CI/CD** | Docker, Docker Compose, Nginx, GitHub Actions |
+
+---
+
+## 🚀 Getting Started (Local Development)
 
 ### Prerequisites
-- [Docker](https://www.docker.com/) & Docker Compose
-- [Node.js](https://nodejs.org/) (v18+)
-- [Python](https://www.python.org/) (3.10+)
-- Gemini API Key (Optional, for LLM Assistant)
+*   Node.js (v20+)
+*   Python (3.10+)
+*   PostgreSQL
+*   Docker & Docker Compose (Optional for containerized run)
 
-### 1. Boot the Database
-Start the PostgreSQL and Redis containers in the background:
+### 1. Database Setup
+Ensure PostgreSQL is running locally on port `5432` with credentials: `user` / `password`.
 ```bash
-docker-compose up -d
-```
-*(Note: The database automatically seeds itself with mock data upon boot via API Gateway auto-migrations).*
-
-### 2. Start the Services
-You can start all services at once using the provided PowerShell script:
-```bash
-.\start-all.ps1
+# The database schema is located in:
+database/init.sql
 ```
 
-Or manually start them in separate terminals:
-
-**Terminal 1 (AI Service)**
-```bash
-cd ai-service
-# Add GEMINI_API_KEY to your .env file if available
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
-```
-
-**Terminal 2 (API Gateway)**
+### 2. Run API Gateway
 ```bash
 cd api-gateway
 npm install
 npm run dev
 ```
 
-**Terminal 3 (Frontend)**
+### 3. Run AI Service
+```bash
+cd ai-service
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+*(Note: To enable the LLM Chatbot, add `GEMINI_API_KEY=your_key` to an `.env` file in the `ai-service` directory).*
+
+### 4. Run Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-### 3. Access the Platform
-Navigate to **http://localhost:5173** in your browser.
-
-- **Username:** `admin`
-- **Password:** `password123`
+Visit `http://localhost:5173` and log in with the default seeded admin account:
+*   **Username:** `admin`
+*   **Password:** `hashedpassword`
 
 ---
 
-## 💡 About the Author
+## 🐳 Docker Deployment (Production)
 
-This platform was built to demonstrate proficiency in end-to-end software engineering, cloud deployment, and practical AI integration for the manufacturing sector.
+To deploy the entire orchestrated microservices stack (Frontend, API Gateway, AI Service, Postgres, and Redis):
 
-*Built for the future of Industry 4.0.*
+```bash
+docker-compose -f docker-compose.prod.yml up --build -d
+```
+
+---
+
+## 🛡️ License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
