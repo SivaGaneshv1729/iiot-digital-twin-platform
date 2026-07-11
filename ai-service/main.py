@@ -35,6 +35,11 @@ def predict_maintenance(req: MaintenanceRequest):
 def get_model_metrics():
     return predictor.get_metrics()
 
+@app.post("/train")
+def trigger_retraining():
+    new_metrics = predictor.retrain()
+    return {"message": "PyTorch Retraining Complete", "metrics": new_metrics}
+
 @app.post("/forecast/temperature")
 def forecast_temperature(req: ForecastRequest):
     forecast = forecaster.forecast_next_n_points(req.history)

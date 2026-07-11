@@ -102,5 +102,17 @@ class MaintenancePredictor:
     def get_metrics(self):
         return self.metrics_history
 
+    def retrain(self):
+        """Trigger continuous learning loop by re-initializing and training"""
+        self.is_trained = False
+        self.model = FailurePredictionNet()
+        self.metrics_history = {
+            'epochs': [],
+            'loss': [],
+            'accuracy': []
+        }
+        self._train_mock_model()
+        return self.metrics_history
+
 # Global instance
 predictor = MaintenancePredictor()
