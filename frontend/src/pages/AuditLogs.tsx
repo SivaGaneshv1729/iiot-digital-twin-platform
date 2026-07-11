@@ -42,7 +42,7 @@ export const AuditLogs = () => {
         return res.json();
       })
       .then(data => {
-        setLogs(data);
+        setLogs(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(err => {

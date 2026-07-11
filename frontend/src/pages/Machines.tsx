@@ -137,7 +137,7 @@ export const Machines = () => {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
-      .then(data => setMachines(data))
+      .then(data => setMachines(Array.isArray(data) ? data : []))
       .catch(err => console.error(err));
 
     // Connect WebSocket
@@ -147,7 +147,9 @@ export const Machines = () => {
     socket.on('disconnect', () => setIsConnected(false));
     
     socket.on('telemetry_update', (liveMachines: Machine[]) => {
-      setMachines(liveMachines);
+      if (Array.isArray(liveMachines)) {
+        setMachines(liveMachines);
+      }
     });
 
     return () => {

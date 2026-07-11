@@ -24,7 +24,7 @@ export const MLOps = () => {
       if (res.ok) {
         const data = await res.json();
         // Convert to Recharts format: [{epoch: 0, loss: 0.8, accuracy: 50}, ...]
-        if (data.epochs) {
+        if (data.epochs && Array.isArray(data.epochs)) {
           const formatted = data.epochs.map((ep: number, i: number) => ({
             epoch: ep,
             loss: data.loss[i],

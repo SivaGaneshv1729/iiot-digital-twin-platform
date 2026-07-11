@@ -30,7 +30,7 @@ export const Inventory = () => {
         });
         if (res.ok) {
           const data = await res.json();
-          setInventory(data);
+          setInventory(Array.isArray(data) ? data : []);
         }
       } catch (err) {
         console.error('Failed to fetch inventory', err);
@@ -44,7 +44,9 @@ export const Inventory = () => {
     // Subscribe to live inventory depletion stream
     const socket = io('http://localhost:4000');
     socket.on('inventory_update', (data: InventoryItem[]) => {
-      setInventory(data);
+      if (Array.isArray(data)) {
+        setInventory(data);
+      }
     });
 
     return () => {

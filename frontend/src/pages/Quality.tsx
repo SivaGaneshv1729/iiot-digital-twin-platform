@@ -52,7 +52,8 @@ export const Quality = () => {
         ]);
 
         if (inspectionsRes.ok && statsRes.ok) {
-          setInspections(await inspectionsRes.json());
+          const inspData = await inspectionsRes.json();
+          setInspections(Array.isArray(inspData) ? inspData : []);
           setStats(await statsRes.json());
         }
       } catch (err) {
