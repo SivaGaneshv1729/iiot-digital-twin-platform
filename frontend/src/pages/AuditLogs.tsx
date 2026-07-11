@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ClipboardList, User, Clock, CheckCircle } from 'lucide-react';
+import { ClipboardList, User, Clock, CheckCircle, Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import './AuditLogs.css';
 
 interface AuditLog {
@@ -37,12 +40,58 @@ export const AuditLogs = () => {
       });
   }, []);
 
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text('SmartFactory AI - Compliance Audit Ledger', 14, 22);
+    
+    const tableColumn = ["Timestamp", "User", "Role", "Action", "Status"];
+    const tableRows = logs.map(log => [
+      new Date(log.time).toLocaleString(),
+      log.username,
+      log.role,
+      log.action,
+      "Success"
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 30,
+      theme: 'grid',
+      headStyles: { fillColor: [56, 189, 248] },
+    });
+    
+    doc.save('Compliance_Audit_Ledger.pdf');
+  };
+
+  const exportToExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(logs.map(log => ({
+      Timestamp: new Date(log.time).toLocaleString(),
+      User: log.username,
+      Role: log.role,
+      Action: log.action,
+      Status: "Success"
+    })));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Audit Logs");
+    XLSX.writeFile(wb, "Compliance_Audit_Ledger.xlsx");
+  };
+
   return (
     <div className="audit-container">
-      <div className="audit-header" style={{ marginBottom: '24px' }}>
+      <div className="audit-header" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h1>{t('Compliance Audit Logs')}</h1>
           <p className="subtitle">{t('Immutable ledger of all administrative actions')}</p>
+        </div>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button className="btn btn-secondary" onClick={exportToPDF} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Download size={16} /> PDF
+          </button>
+          <button className="btn btn-primary" onClick={exportToExcel} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Download size={16} /> Excel
+          </button>
         </div>
       </div>
 

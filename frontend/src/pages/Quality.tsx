@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ShieldCheck, ShieldAlert, Target, ScanEye } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Target, ScanEye, Download } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import './Quality.css';
 
 interface QualityInspection {
@@ -46,6 +49,47 @@ export const Quality = () => {
     fetchQualityData();
   }, []);
 
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text('SmartFactory AI - Quality Assurance Report', 14, 22);
+    
+    const tableColumn = ["Batch", "Product", "Machine", "Status", "Reason", "Inspector"];
+    const tableRows = inspections.map(item => [
+      item.batch_number,
+      item.product_name,
+      item.machine_name,
+      item.status,
+      item.defect_reason || '-',
+      item.inspector
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 30,
+      theme: 'grid',
+      headStyles: { fillColor: [56, 189, 248] },
+    });
+    
+    doc.save('Quality_Assurance_Report.pdf');
+  };
+
+  const exportToExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(inspections.map(item => ({
+      Batch: item.batch_number,
+      Product: item.product_name,
+      Machine: item.machine_name,
+      Status: item.status,
+      Reason: item.defect_reason || '-',
+      Inspector: item.inspector,
+      Time: new Date(item.inspection_time).toLocaleString()
+    })));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Quality Inspections");
+    XLSX.writeFile(wb, "Quality_Assurance_Report.xlsx");
+  };
+
   const chartData = [
     { name: 'Passed', value: stats.passed },
     { name: 'Failed', value: stats.failed }
@@ -54,8 +98,18 @@ export const Quality = () => {
   return (
     <div className="quality-container">
       <div className="quality-header">
-        <h1>Quality Assurance</h1>
-        <p className="subtitle">Real-time defect tracking and computer vision inspection</p>
+        <div>
+          <h1>Quality Assurance</h1>
+          <p className="subtitle">Real-time defect tracking and computer vision inspection</p>
+        </div>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button className="btn btn-secondary" onClick={exportToPDF} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Download size={16} /> PDF
+          </button>
+          <button className="btn btn-primary" onClick={exportToExcel} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Download size={16} /> Excel
+          </button>
+        </div>
       </div>
 
       <div className="quality-top-grid">
