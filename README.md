@@ -23,6 +23,7 @@ Featuring a WebGL 3D Digital Twin, Real-Time WebSockets Telemetry, Time-Series A
 *   **🔮 Time-Series AI Forecasting:** A PyTorch LSTM Neural Network simulating advanced forecasting of future thermodynamic trajectories, visualized via dual-line graphs in React.
 *   **🛠️ MLOps Continuous Learning Dashboard:** A dedicated MLOps control center for managing Neural Network health. Features dual-axis AreaCharts for visualizing loss vs. accuracy convergence, and a trigger for remote PyTorch retraining loops via REST endpoints.
 *   **📊 Enterprise Reporting (PDF/Excel):** Automated client-side generation of heavily formatted PDF and Excel (.xlsx) reports for Quality Control and Compliance Audit data, enabling seamless external auditing capabilities.
+*   **🏢 High-Density Enterprise Command Center:** A data-dense dashboard featuring a 6-metric KPI grid (OEE, Energy Draw, Yield, MTTR), dual-axis ComposedCharts layering Output vs. Energy, and a live streaming factory event feed.
 *   **🏭 Full-Stack Microservices:**
     *   **Frontend:** React, Vite, Tailwind CSS, Recharts, Three.js
     *   **API Gateway:** Node.js, Express, TypeScript, JWT Auth
