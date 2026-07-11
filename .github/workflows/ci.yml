@@ -20,6 +20,9 @@ jobs:
     - name: Install Frontend Dependencies
       working-directory: ./frontend
       run: npm ci
+    - name: Run Frontend Tests (Vitest)
+      working-directory: ./frontend
+      run: npm test
     - name: Build Frontend (Vite & React Three Fiber)
       working-directory: ./frontend
       run: npm run build
@@ -37,6 +40,9 @@ jobs:
     - name: Install API Gateway Dependencies
       working-directory: ./api-gateway
       run: npm ci
+    - name: Run API Gateway Tests (Jest)
+      working-directory: ./api-gateway
+      run: npm test
     - name: Build API Gateway (TypeScript -> JS)
       working-directory: ./api-gateway
       run: npm run build
