@@ -1,0 +1,49 @@
+.model-metrics-panel {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 24px;
+}
+
+.metrics-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.metrics-description {
+  display: flex;
+  gap: 24px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.metrics-description p {
+  margin: 0;
+}
+
+.charts-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.chart-box {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.chart-box h4 {
+  margin: 0 0 16px 0;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .charts-container {
+    grid-template-columns: 1fr;
+  }
+}
