@@ -38,16 +38,42 @@ io.on('connection', (socket) => {
     });
 });
 
-// Simulate Live Telemetry Every 2 Seconds
+import Redis from 'ioredis';
+
+// Redis Configuration
+const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
+const REDIS_PORT = parseInt(process.env.REDIS_PORT || '6379');
+
+const redisPublisher = new Redis({ host: REDIS_HOST, port: REDIS_PORT });
+const redisSubscriber = new Redis({ host: REDIS_HOST, port: REDIS_PORT });
+
+const TELEMETRY_CHANNEL = 'iot:machine:telemetry';
+
+// Subscribe to Redis Channel and forward to WebSockets
+redisSubscriber.subscribe(TELEMETRY_CHANNEL, (err, count) => {
+    if (err) {
+        console.error('Failed to subscribe to Redis telemetry channel:', err);
+    } else {
+        console.log(`Subscribed to Redis channel: ${TELEMETRY_CHANNEL}`);
+    }
+});
+
+redisSubscriber.on('message', (channel, message) => {
+    if (channel === TELEMETRY_CHANNEL) {
+        // We received a message from the message broker. Forward it to UI clients.
+        const telemetryData = JSON.parse(message);
+        io.emit('telemetry_update', telemetryData);
+    }
+});
+
+// Simulate "IoT Edge Device" publishing to Redis Message Broker
 setInterval(async () => {
     try {
         const result = await query('SELECT id, name, status, temperature, running_hours FROM machines');
         const machines = result.rows.map((m: any) => {
-            // Randomly fluctuate temperature slightly for realism
-            const tempFluctuation = (Math.random() - 0.5) * 2; // -1.0 to +1.0
+            const tempFluctuation = (Math.random() - 0.5) * 2;
             const newTemp = Math.max(20, Math.min(100, parseFloat(m.temperature) + tempFluctuation)).toFixed(1);
             
-            // Randomly update status sometimes
             let newStatus = m.status;
             if (m.status !== 'Maintenance' && Math.random() < 0.05) {
                 newStatus = Math.random() < 0.8 ? 'Running' : 'Idle';
@@ -62,12 +88,11 @@ setInterval(async () => {
             };
         });
 
-        // Broadcast to all connected clients
-        io.emit('telemetry_update', machines);
+        // Publish to Redis instead of emitting directly
+        redisPublisher.publish(TELEMETRY_CHANNEL, JSON.stringify(machines));
 
-        // Optionally, update the database periodically if needed, but for now we just broadcast the live mock data.
     } catch (err) {
-        console.error('Error broadcasting telemetry:', err);
+        console.error('Error generating mock telemetry:', err);
     }
 }, 2000);
 
