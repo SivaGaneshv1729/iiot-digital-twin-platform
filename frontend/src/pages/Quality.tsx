@@ -6,6 +6,11 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import './Quality.css';
 
+/**
+ * @interface QualityInspection
+ * @description Represents a standardized enterprise quality control inspection record.
+ * Contains both computer vision metadata and human inspector overrides.
+ */
 interface QualityInspection {
   id: number;
   batch_number: string;
@@ -19,6 +24,17 @@ interface QualityInspection {
 
 const COLORS = ['#10b981', '#ef4444'];
 
+/**
+ * @component Quality
+ * @description Enterprise Quality Assurance Dashboard.
+ * 
+ * Features:
+ * - Real-time Defect Tracking
+ * - Computer Vision (YOLOv8) integration mockups
+ * - Automated PDF/Excel Compliance Reporting
+ * 
+ * Target: Enterprise QA Managers & Compliance Officers
+ */
 export const Quality = () => {
   const [inspections, setInspections] = useState<QualityInspection[]>([]);
   const [stats, setStats] = useState({ passed: 0, failed: 0, defect_rate: 0 });
@@ -49,6 +65,11 @@ export const Quality = () => {
     fetchQualityData();
   }, []);
 
+  /**
+   * @function exportToPDF
+   * @description Generates a paginated, formatted PDF report of all current quality inspections.
+   * Utilizes jsPDF and autoTable for client-side rendering to reduce server load.
+   */
   const exportToPDF = () => {
     const doc = new jsPDF();
     doc.setFontSize(18);
@@ -75,6 +96,11 @@ export const Quality = () => {
     doc.save('Quality_Assurance_Report.pdf');
   };
 
+  /**
+   * @function exportToExcel
+   * @description Converts the JSON inspection data into a flat Excel (.xlsx) workbook.
+   * Leverages SheetJS for secure, client-side data extraction.
+   */
   const exportToExcel = () => {
     const ws = XLSX.utils.json_to_sheet(inspections.map(item => ({
       Batch: item.batch_number,
