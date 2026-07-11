@@ -1,7 +1,14 @@
 .machines-container {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 24px;
+}
+
+.machines-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
 .machines-header h1 {
@@ -9,9 +16,80 @@
   margin-bottom: 4px;
 }
 
+/* Connection Badge */
+.connection-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+}
+
+.connection-badge.connected {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid #10b981;
+}
+
+.connection-badge.disconnected {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+.pulse {
+  animation: pulse-wifi 2s infinite;
+}
+
+@keyframes pulse-wifi {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Fleet KPIs */
+.fleet-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 8px;
+}
+
+.fleet-kpi-card {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.fleet-kpi-info h3 {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  margin: 0 0 4px 0;
+}
+
+.fleet-kpi-info span {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.fleet-kpi-info small {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Machines Grid */
 .machines-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
 }
 
@@ -20,6 +98,12 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.machine-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
 }
 
 .machine-card-header {
@@ -31,6 +115,9 @@
 .machine-card-header h2 {
   font-size: 1.2rem;
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .status-badge {
@@ -45,16 +132,19 @@
 .status-badge.status-Running {
   background: rgba(16, 185, 129, 0.1);
   border-color: rgba(16, 185, 129, 0.3);
+  color: #10b981;
 }
 
 .status-badge.status-Idle {
   background: rgba(245, 158, 11, 0.1);
   border-color: rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
 }
 
 .status-badge.status-Maintenance {
   background: rgba(239, 68, 68, 0.1);
   border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
 }
 
 .machine-stats {
@@ -88,11 +178,14 @@
   margin-top: auto;
   padding-top: 16px;
   border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .btn-secondary {
   width: 100%;
-  padding: 10px;
+  padding: 8px;
   border-radius: 8px;
   border: 1px solid var(--border-color);
   background: rgba(255, 255, 255, 0.05);
@@ -118,22 +211,40 @@
   border-top: 1px dashed rgba(255, 255, 255, 0.1);
 }
 
-.text-success {
-  color: var(--success);
-}
-
-.text-danger {
-  color: var(--danger);
-  animation: pulse 2s infinite;
-}
+.text-success { color: var(--success); }
+.text-danger { color: var(--danger); animation: pulse-danger 2s infinite; }
+.text-accent { color: var(--accent-primary); }
+.text-warning { color: var(--warning); }
 
 .machine-card.high-risk {
   border: 1px solid rgba(239, 68, 68, 0.4);
   box-shadow: 0 0 15px rgba(239, 68, 68, 0.15);
 }
 
-@keyframes pulse {
+@keyframes pulse-danger {
   0% { opacity: 1; }
   50% { opacity: 0.7; }
   100% { opacity: 1; }
+}
+
+.btn-ai-analytics {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  background: rgba(139, 92, 246, 0.1);
+  color: #c084fc;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-ai-analytics:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.5);
+  color: #d8b4fe;
 }

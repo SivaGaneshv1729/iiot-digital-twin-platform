@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Activity, Clock, AlertTriangle, Wifi } from 'lucide-react';
+import { 
+  Activity, Clock, AlertTriangle, Wifi,
+  Settings, Zap, BarChart2, Server
+} from 'lucide-react';
 import { io } from 'socket.io-client';
+import { MachineHistoryModal } from '../components/MachineHistoryModal';
 import './Machines.css';
 
 interface Machine {
@@ -12,7 +16,7 @@ interface Machine {
   last_maintenance: string | null;
 }
 
-const MachineCard = ({ machine, userRole }: { machine: Machine, userRole: string }) => {
+const MachineCard = ({ machine, userRole, onOpenAnalytics }: { machine: Machine, userRole: string, onOpenAnalytics: (id: number) => void }) => {
   const [failureProb, setFailureProb] = useState<number | null>(null);
 
   useEffect(() => {
@@ -60,7 +64,7 @@ const MachineCard = ({ machine, userRole }: { machine: Machine, userRole: string
   return (
     <div className={`machine-card glass-panel ${isHighRisk ? 'high-risk' : ''}`}>
       <div className="machine-card-header">
-        <h2>{machine.name}</h2>
+        <h2><Server size={18} className="text-accent"/> {machine.name}</h2>
         <span className={`status-badge status-${machine.status}`}>
           {machine.status}
         </span>
@@ -69,7 +73,7 @@ const MachineCard = ({ machine, userRole }: { machine: Machine, userRole: string
       <div className="machine-stats">
         <div className="stat-row">
           <Activity size={18} className="stat-icon" />
-          <span className="stat-label">Temperature:</span>
+          <span className="stat-label">Core Temperature:</span>
           <span className="stat-value">{machine.temperature}°C</span>
         </div>
         <div className="stat-row">
@@ -88,37 +92,46 @@ const MachineCard = ({ machine, userRole }: { machine: Machine, userRole: string
         </div>
       </div>
 
-      <div className="machine-actions" style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-        {!isAdmin && (
-          <div style={{ width: '100%', textAlign: 'center', fontSize: '0.8rem', color: '#ef4444' }}>
-            🔒 Admin Access Required
-          </div>
-        )}
-        {isAdmin && (
-          <>
-            <button 
-              className="btn-secondary" 
-              style={{ flex: 1, padding: '4px 8px', fontSize: '0.8rem', background: 'rgba(16, 185, 129, 0.2)' }}
-              onClick={() => updateStatus('Running')}
-            >
-              Start
-            </button>
-            <button 
-              className="btn-secondary" 
-              style={{ flex: 1, padding: '4px 8px', fontSize: '0.8rem', background: 'rgba(239, 68, 68, 0.2)' }}
-              onClick={() => updateStatus('Idle')}
-            >
-              Stop
-            </button>
-            <button 
-              className="btn-secondary" 
-              style={{ flex: 1, padding: '4px 8px', fontSize: '0.8rem', background: 'rgba(245, 158, 11, 0.2)' }}
-              onClick={() => updateStatus('Maintenance')}
-            >
-              Maint.
-            </button>
-          </>
-        )}
+      <div className="machine-actions">
+        <button 
+          className="btn-ai-analytics" 
+          onClick={() => onOpenAnalytics(machine.id)}
+        >
+          <BarChart2 size={16} /> Open AI Telemetry
+        </button>
+
+        <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+          {!isAdmin && (
+            <div style={{ width: '100%', textAlign: 'center', fontSize: '0.8rem', color: '#ef4444', padding: '8px' }}>
+              🔒 Admin Access Required
+            </div>
+          )}
+          {isAdmin && (
+            <>
+              <button 
+                className="btn-secondary" 
+                style={{ flex: 1, padding: '4px 8px', fontSize: '0.8rem', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)' }}
+                onClick={() => updateStatus('Running')}
+              >
+                Start
+              </button>
+              <button 
+                className="btn-secondary" 
+                style={{ flex: 1, padding: '4px 8px', fontSize: '0.8rem', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)' }}
+                onClick={() => updateStatus('Idle')}
+              >
+                Stop
+              </button>
+              <button 
+                className="btn-secondary" 
+                style={{ flex: 1, padding: '4px 8px', fontSize: '0.8rem', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)' }}
+                onClick={() => updateStatus('Maintenance')}
+              >
+                Maint.
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -127,6 +140,8 @@ const MachineCard = ({ machine, userRole }: { machine: Machine, userRole: string
 export const Machines = () => {
   const [machines, setMachines] = useState<Machine[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [selectedMachineId, setSelectedMachineId] = useState<number | null>(null);
+
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userRole = user.role || 'Operator';
 
@@ -157,24 +172,75 @@ export const Machines = () => {
     };
   }, []);
 
+  // Calculate Fleet KPIs
+  const totalMachines = machines.length;
+  const runningMachines = machines.filter(m => m.status === 'Running').length;
+  const avgTemp = totalMachines > 0 
+    ? (machines.reduce((acc, m) => acc + (typeof m.temperature === 'number' ? m.temperature : parseFloat(m.temperature)), 0) / totalMachines).toFixed(1)
+    : 0;
+  
+  // Mock OEE calculation for presentation: (Running / Total) * 0.95 (Performance) * 0.99 (Quality)
+  const oee = totalMachines > 0 
+    ? ((runningMachines / totalMachines) * 0.95 * 0.99 * 100).toFixed(1) 
+    : 0;
+
   return (
     <div className="machines-container">
-      <div className="machines-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="machines-header">
         <div>
-          <h1>Machine Fleet Management</h1>
-          <p className="subtitle">Monitor and manage all factory machines</p>
+          <h1>Fleet & OEE Command Center</h1>
+          <p className="subtitle">Global equipment effectiveness and predictive AI node analytics</p>
         </div>
-        <div className={`connection-badge ${isConnected ? 'connected' : 'disconnected'}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '20px', background: isConnected ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: isConnected ? '#10b981' : '#ef4444', border: `1px solid ${isConnected ? '#10b981' : '#ef4444'}` }}>
+        <div className={`connection-badge ${isConnected ? 'connected' : 'disconnected'}`}>
           <Wifi size={16} className={isConnected ? 'pulse' : ''} />
           <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{isConnected ? 'IoT Stream Live' : 'IoT Disconnected'}</span>
         </div>
       </div>
 
+      {/* Fleet KPI Banner */}
+      <div className="fleet-kpi-grid">
+        <div className="fleet-kpi-card glass-panel">
+          <Zap size={32} className="text-accent" />
+          <div className="fleet-kpi-info">
+            <h3>Global Fleet OEE</h3>
+            <span>{oee}<small>%</small></span>
+          </div>
+        </div>
+        <div className="fleet-kpi-card glass-panel">
+          <Activity size={32} className="text-success" />
+          <div className="fleet-kpi-info">
+            <h3>Active Nodes</h3>
+            <span>{runningMachines} <small>/ {totalMachines}</small></span>
+          </div>
+        </div>
+        <div className="fleet-kpi-card glass-panel">
+          <Settings size={32} className="text-warning" />
+          <div className="fleet-kpi-info">
+            <h3>Avg Core Temp</h3>
+            <span>{avgTemp}<small>°C</small></span>
+          </div>
+        </div>
+      </div>
+
+      {/* Machines Grid */}
       <div className="machines-grid">
         {machines.map(machine => (
-          <MachineCard key={machine.id} machine={machine} userRole={userRole} />
+          <MachineCard 
+            key={machine.id} 
+            machine={machine} 
+            userRole={userRole} 
+            onOpenAnalytics={(id) => setSelectedMachineId(id)}
+          />
         ))}
       </div>
+
+      {/* Machine History & AI Forecast Modal */}
+      {selectedMachineId && (
+        <MachineHistoryModal 
+          machineId={selectedMachineId} 
+          onClose={() => setSelectedMachineId(null)} 
+        />
+      )}
     </div>
   );
 };
