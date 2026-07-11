@@ -1,5 +1,6 @@
+import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Server, Settings, Bell, Search, Package, LogOut, ScanEye, Globe, ClipboardList, Cpu } from 'lucide-react';
+import { LayoutDashboard, Server, Settings, Bell, Search, Package, LogOut, ScanEye, Globe, ClipboardList, Cpu, Sun, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { FactoryAssistant } from './FactoryAssistant';
 import './Layout.css';
@@ -8,6 +9,12 @@ export const Layout = () => {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -17,6 +24,10 @@ export const Layout = () => {
 
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === 'en' ? 'ja' : 'en');
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   return (
@@ -68,6 +79,9 @@ export const Layout = () => {
             <input type="text" placeholder="Search machines, orders..." className="search-input" />
           </div>
           <div className="header-actions">
+            <button className="icon-btn" onClick={toggleTheme} title="Toggle Theme">
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
             <button className="icon-btn" onClick={toggleLanguage} title="Toggle Language">
               <Globe size={20} />
               <span style={{ marginLeft: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
