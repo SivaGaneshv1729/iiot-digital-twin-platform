@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Package, AlertTriangle, ArrowDownToLine } from 'lucide-react';
 import { io } from 'socket.io-client';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import './Inventory.css';
 
 interface InventoryItem {

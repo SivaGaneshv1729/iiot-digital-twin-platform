@@ -6,7 +6,7 @@ import './Layout.css';
 
 export const Layout = () => {
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   const handleLogout = () => {

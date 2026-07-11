@@ -20,7 +20,7 @@ interface MachineHistoryModalProps {
  * 2. Future predicted trajectory (fetched via PyTorch LSTM inference)
  */
 export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalProps) => {
-  const { t } = useTranslation();
+  useTranslation();
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 

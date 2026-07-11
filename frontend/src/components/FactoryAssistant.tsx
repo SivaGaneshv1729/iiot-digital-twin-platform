@@ -53,7 +53,7 @@ export const FactoryAssistant = () => {
 
       const data = await response.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.answer || data.error }]);
-    } catch (error) {
+    } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I could not connect to the AI service.' }]);
     } finally {
       setIsLoading(false);

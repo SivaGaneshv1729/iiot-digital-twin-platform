@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Activity, Clock, Settings2, AlertTriangle, Wifi } from 'lucide-react';
+import { Activity, Clock, AlertTriangle, Wifi } from 'lucide-react';
 import { io } from 'socket.io-client';
 import './Machines.css';
 
