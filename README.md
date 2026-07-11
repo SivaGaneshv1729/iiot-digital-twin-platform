@@ -1,6 +1,7 @@
 # 🏭 SmartFactory-Nexus (IIoT Digital Twin Platform)
 
 ![CI/CD Pipeline](https://github.com/SivaGaneshv1729/iiot-digital-twin-platform/actions/workflows/ci.yml/badge.svg)
+![Tests: Passing](https://img.shields.io/badge/Tests-Passing-brightgreen.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
@@ -8,31 +9,31 @@
 ![Three.js](https://img.shields.io/badge/Three.js-black?logo=three.js&logoColor=white)
 
 An Enterprise-Grade **Industrial IoT (IIoT) Platform** engineered by **Siva Ganesh**. 
-Featuring a WebGL 3D Digital Twin, Real-Time WebSockets Telemetry, Time-Series Analytics, and a PyTorch Deep Learning backend for Predictive Maintenance.
+Featuring a WebGL 3D Digital Twin, Real-Time WebSockets Telemetry, Time-Series Analytics, PyTorch Deep Learning backend for Predictive Maintenance, and a strict Automated CI/CD Testing Pipeline.
 
 ---
 
-## 🌟 Core Enterprise Features (Phases 1-15)
+## 🌟 Core Enterprise Features
 
 *   **🌐 3D Digital Twin (WebGL):** Real-time 3D visualization of the factory floor using `Three.js` and `React Three Fiber`. Machines physically react and glow (Green/Red) based on live IoT health status. Includes raycasting interactivity for dynamic data fetching on mesh click.
 *   **⚡ Real-Time Data Streaming (Redis Pub/Sub):** Bi-directional WebSockets (`Socket.io`) backed by a Redis Message Broker, streaming live machine telemetry directly to the dashboard, eliminating REST polling.
 *   **📈 Time-Series Historical Analytics:** Automated ingestion pipeline from Redis to PostgreSQL `telemetry_history` tables. Visualized on the frontend via interactive `Recharts` glassmorphism modals.
-*   **📦 Dynamic Supply Chain ERP:** IoT Edge Simulator executes live SQL decrements against the `inventory` table based on production output. Connected via WebSockets to a live-updating `Recharts` BarChart dashboard.
-*   **📋 Compliance Audit Logging:** Immutable database ledger tracking all administrative actions. Features a dedicated glassmorphism dashboard for real-time monitoring of user activity and system overrides.
+*   **📦 Dynamic Supply Chain ERP:** IoT Edge Simulator executes live SQL decrements against the `inventory` table based on production output.
 *   **🧠 Deep Learning Predictive Maintenance:** A PyTorch Feed-Forward Neural Network trained to predict point-in-time machine failure probabilities based on sensor data.
 *   **🔮 Time-Series AI Forecasting:** A PyTorch LSTM Neural Network simulating advanced forecasting of future thermodynamic trajectories, visualized via dual-line graphs in React.
-*   **🛠️ MLOps Continuous Learning Dashboard:** A dedicated MLOps control center for managing Neural Network health. Features dual-axis AreaCharts for visualizing loss vs. accuracy convergence, and a trigger for remote PyTorch retraining loops via REST endpoints.
-*   **📊 Enterprise Reporting (PDF/Excel):** Automated client-side generation of heavily formatted PDF and Excel (.xlsx) reports for Quality Control and Compliance Audit data, enabling seamless external auditing capabilities.
-*   **🏢 High-Density Enterprise Command Center:** A data-dense dashboard featuring a 6-metric KPI grid (OEE, Energy Draw, Yield, MTTR), dual-axis ComposedCharts layering Output vs. Energy, and a live streaming factory event feed.
-*   **🏭 Full-Stack Microservices:**
-    *   **Frontend:** React, Vite, Tailwind CSS, Recharts, Three.js
-    *   **API Gateway:** Node.js, Express, TypeScript, JWT Auth
-    *   **AI Engine:** Python, FastAPI, PyTorch, Google Gemini
-    *   **Database:** PostgreSQL (Primary Data) & Redis (Caching/Broker)
-*   **🛡️ Role-Based Access Control (RBAC):** Strict JWT middleware separating `Admin` and `Operator` privileges. Operators have read-only views, while Admins can remotely start/stop machines.
-*   **🌍 Enterprise Localization (i18n):** Native support for Japanese (日本語) and English UI localization, optimized for global manufacturing environments.
-*   **🤖 LLM Factory Assistant:** Integrated Natural Language Processing chatbot capable of analyzing factory output and providing strategic insights.
-*   **🚀 Enterprise DevOps:** Fully containerized architecture with multi-stage `Docker` builds, orchestrated via `docker-compose`, and automated CI/CD pipelines via `GitHub Actions`.
+*   **🤖 LLM Factory Assistant:** Integrated Natural Language Processing chatbot (Gemini 2.5) capable of analyzing factory output and providing strategic insights.
+
+### 🏢 Next-Generation Dashboards (Glassmorphism & High-Density UI)
+*   **Executive Command Center:** A data-dense dashboard featuring a 6-metric KPI grid (OEE, Revenue at Risk, AI Energy Savings), live-animated dual-axis `ComposedCharts`, and an interactive **AI Prescriptive Action Center**.
+*   **MLOps Control Center:** A dedicated dashboard for managing Neural Network health. Features area charts for visualizing loss vs. accuracy convergence, live inference latency telemetry, and a trigger for remote PyTorch retraining loops.
+*   **Compliance Audit Ledger:** Immutable database ledger tracking all administrative actions with an integrated live search, role-distribution charts, and cryptographic hash simulations.
+
+### 🚀 Enterprise DevOps & Automated Testing
+*   **Automated Testing Suite:** Robust testing infrastructure ensuring zero-regression deployments. 
+    *   **Frontend Unit Tests:** Implemented with `Vitest`, `JSDOM`, and `React Testing Library` to verify complex React component rendering.
+    *   **Backend Integration Tests:** Implemented with `Jest` and `Supertest` hitting an in-memory Node server to validate HTTP status codes and strict JWT authentication.
+*   **Continuous Integration (CI):** GitHub Actions pipeline configured as an automated gatekeeper. The pipeline instantly blocks deployment if the `Vitest` or `Jest` suites fail.
+*   **Container Orchestration:** Fully containerized microservices architecture with multi-stage `Docker` builds, orchestrated via `docker-compose.prod.yml`.
 
 ---
 
@@ -40,12 +41,41 @@ Featuring a WebGL 3D Digital Twin, Real-Time WebSockets Telemetry, Time-Series A
 
 ```mermaid
 graph TD
-    UI[Frontend: React + WebGL 3D] <==>|WebSockets / REST| API[API Gateway: Express/Node.js]
-    API <--> DB[(PostgreSQL Timeseries)]
-    API <--> Cache[(Redis Pub/Sub)]
-    API <--> AI[AI Service: FastAPI/PyTorch]
-    AI --> Model((Deep Learning Model))
-    AI --> LLM((Gemini LLM API))
+    subgraph Frontend [React + Vite]
+        UI[Glassmorphism UI Dashboards]
+        DT[Three.js Digital Twin]
+        Tests1[Vitest + RTL Suite]
+    end
+
+    subgraph API [Node.js + Express]
+        Gateway[API Gateway]
+        Auth[JWT Middleware]
+        WS[Socket.io Server]
+        Tests2[Jest Integration Tests]
+    end
+
+    subgraph Data [Data Layer]
+        DB[(PostgreSQL Timeseries)]
+        Cache[(Redis Pub/Sub)]
+    end
+
+    subgraph AI [Python + PyTorch]
+        FastAPI[FastAPI Service]
+        DL((LSTM / FNN Models))
+        LLM((Gemini NLP Agent))
+    end
+
+    UI <==>|WebSockets / REST| Gateway
+    DT <==>|WebSockets| WS
+    Gateway <--> DB
+    Gateway <--> Cache
+    Gateway <--> FastAPI
+    FastAPI --> DL
+    FastAPI --> LLM
+    
+    %% CI/CD Pipeline
+    Pipeline((GitHub Actions CI)) --> Tests1
+    Pipeline --> Tests2
 ```
 
 ---
@@ -54,12 +84,13 @@ graph TD
 
 | Domain | Technologies |
 | :--- | :--- |
-| **Frontend UI** | React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons, i18next |
+| **Frontend UI** | React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons |
 | **3D Graphics** | Three.js, React Three Fiber, React Three Drei |
 | **Backend API** | Node.js 20, Express, Socket.io, JSON Web Tokens |
 | **AI / ML Backend** | Python 3.11, FastAPI, PyTorch, Scikit-learn, Google GenAI |
 | **Databases** | PostgreSQL 15, Redis 7 |
-| **DevOps / CI/CD** | Docker, Docker Compose, Nginx, GitHub Actions |
+| **Testing** | Vitest, Jest, Supertest, React Testing Library |
+| **DevOps / CI/CD** | Docker, Docker Compose, GitHub Actions |
 
 ---
 
@@ -86,6 +117,8 @@ node api-gateway/seed_operator.js
 cd api-gateway
 npm install
 npm run dev
+# To run backend integration tests:
+npm test
 ```
 
 ### 3. Run AI Service
@@ -100,6 +133,8 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 cd frontend
 npm install
 npm run dev
+# To run frontend unit tests:
+npm test
 ```
 
 Visit `http://localhost:5173` and log in with:
@@ -122,7 +157,7 @@ docker-compose -f docker-compose.prod.yml up --build -d
 
 **Siva Ganesh**  
 *Lead Full-Stack IIoT Engineer*  
-Engineered from the ground up to demonstrate advanced proficiency in Microservices Architecture, Real-Time WebGL Graphics, Time-Series Data Engineering, and Applied Deep Learning for Japanese Enterprise Manufacturing.
+Engineered from the ground up to demonstrate advanced proficiency in Microservices Architecture, Real-Time WebGL Graphics, Time-Series Data Engineering, Applied Deep Learning, and Enterprise DevOps.
 
 ## 🛡️ License
 
