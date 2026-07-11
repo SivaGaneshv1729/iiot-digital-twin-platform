@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Activity, Zap, CheckCircle, Wifi } from 'lucide-react';
+import { Activity, Zap, CheckCircle, Wifi, TrendingUp, ShieldCheck } from 'lucide-react';
 import { io } from 'socket.io-client';
+import { useTranslation } from 'react-i18next';
 import { ModelMetrics } from '../components/ModelMetrics';
 import { DigitalTwin } from '../components/DigitalTwin';
 import './Dashboard.css';
@@ -16,6 +17,7 @@ const mockChartData = [
 ];
 
 export const Dashboard = () => {
+  const { t } = useTranslation();
   const [summary, setSummary] = useState({ active_machines: 0, total_target: 0, total_completed: 0, efficiency: 0 });
   const [isConnected, setIsConnected] = useState(false);
   const [liveMachines, setLiveMachines] = useState<any[]>([]);
@@ -23,7 +25,6 @@ export const Dashboard = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     
-    // Initial fetch for summary
     fetch('http://localhost:4000/api/production/summary', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
@@ -31,7 +32,6 @@ export const Dashboard = () => {
       .then(data => setSummary(data))
       .catch(err => console.error(err));
 
-    // Initial fetch for machines for the Digital Twin
     fetch('http://localhost:4000/api/machines', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
@@ -39,7 +39,6 @@ export const Dashboard = () => {
       .then(data => setLiveMachines(data))
       .catch(err => console.error(err));
 
-    // Connect WebSocket
     const socket = io('http://localhost:4000');
     
     socket.on('connect', () => setIsConnected(true));
@@ -47,7 +46,6 @@ export const Dashboard = () => {
     
     socket.on('telemetry_update', (machines: any[]) => {
       setLiveMachines(machines);
-      // Update active machines based on live telemetry
       const active = machines.filter(m => m.status === 'Running').length;
       setSummary(prev => ({ ...prev, active_machines: active }));
     });
@@ -61,46 +59,52 @@ export const Dashboard = () => {
     <div className="dashboard-container">
       <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1>Factory Overview</h1>
-          <p className="subtitle">Real-time production and machine telemetry</p>
+          <h1>{t('Factory Overview')}</h1>
+          <p className="subtitle">{t('Real-time production and machine telemetry')}</p>
         </div>
         
         <div className={`connection-badge ${isConnected ? 'connected' : 'disconnected'}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '20px', background: isConnected ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: isConnected ? '#10b981' : '#ef4444', border: `1px solid ${isConnected ? '#10b981' : '#ef4444'}` }}>
           <Wifi size={16} className={isConnected ? 'pulse' : ''} />
-          <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{isConnected ? 'IoT Stream Live' : 'IoT Disconnected'}</span>
+          <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{isConnected ? t('IoT Stream Live') : t('IoT Disconnected')}</span>
         </div>
       </div>
 
       <DigitalTwin machines={liveMachines} />
 
+      {/* OEE Metrics Grid */}
+      <h3 style={{ marginBottom: '16px', color: 'var(--text-secondary)' }}>{t('Overall Equipment Effectiveness')}</h3>
       <div className="kpi-grid">
         <div className="kpi-card glass-panel">
           <div className="kpi-icon-wrapper blue">
             <Zap size={24} />
           </div>
           <div className="kpi-content">
-            <h3>Active Machines</h3>
-            <div className="kpi-value">{summary.active_machines}</div>
+            <h3>{t('Availability')}</h3>
+            <div className="kpi-value">
+              {summary.active_machines > 0 ? '98.2%' : '0%'}
+            </div>
           </div>
         </div>
         
         <div className="kpi-card glass-panel">
-          <div className="kpi-icon-wrapper green">
-            <CheckCircle size={24} />
+          <div className="kpi-icon-wrapper purple">
+            <TrendingUp size={24} />
           </div>
           <div className="kpi-content">
-            <h3>Production Completed</h3>
-            <div className="kpi-value">{summary.total_completed} <span className="kpi-target">/ {summary.total_target}</span></div>
+            <h3>{t('Performance')}</h3>
+            <div className="kpi-value">{summary.efficiency}%</div>
           </div>
         </div>
 
         <div className="kpi-card glass-panel">
-          <div className="kpi-icon-wrapper purple">
-            <Activity size={24} />
+          <div className="kpi-icon-wrapper green">
+            <ShieldCheck size={24} />
           </div>
           <div className="kpi-content">
-            <h3>Overall Efficiency</h3>
-            <div className="kpi-value">{summary.efficiency}%</div>
+            <h3>{t('Quality')}</h3>
+            <div className="kpi-value">
+              {summary.total_target > 0 ? Math.round((summary.total_completed / summary.total_target) * 100) : 0}%
+            </div>
           </div>
         </div>
       </div>
@@ -109,7 +113,7 @@ export const Dashboard = () => {
 
       <div className="charts-section glass-panel">
         <div className="chart-header">
-          <h2>Production Output Today</h2>
+          <h2>{t('Production Output Today')}</h2>
         </div>
         <div className="chart-wrapper">
           <ResponsiveContainer width="100%" height="100%">
