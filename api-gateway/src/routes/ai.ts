@@ -3,6 +3,11 @@ import { Router } from 'express';
 const router = Router();
 const AI_SERVICE_URL = 'http://localhost:8000';
 
+/**
+ * @route POST /api/ai/predict/maintenance
+ * @description Proxies real-time telemetry to the Python FastApi service.
+ * Utilizes the FFNN to predict equipment failure probabilities.
+ */
 router.post('/predict/maintenance', async (req, res) => {
     try {
         const response = await fetch(`${AI_SERVICE_URL}/predict/maintenance`, {
