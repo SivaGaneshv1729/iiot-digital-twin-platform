@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { query } from '../db';
+import { requireAdmin } from '../middleware/auth';
+import { cacheMiddleware } from '../middleware/cache';
 
 const router = Router();
 

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { query } from '../db';
 import { requireAdmin } from '../middleware/auth';
+import { cacheMiddleware } from '../middleware/cache';
 
 const router = Router();
 
@@ -17,7 +18,7 @@ const router = Router();
  *       401:
  *         description: Unauthorized
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', cacheMiddleware(10), async (req: Request, res: Response) => {
     try {
         const result = await query('SELECT * FROM machines ORDER BY id ASC');
         res.json(result.rows);

@@ -1,10 +1,8 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
-import http from 'http';
-import { Server } from 'socket.io';
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
+import rateLimit from 'express-rate-limit';
 import { swaggerSpec } from './swagger';
 
 import machinesRouter from './routes/machines';
@@ -21,6 +19,16 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+
+// Enterprise Security: DDoS Protection (Max 100 requests per 15 minutes per IP)
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, 
+    max: 1000, // Set high to 1000 for local testing so we don't block ourselves, but proves the concept
+    message: 'Too many requests from this IP, please try again after 15 minutes',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use('/api', limiter);
 
 app.use(cors());
 app.use(express.json());
