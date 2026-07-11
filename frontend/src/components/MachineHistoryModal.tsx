@@ -4,11 +4,21 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useTranslation } from 'react-i18next';
 import './MachineHistoryModal.css';
 
+/**
+ * @interface MachineHistoryModalProps
+ * @description Properties for the Machine History & AI Forecasting Modal
+ */
 interface MachineHistoryModalProps {
   machineId: number | null;
   onClose: () => void;
 }
 
+/**
+ * @component MachineHistoryModal
+ * @description Renders a modal overlay containing dual-line Recharts visualizing:
+ * 1. Historical thermodynamic telemetry (fetched from PostgreSQL)
+ * 2. Future predicted trajectory (fetched via PyTorch LSTM inference)
+ */
 export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalProps) => {
   const { t } = useTranslation();
   const [history, setHistory] = useState<any[]>([]);
