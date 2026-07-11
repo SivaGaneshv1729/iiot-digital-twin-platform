@@ -6,6 +6,11 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import './AuditLogs.css';
 
+/**
+ * @interface AuditLog
+ * @description Defines the structure of an immutable compliance record.
+ * Used for tracking user actions within the factory digital twin.
+ */
 interface AuditLog {
   id: number;
   action: string;
@@ -14,6 +19,12 @@ interface AuditLog {
   role: string;
 }
 
+/**
+ * @component AuditLogs
+ * @description The central Compliance and Auditing Ledger.
+ * Provides a read-only view of historical administrative actions with export capabilities
+ * for regulatory compliance.
+ */
 export const AuditLogs = () => {
   const { t } = useTranslation();
   const [logs, setLogs] = useState<AuditLog[]>([]);
