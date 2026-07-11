@@ -139,6 +139,10 @@ app.use('/api/quality', authenticateToken, qualityRouter);
 app.use('/api/ai', authenticateToken, aiRouter);
 app.use('/api/audit', authenticateToken, auditRouter);
 
-server.listen(PORT, () => {
-    console.log(`API Gateway & Socket.io Server running on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+    server.listen(PORT, () => {
+        console.log(`API Gateway & Socket.io Server running on http://localhost:${PORT}`);
+    });
+}
+
+export default app;
