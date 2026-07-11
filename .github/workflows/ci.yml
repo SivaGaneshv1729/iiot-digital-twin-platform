@@ -1,0 +1,69 @@
+name: SmartFactory IIoT CI Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20.x
+        cache: 'npm'
+        cache-dependency-path: 'frontend/package-lock.json'
+    - name: Install Frontend Dependencies
+      working-directory: ./frontend
+      run: npm ci
+    - name: Build Frontend (Vite & React Three Fiber)
+      working-directory: ./frontend
+      run: npm run build
+
+  build-api-gateway:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20.x
+        cache: 'npm'
+        cache-dependency-path: 'api-gateway/package-lock.json'
+    - name: Install API Gateway Dependencies
+      working-directory: ./api-gateway
+      run: npm ci
+    - name: Build API Gateway (TypeScript -> JS)
+      working-directory: ./api-gateway
+      run: npm run build
+
+  test-ai-service:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+        cache: 'pip'
+    - name: Install AI Dependencies
+      working-directory: ./ai-service
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Syntax Check
+      working-directory: ./ai-service
+      run: |
+        python -m py_compile main.py
+
+  docker-compose-test:
+    needs: [build-frontend, build-api-gateway, test-ai-service]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Test Docker Compose Build
+      run: docker-compose -f docker-compose.prod.yml build
