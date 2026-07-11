@@ -21,6 +21,7 @@ Featuring a WebGL 3D Digital Twin, Real-Time WebSockets Telemetry, Time-Series A
 *   **📋 Compliance Audit Logging:** Immutable database ledger tracking all administrative actions. Features a dedicated glassmorphism dashboard for real-time monitoring of user activity and system overrides.
 *   **🧠 Deep Learning Predictive Maintenance:** A PyTorch Feed-Forward Neural Network trained to predict point-in-time machine failure probabilities based on sensor data.
 *   **🔮 Time-Series AI Forecasting:** A PyTorch LSTM Neural Network simulating advanced forecasting of future thermodynamic trajectories, visualized via dual-line graphs in React.
+*   **🛠️ MLOps Continuous Learning Dashboard:** A dedicated MLOps control center for managing Neural Network health. Features dual-axis AreaCharts for visualizing loss vs. accuracy convergence, and a trigger for remote PyTorch retraining loops via REST endpoints.
 *   **🏭 Full-Stack Microservices:**
     *   **Frontend:** React, Vite, Tailwind CSS, Recharts, Three.js
     *   **API Gateway:** Node.js, Express, TypeScript, JWT Auth
