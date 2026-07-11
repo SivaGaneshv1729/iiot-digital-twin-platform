@@ -1,0 +1,11 @@
+.digital-twin-container {
+  width: 100%;
+  height: 400px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.digital-twin-container canvas {
+  border-radius: 12px;
+}
