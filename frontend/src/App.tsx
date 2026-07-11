@@ -6,6 +6,7 @@ import { Machines } from './pages/Machines';
 import { Inventory } from './pages/Inventory';
 import { Quality } from './pages/Quality';
 import { AuditLogs } from './pages/AuditLogs';
+import { MLOps } from './pages/MLOps';
 import { Login } from './pages/Login';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -32,6 +33,7 @@ function App() {
           <Route path="inventory" element={<Inventory />} />
           <Route path="quality" element={<Quality />} />
           <Route path="audit" element={<AuditLogs />} />
+          <Route path="mlops" element={<MLOps />} />
         </Route>
       </Routes>
     </BrowserRouter>
