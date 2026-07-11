@@ -3,6 +3,14 @@ import torch.nn as nn
 import numpy as np
 
 class LSTMPredictor(nn.Module):
+    """
+    Long Short-Term Memory (LSTM) Neural Network for Time-Series Forecasting.
+    
+    Architecture:
+    - Input: Sequential thermodynamic telemetry sequences (e.g. Temperature).
+    - Hidden State: Captures long-term non-linear dependencies.
+    - Output: Predicted future trajectory points.
+    """
     def __init__(self, input_dim=1, hidden_dim=16, output_dim=1, num_layers=1):
         super(LSTMPredictor, self).__init__()
         self.hidden_dim = hidden_dim
@@ -12,6 +20,10 @@ class LSTMPredictor(nn.Module):
         self.fc = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x):
+        """
+        Forward pass through the LSTM network.
+        Initializes hidden and cell states dynamically per batch.
+        """
         # Initialize hidden state with zeros
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).requires_grad_()
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).requires_grad_()
