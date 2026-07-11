@@ -59,16 +59,25 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--text-primary);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.kpi-value small {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 /* Lower Section Grid */
 .dashboard-lower-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 2fr 1.2fr;
   gap: 24px;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1100px) {
   .dashboard-lower-grid {
     grid-template-columns: 1fr;
   }
@@ -78,6 +87,8 @@
   padding: 20px;
   border: 1px solid rgba(255, 255, 255, 0.05);
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .chart-header {
@@ -112,7 +123,7 @@
   width: 100%;
 }
 
-/* Event Stream */
+/* Prescriptive Action Center */
 .event-stream-section {
   padding: 20px;
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -152,65 +163,114 @@
 .event-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   overflow-y: auto;
-  max-height: 350px;
+  max-height: 380px;
   padding-right: 8px;
 }
 
-/* Custom Scrollbar for event stream */
-.event-list::-webkit-scrollbar {
-  width: 4px;
-}
-.event-list::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-}
-.event-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-}
+/* Custom Scrollbar */
+.event-list::-webkit-scrollbar { width: 4px; }
+.event-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+.event-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
 
-.event-item {
-  display: flex;
-  gap: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.event-item:last-child {
-  border-bottom: none;
-}
-
-.event-time {
-  font-size: 0.75rem;
-  color: #94a3b8;
-  min-width: 40px;
-  padding-top: 2px;
-}
-
-.event-details {
+.action-card {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  transition: border-color 0.2s ease;
 }
 
-.event-title {
-  font-size: 0.85rem;
+.action-card.high-priority {
+  border-left: 4px solid #ef4444;
+}
+
+.action-card.medium-priority {
+  border-left: 4px solid #f59e0b;
+}
+
+.action-card.low-priority {
+  border-left: 4px solid #3b82f6;
+}
+
+.action-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.action-time {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.action-title {
+  font-size: 0.95rem;
   color: var(--text-primary);
-  font-weight: 500;
-  line-height: 1.3;
-}
-
-.event-type {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  display: inline-block;
-  width: fit-content;
   font-weight: 600;
+  line-height: 1.4;
 }
 
-.event-type.ai { background: rgba(139, 92, 246, 0.15); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.3); }
-.event-type.system { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
-.event-type.alert { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+.action-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.action-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn-approve {
+  padding: 6px 12px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #10b981;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-approve:hover {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.btn-approve:disabled {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.1);
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+.btn-dismiss {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-dismiss:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
