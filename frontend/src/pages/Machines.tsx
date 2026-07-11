@@ -12,12 +12,11 @@ interface Machine {
   last_maintenance: string | null;
 }
 
-const MachineCard = ({ machine }: { machine: Machine }) => {
+const MachineCard = ({ machine, userRole }: { machine: Machine, userRole: string }) => {
   const [failureProb, setFailureProb] = useState<number | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    // Fetch AI prediction for this machine
     fetch('http://localhost:4000/api/ai/predict/maintenance', {
       method: 'POST',
       headers: { 
@@ -32,9 +31,31 @@ const MachineCard = ({ machine }: { machine: Machine }) => {
       .then(res => res.json())
       .then(data => setFailureProb(data.failure_probability))
       .catch(err => console.error(err));
-  }, [machine.temperature, machine.running_hours]); // Re-run when telemetry changes
+  }, [machine.temperature, machine.running_hours]);
 
   const isHighRisk = failureProb !== null && failureProb > 75;
+  const isAdmin = userRole === 'Admin';
+
+  const updateStatus = async (status: string) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`http://localhost:4000/api/machines/${machine.id}/status`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status })
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        alert(error.error || 'Failed to update status');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Network error while updating status');
+    }
+  };
 
   return (
     <div className={`machine-card glass-panel ${isHighRisk ? 'high-risk' : ''}`}>
@@ -67,10 +88,37 @@ const MachineCard = ({ machine }: { machine: Machine }) => {
         </div>
       </div>
 
-      <div className="machine-actions">
-        <button className="btn-secondary">
-          <Settings2 size={16} /> Manage
-        </button>
+      <div className="machine-actions" style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+        {!isAdmin && (
+          <div style={{ width: '100%', textAlign: 'center', fontSize: '0.8rem', color: '#ef4444' }}>
+            🔒 Admin Access Required
+          </div>
+        )}
+        {isAdmin && (
+          <>
+            <button 
+              className="btn-secondary" 
+              style={{ flex: 1, padding: '4px 8px', fontSize: '0.8rem', background: 'rgba(16, 185, 129, 0.2)' }}
+              onClick={() => updateStatus('Running')}
+            >
+              Start
+            </button>
+            <button 
+              className="btn-secondary" 
+              style={{ flex: 1, padding: '4px 8px', fontSize: '0.8rem', background: 'rgba(239, 68, 68, 0.2)' }}
+              onClick={() => updateStatus('Idle')}
+            >
+              Stop
+            </button>
+            <button 
+              className="btn-secondary" 
+              style={{ flex: 1, padding: '4px 8px', fontSize: '0.8rem', background: 'rgba(245, 158, 11, 0.2)' }}
+              onClick={() => updateStatus('Maintenance')}
+            >
+              Maint.
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -79,6 +127,8 @@ const MachineCard = ({ machine }: { machine: Machine }) => {
 export const Machines = () => {
   const [machines, setMachines] = useState<Machine[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userRole = user.role || 'Operator';
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -120,7 +170,7 @@ export const Machines = () => {
 
       <div className="machines-grid">
         {machines.map(machine => (
-          <MachineCard key={machine.id} machine={machine} />
+          <MachineCard key={machine.id} machine={machine} userRole={userRole} />
         ))}
       </div>
     </div>
