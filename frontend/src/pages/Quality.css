@@ -1,7 +1,7 @@
 .quality-container {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 24px;
 }
 
 .quality-header h1 {
@@ -9,25 +9,69 @@
   margin-bottom: 4px;
 }
 
-.quality-top-grid {
+.quality-analytics-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 24px;
+  grid-template-columns: 350px 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 20px;
+}
+
+@media (max-width: 1200px) {
+  .quality-analytics-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+  .cv-mockup-panel {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+  }
+  .quality-kpi-row, .quality-charts-row {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+  }
+}
+
+.cv-mockup-panel {
+  grid-column: 1 / 2;
+  grid-row: 1 / 3;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  min-height: 400px;
+}
+
+.quality-kpi-row {
+  grid-column: 2 / 4;
+  grid-row: 1 / 2;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.quality-charts-row {
+  grid-column: 2 / 4;
+  grid-row: 2 / 3;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
 
 .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .panel-header h3 {
-  font-size: 1.1rem;
+  font-size: 1rem;
   display: flex;
   align-items: center;
   gap: 8px;
   margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
 }
 
 .live-indicator {
@@ -35,15 +79,9 @@
   color: var(--danger);
   padding: 4px 10px;
   border-radius: 12px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   animation: pulse 2s infinite;
-}
-
-.cv-mockup-panel {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
 }
 
 .camera-feed {
@@ -54,7 +92,6 @@
   position: relative;
   overflow: hidden;
   min-height: 250px;
-  /* Simulating a conveyor belt pattern */
   background-image: repeating-linear-gradient(
     45deg,
     rgba(255,255,255,0.02) 0px,
@@ -143,48 +180,61 @@
   display: flex;
   justify-content: space-between;
   color: rgba(255,255,255,0.5);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-family: monospace;
 }
 
-.quality-stats-panel {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-}
-
 .stat-card {
+  padding: 20px;
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 24px;
 }
 
 .stat-value {
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.chart-wrapper-small {
+  height: 120px;
+  width: 100%;
+}
+
 .chart-wrapper {
-  flex: 1;
+  height: 220px;
+  width: 100%;
+  min-width: 0;
+}
+
+.chart-container-box {
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
 }
 
 .chart-legend {
   display: flex;
   justify-content: center;
   gap: 16px;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
 }
 
