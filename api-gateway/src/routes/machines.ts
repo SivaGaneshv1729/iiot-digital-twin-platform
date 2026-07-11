@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { query } from '../db';
+import { requireAdmin } from '../middleware/auth';
 
 const router = Router();
 
@@ -41,6 +42,23 @@ router.get('/:id/history', async (req, res) => {
         res.json(result.rows.reverse());
     } catch (err) {
         console.error('Error fetching machine history:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+router.post('/:id/status', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        
+        if (!['Running', 'Idle', 'Maintenance'].includes(status)) {
+            return res.status(400).json({ error: 'Invalid status' });
+        }
+        
+        await query('UPDATE machines SET status = $1 WHERE id = $2', [status, id]);
+        res.json({ message: `Machine ${id} status updated to ${status}` });
+    } catch (err) {
+        console.error('Error updating machine status:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
