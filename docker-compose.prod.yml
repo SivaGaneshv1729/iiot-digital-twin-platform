@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: iiot_postgres_prod
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: smartfactory
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - iiot_network
+    restart: unless-stopped
+
+  # 2. Redis Cache / Message Broker
+  redis:
+    image: redis:7-alpine
+    container_name: iiot_redis_prod
+    ports:
+      - "6379:6379"
+    networks:
+      - iiot_network
+    restart: unless-stopped
+
+  # 3. FastAPI AI Backend
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: iiot_ai_service_prod
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-mock_key}
+    ports:
+      - "8000:8000"
+    networks:
+      - iiot_network
+    restart: unless-stopped
+
+  # 4. Express Node API Gateway
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: iiot_api_gateway_prod
+    environment:
+      - PORT=4000
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=smartfactory
+      - JWT_SECRET=super_secret_jwt_key_for_production
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+      - redis
+      - ai-service
+    networks:
+      - iiot_network
+    restart: unless-stopped
+
+  # 5. React Frontend (Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: iiot_frontend_prod
+    ports:
+      - "80:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - iiot_network
+    restart: unless-stopped
+
+networks:
+  iiot_network:
+    driver: bridge
+
+volumes:
+  postgres_prod_data:
