@@ -59,7 +59,9 @@ export const Dashboard = () => {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
-      .then(data => setLiveMachines(data))
+      .then(data => {
+        setLiveMachines(Array.isArray(data) ? data : []);
+      })
       .catch(err => console.error(err));
 
     // Initialize WebSockets
@@ -69,9 +71,11 @@ export const Dashboard = () => {
     socket.on('disconnect', () => setIsConnected(false));
     
     socket.on('telemetry_update', (machines: any[]) => {
-      setLiveMachines(machines);
-      const active = machines.filter(m => m.status === 'Running').length;
-      setSummary(prev => ({ ...prev, active_machines: active }));
+      if (Array.isArray(machines)) {
+        setLiveMachines(machines);
+        const active = machines.filter(m => m.status === 'Running').length;
+        setSummary(prev => ({ ...prev, active_machines: active }));
+      }
     });
 
     return () => {

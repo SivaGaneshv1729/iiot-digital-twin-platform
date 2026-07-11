@@ -22,14 +22,16 @@ export const ModelMetrics = () => {
         });
         
         if (res.ok) {
-          const raw: MetricsData = await res.json();
-          // Transform for Recharts
-          const formatted = raw.epochs.map((epoch, i) => ({
-            epoch,
-            loss: raw.loss[i],
-            accuracy: raw.accuracy[i]
-          }));
-          setData(formatted);
+          const raw = await res.json();
+          // Transform for Recharts if data is valid
+          if (raw && raw.epochs && Array.isArray(raw.epochs)) {
+            const formatted = raw.epochs.map((epoch: number, i: number) => ({
+              epoch,
+              loss: raw.loss[i],
+              accuracy: raw.accuracy[i]
+            }));
+            setData(formatted);
+          }
         }
       } catch (err) {
         console.error("Failed to fetch model metrics", err);
