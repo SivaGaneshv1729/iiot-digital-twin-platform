@@ -29,4 +29,20 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+router.get('/:id/history', async (req, res) => {
+    try {
+        const { id } = req.params;
+        // Fetch last 50 historical points for charting
+        const result = await query(
+            'SELECT temperature, status, timestamp as time FROM telemetry_history WHERE machine_id = $1 ORDER BY timestamp DESC LIMIT 50',
+            [id]
+        );
+        // Reverse to get chronological order for charts
+        res.json(result.rows.reverse());
+    } catch (err) {
+        console.error('Error fetching machine history:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 export default router;
