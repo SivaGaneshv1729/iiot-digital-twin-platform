@@ -103,6 +103,23 @@ setInterval(async () => {
             }
         }
 
+        // Phase 14: Supply Chain Integration - Deplete inventory based on production
+        const runningMachines = machines.filter((m: any) => m.status === 'Running');
+        if (runningMachines.length > 0) {
+            // Deplete a random raw material (e.g. IDs 1, 2, 3) by a random amount (1-5)
+            const randomItemId = Math.floor(Math.random() * 3) + 1;
+            const depletionAmount = Math.floor(Math.random() * 5) + 1;
+            
+            await query(
+                'UPDATE inventory SET quantity = quantity - $1 WHERE id = $2 AND quantity > 0',
+                [depletionAmount, randomItemId]
+            );
+            
+            // Broadcast the new inventory levels to all clients
+            const invResult = await query('SELECT * FROM inventory ORDER BY category, item_name');
+            io.emit('inventory_update', invResult.rows);
+        }
+
     } catch (err) {
         console.error('Error generating mock telemetry:', err);
     }
