@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Server, Settings, Bell, Search, Package, LogOut, ScanEye, Globe } from 'lucide-react';
+import { LayoutDashboard, Server, Settings, Bell, Search, Package, LogOut, ScanEye, Globe, ClipboardList } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { FactoryAssistant } from './FactoryAssistant';
 import './Layout.css';
@@ -43,6 +43,10 @@ export const Layout = () => {
           <NavLink to="/quality" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
             <ScanEye size={20} />
             <span>Quality Control</span>
+          </NavLink>
+          <NavLink to="/audit" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
+            <ClipboardList size={20} />
+            <span>Audit Logs</span>
           </NavLink>
           <div className="nav-item disabled">
             <Settings size={20} />

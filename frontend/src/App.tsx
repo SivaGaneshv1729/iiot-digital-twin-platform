@@ -5,6 +5,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Machines } from './pages/Machines';
 import { Inventory } from './pages/Inventory';
 import { Quality } from './pages/Quality';
+import { AuditLogs } from './pages/AuditLogs';
 import { Login } from './pages/Login';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -30,6 +31,7 @@ function App() {
           <Route path="machines" element={<Machines />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="quality" element={<Quality />} />
+          <Route path="audit" element={<AuditLogs />} />
         </Route>
       </Routes>
     </BrowserRouter>
