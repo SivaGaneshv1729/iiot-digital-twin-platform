@@ -3,7 +3,7 @@ import {
   ComposedChart, Line, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
 import { 
-  Activity, Zap, Wifi, TrendingUp, DollarSign, Leaf, CheckCircle, Clock, Download
+  Activity, Zap, Wifi, TrendingUp, DollarSign, Leaf, CheckCircle, Clock, Download, AlertOctagon
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { useTranslation } from 'react-i18next';
@@ -45,6 +45,7 @@ export const Dashboard = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [liveMachines, setLiveMachines] = useState<any[]>([]);
   const [selectedMachineId, setSelectedMachineId] = useState<number | null>(null);
+  const [isEmergencyMode, setIsEmergencyMode] = useState(false);
   
   const [chartData, setChartData] = useState(INITIAL_CHART_DATA);
   const [actions, setActions] = useState(INITIAL_ACTIONS);
@@ -114,6 +115,13 @@ export const Dashboard = () => {
         setSummary(prev => ({ ...prev, active_machines: active }));
       }
     });
+    
+    socket.on('emergency_stop', () => {
+      setIsEmergencyMode(true);
+      // Immediately reflect local state
+      setLiveMachines(prev => prev.map(m => ({ ...m, status: 'Maintenance' })));
+      setSummary(prev => ({ ...prev, active_machines: 0 }));
+    });
 
     return () => { socket.disconnect(); };
   }, []);
@@ -122,11 +130,34 @@ export const Dashboard = () => {
     setActions(prev => prev.map(a => a.id === id ? { ...a, status } : a));
   };
 
+  const triggerEmergencyStop = async () => {
+    if (!window.confirm("CRITICAL WARNING: This will immediately halt all factory production lines. Are you absolutely sure?")) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      await fetch('http://localhost:4000/api/machines/emergency-stop', {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' 
+        }
+      });
+      setIsEmergencyMode(true);
+    } catch (err) {
+      console.error("Failed to trigger E-Stop", err);
+    }
+  };
+
   // Mock Financials based on system state
-  const revenueAtRisk = liveMachines.filter(m => m.status === 'Error' || m.status === 'Warning').length * 4500;
+  const revenueAtRisk = liveMachines.filter(m => m.status === 'Error' || m.status === 'Maintenance').length * 4500;
 
   return (
-    <div className="dashboard-container">
+    <div className={`dashboard-container ${isEmergencyMode ? 'emergency-mode-active' : ''}`}>
+      {isEmergencyMode && (
+        <div style={{ backgroundColor: '#dc2626', color: 'white', padding: '12px', textAlign: 'center', fontWeight: 'bold', fontSize: '1.1rem', borderRadius: '8px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', animation: 'pulse 2s infinite' }}>
+          <AlertOctagon size={24} /> CRITICAL ALERT: GLOBAL EMERGENCY STOP ACTIVATED. ALL MACHINES HALTED.
+        </div>
+      )}
       <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1>{t('Executive Command Center')}</h1>
@@ -134,6 +165,15 @@ export const Dashboard = () => {
         </div>
         
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <button 
+            onClick={triggerEmergencyStop}
+            className="btn-danger glass-panel"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', background: 'rgba(220, 38, 38, 0.2)', color: '#ef4444', border: '2px solid #dc2626', fontWeight: 'bold' }}
+            title="Halt all production immediately"
+          >
+            <AlertOctagon size={16} />
+            <span>E-STOP</span>
+          </button>
           <button 
             onClick={generatePDF} 
             className="glass-panel"
