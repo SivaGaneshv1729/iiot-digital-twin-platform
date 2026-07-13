@@ -3,7 +3,7 @@ import {
   ComposedChart, Line, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
 import { 
-  Activity, Zap, Wifi, TrendingUp, DollarSign, Leaf, CheckCircle, Clock, Download, AlertOctagon
+  Activity, Zap, Wifi, TrendingUp, DollarSign, Leaf, CheckCircle, Clock, Download, AlertOctagon, Bell
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { useTranslation } from 'react-i18next';
@@ -161,6 +161,55 @@ export const Dashboard = () => {
     }
   };
 
+  const subscribeToPush = async () => {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      
+      const existingSubscription = await registration.pushManager.getSubscription();
+      if (existingSubscription) {
+          alert("Already subscribed to Global Push Notifications.");
+          return;
+      }
+
+      const response = await fetch('http://localhost:4000/api/push/vapidPublicKey', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const vapidPublicKey = await response.text();
+      
+      const urlBase64ToUint8Array = (base64String: string) => {
+          const padding = '='.repeat((4 - base64String.length % 4) % 4);
+          const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+          const rawData = window.atob(base64);
+          const outputArray = new Uint8Array(rawData.length);
+          for (let i = 0; i < rawData.length; ++i) {
+              outputArray[i] = rawData.charCodeAt(i);
+          }
+          return outputArray;
+      };
+
+      const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+
+      const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidKey
+      });
+
+      await fetch('http://localhost:4000/api/push/subscribe', {
+          method: 'POST',
+          body: JSON.stringify(subscription),
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+      });
+
+      alert("Successfully subscribed to PWA Web Push Alerts!");
+    } catch (err) {
+      console.error("Push subscription failed:", err);
+      alert("Failed to subscribe to Web Push (requires HTTPS or localhost in modern browsers). Check console.");
+    }
+  };
+
   // Mock Financials based on system state
   const revenueAtRisk = liveMachines.filter(m => m.status === 'Error' || m.status === 'Maintenance').length * 4500;
 
@@ -187,6 +236,17 @@ export const Dashboard = () => {
             <AlertOctagon size={16} />
             <span>E-STOP</span>
           </button>
+          
+          <button 
+            onClick={subscribeToPush} 
+            className="glass-panel"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', border: '1px solid #8b5cf6' }}
+            title="Subscribe to Push Alerts"
+          >
+            <Bell size={16} />
+            <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Enable Alerts</span>
+          </button>
+
           <button 
             onClick={generatePDF} 
             className="glass-panel"

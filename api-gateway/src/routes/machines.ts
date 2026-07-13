@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { query } from '../db';
 import { requireAdmin } from '../middleware/auth';
 import { cacheMiddleware } from '../middleware/cache';
+import { triggerEmergencyPush } from './push';
 
 const router = Router();
 
@@ -41,6 +42,9 @@ router.post('/emergency-stop', requireAdmin, async (req, res) => {
         if (io) {
             io.emit('emergency_stop', { timestamp: new Date(), user: user.username });
         }
+        
+        // Trigger PWA Web Push to all devices
+        triggerEmergencyPush();
 
         res.json({ message: 'Emergency stop activated. All machines halted.' });
     } catch (err) {

@@ -15,6 +15,7 @@ import authRouter from './routes/auth';
 import inventoryRouter from './routes/inventory';
 import qualityRouter from './routes/quality';
 import auditRouter from './routes/audit';
+import pushRouter from './routes/push';
 import { authenticateToken } from './middleware/auth';
 import { query } from './db';
 
@@ -159,6 +160,7 @@ app.use('/api/inventory', authenticateToken, inventoryRouter);
 app.use('/api/quality', authenticateToken, qualityRouter);
 app.use('/api/ai', authenticateToken, aiRouter);
 app.use('/api/audit', authenticateToken, auditRouter);
+app.use('/api/push', pushRouter);
 
 if (process.env.NODE_ENV !== 'test') {
     server.listen(PORT, () => {
