@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, FileText, AlertOctagon, Sun, Server, Activity } from 'lucide-react';
+import { Search, FileText, AlertOctagon, Sun, Server, Activity, Globe } from 'lucide-react';
 import './CommandPalette.css';
 
 interface Command {
@@ -51,9 +51,10 @@ export const CommandPalette = () => {
   const commands: Command[] = [
     { id: '1', icon: Server, title: 'Go to Machines', section: 'Navigation', action: () => { navigate('/machines'); setIsOpen(false); } },
     { id: '2', icon: Activity, title: 'Go to Dashboard', section: 'Navigation', action: () => { navigate('/'); setIsOpen(false); } },
-    { id: '3', icon: FileText, title: 'Export PDF Report', section: 'Actions', action: () => { window.dispatchEvent(new CustomEvent('cmd_export_pdf')); setIsOpen(false); } },
-    { id: '4', icon: AlertOctagon, title: 'Trigger Emergency Stop', subtitle: 'Jidoka / Halt all machines', section: 'Safety', action: () => { window.dispatchEvent(new CustomEvent('cmd_emergency_stop')); setIsOpen(false); } },
-    { id: '5', icon: Sun, title: 'Toggle Theme', section: 'Settings', action: () => { window.dispatchEvent(new CustomEvent('cmd_toggle_theme')); setIsOpen(false); } },
+    { id: '3', icon: Globe, title: 'Go to Global Network', section: 'Navigation', action: () => { navigate('/global'); setIsOpen(false); } },
+    { id: '4', icon: FileText, title: 'Export PDF Report', section: 'Actions', action: () => { window.dispatchEvent(new CustomEvent('cmd_export_pdf')); setIsOpen(false); } },
+    { id: '5', icon: AlertOctagon, title: 'Trigger Emergency Stop', subtitle: 'Jidoka / Halt all machines', section: 'Safety', action: () => { window.dispatchEvent(new CustomEvent('cmd_emergency_stop')); setIsOpen(false); } },
+    { id: '6', icon: Sun, title: 'Toggle Theme', section: 'Settings', action: () => { window.dispatchEvent(new CustomEvent('cmd_toggle_theme')); setIsOpen(false); } },
   ];
 
   const filteredCommands = query 

@@ -62,6 +62,10 @@ export const Layout = () => {
             <ScanEye size={20} />
             <span>Quality Control</span>
           </NavLink>
+          <NavLink to="/global" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
+            <Globe size={20} />
+            <span>Global Network</span>
+          </NavLink>
           <NavLink to="/audit" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
             <ClipboardList size={20} />
             <span>Audit Logs</span>
