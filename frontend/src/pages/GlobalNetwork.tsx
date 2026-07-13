@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import Globe from 'react-globe.gl';
 import { useTranslation } from 'react-i18next';
-import { ShieldAlert, CheckCircle } from 'lucide-react';
+import { ShieldAlert, CheckCircle, ExternalLink } from 'lucide-react';
 import { io } from 'socket.io-client';
+import { useNavigate } from 'react-router-dom';
 
 export const GlobalNetwork = () => {
   const { t } = useTranslation('translation');
+  const navigate = useNavigate();
   const globeEl = useRef<any>(null);
   const [dimensions, setDimensions] = useState({ width: window.innerWidth - 250, height: window.innerHeight - 100 });
   const [isEmergency, setIsEmergency] = useState(false);
@@ -70,6 +72,13 @@ export const GlobalNetwork = () => {
               <span style={{ fontSize: '0.9rem', color: isEmergency && loc.name === 'Tokyo HQ' ? '#ef4444' : '#e2e8f0', fontWeight: 'bold' }}>
                 {loc.name}
               </span>
+              <button 
+                onClick={() => navigate(`/?factory=${encodeURIComponent(loc.name)}`)}
+                style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer' }}
+                title="View Digital Twin"
+              >
+                <ExternalLink size={16} />
+              </button>
             </div>
           ))}
         </div>
@@ -90,6 +99,8 @@ export const GlobalNetwork = () => {
         arcDashLength={0.4}
         arcDashGap={0.2}
         arcDashAnimateTime={2000}
+        onPointClick={(point: any) => navigate(`/?factory=${encodeURIComponent(point.name)}`)}
+        pointLabel="name"
       />
     </div>
   );
