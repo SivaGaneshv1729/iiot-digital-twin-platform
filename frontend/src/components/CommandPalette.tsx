@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, FileText, AlertOctagon, Sun, Server, Activity, Globe } from 'lucide-react';
+import { Search, FileText, AlertOctagon, Sun, Server, Activity, Globe, Thermometer } from 'lucide-react';
 import './CommandPalette.css';
 
 interface Command {
@@ -53,8 +53,9 @@ export const CommandPalette = () => {
     { id: '2', icon: Activity, title: 'Go to Dashboard', section: 'Navigation', action: () => { navigate('/'); setIsOpen(false); } },
     { id: '3', icon: Globe, title: 'Go to Global Network', section: 'Navigation', action: () => { navigate('/global'); setIsOpen(false); } },
     { id: '4', icon: FileText, title: 'Export PDF Report', section: 'Actions', action: () => { window.dispatchEvent(new CustomEvent('cmd_export_pdf')); setIsOpen(false); } },
-    { id: '5', icon: AlertOctagon, title: 'Trigger Emergency Stop', subtitle: 'Jidoka / Halt all machines', section: 'Safety', action: () => { window.dispatchEvent(new CustomEvent('cmd_emergency_stop')); setIsOpen(false); } },
-    { id: '6', icon: Sun, title: 'Toggle Theme', section: 'Settings', action: () => { window.dispatchEvent(new CustomEvent('cmd_toggle_theme')); setIsOpen(false); } },
+    { id: '5', icon: Thermometer, title: 'Toggle Thermal Scan Mode', subtitle: 'View 3D Spatial Heatmaps', section: 'Actions', action: () => { window.dispatchEvent(new CustomEvent('cmd_toggle_thermal')); setIsOpen(false); } },
+    { id: '6', icon: AlertOctagon, title: 'Trigger Emergency Stop', subtitle: 'Jidoka / Halt all machines', section: 'Safety', action: () => { window.dispatchEvent(new CustomEvent('cmd_emergency_stop')); setIsOpen(false); } },
+    { id: '7', icon: Sun, title: 'Toggle Theme', section: 'Settings', action: () => { window.dispatchEvent(new CustomEvent('cmd_toggle_theme')); setIsOpen(false); } },
   ];
 
   const filteredCommands = query 

@@ -15,13 +15,15 @@ interface Machine {
 interface DigitalTwinProps {
   machines: Machine[];
   onSelectMachine?: (id: number) => void;
+  thermalMode?: boolean;
 }
 
 // Complex Animated CNC Machine Component
-const Machine3D = ({ machine, position, onClick }: { machine: Machine, position: [number, number, number], onClick?: () => void }) => {
+const Machine3D = ({ machine, position, thermalMode, onClick }: { machine: Machine, position: [number, number, number], thermalMode?: boolean, onClick?: () => void }) => {
   const gantryRef = useRef<THREE.Group>(null);
   const spindleRef = useRef<THREE.Mesh>(null);
   const indicatorRef = useRef<THREE.Mesh>(null);
+  const thermalRef = useRef<THREE.Mesh>(null);
 
   // Kinematics: Animate the machine parts based on status
   useFrame((state) => {
@@ -44,6 +46,12 @@ const Machine3D = ({ machine, position, onClick }: { machine: Machine, position:
         (indicatorRef.current.material as THREE.MeshBasicMaterial).opacity = 1;
       }
     }
+
+    if (thermalMode && thermalRef.current) {
+      // Pulse the thermal aura slightly
+      const scale = 1 + Math.sin(state.clock.elapsedTime * 4) * 0.1;
+      thermalRef.current.scale.set(scale, scale, scale);
+    }
   });
 
   // Determine color and glow based on status
@@ -57,6 +65,11 @@ const Machine3D = ({ machine, position, onClick }: { machine: Machine, position:
     themeColor = '#ef4444'; // Red (Warning/Maintenance)
     emissiveIntensity = 1.2;
   }
+
+  // Thermal Aura Color
+  let thermalColor = '#06b6d4'; // Cyan (Cool)
+  if (machine.temperature > 65) thermalColor = '#f59e0b'; // Yellow (Warm)
+  if (machine.temperature > 85) thermalColor = '#ef4444'; // Red (Hot)
 
   return (
     <group 
@@ -122,6 +135,14 @@ const Machine3D = ({ machine, position, onClick }: { machine: Machine, position:
       <Box args={[0.02, 0.5, 0.3]} position={[1.1, 0.8, 0.2]}>
         <meshBasicMaterial color={themeColor} />
       </Box>
+
+      {/* 7. Thermal Scan Aura (Only visible if thermalMode is true) */}
+      {thermalMode && (
+        <mesh ref={thermalRef} position={[0, -0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[2.5, 32]} />
+          <meshBasicMaterial color={thermalColor} transparent={true} opacity={0.4} side={THREE.DoubleSide} />
+        </mesh>
+      )}
     </group>
   );
 };
@@ -162,7 +183,7 @@ const Floor = ({ level, height }: { level: number, height: number }) => {
   );
 };
 
-export const DigitalTwin = ({ machines, onSelectMachine }: DigitalTwinProps) => {
+export const DigitalTwin = ({ machines, onSelectMachine, thermalMode }: DigitalTwinProps) => {
   // Map machines to different floors (Y-axis = 0, 5, 10)
   const positions: [number, number, number][] = [
     [-3, 0.1, -3], // Floor 1
@@ -176,7 +197,9 @@ export const DigitalTwin = ({ machines, onSelectMachine }: DigitalTwinProps) => 
     <div className="digital-twin-container glass-panel">
       <div className="panel-header" style={{ position: 'absolute', zIndex: 10, margin: '16px' }}>
         <h3>3-Story Factory Architecture</h3>
-        <span className="badge" style={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}>Multi-Floor 3D View</span>
+        <span className="badge" style={{ background: thermalMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.1)', color: thermalMode ? '#ef4444' : 'white', transition: 'all 0.3s' }}>
+          {thermalMode ? 'Thermal Scan Active' : 'Multi-Floor 3D View'}
+        </span>
       </div>
       
       <Canvas shadows camera={{ position: [20, 15, 20], fov: 45 }}>
@@ -228,6 +251,7 @@ export const DigitalTwin = ({ machines, onSelectMachine }: DigitalTwinProps) => 
             key={machine.id} 
             machine={machine} 
             position={positions[index % positions.length]} 
+            thermalMode={thermalMode}
             onClick={() => onSelectMachine && onSelectMachine(machine.id)}
           />
         ))}

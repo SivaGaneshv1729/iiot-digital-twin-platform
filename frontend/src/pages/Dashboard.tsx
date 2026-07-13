@@ -46,6 +46,7 @@ export const Dashboard = () => {
   const [liveMachines, setLiveMachines] = useState<any[]>([]);
   const [selectedMachineId, setSelectedMachineId] = useState<number | null>(null);
   const [isEmergencyMode, setIsEmergencyMode] = useState(false);
+  const [thermalMode, setThermalMode] = useState(false);
   
   const [chartData, setChartData] = useState(INITIAL_CHART_DATA);
   const [actions, setActions] = useState(INITIAL_ACTIONS);
@@ -88,11 +89,14 @@ export const Dashboard = () => {
 
   // Command Palette Event Listeners
   useEffect(() => {
+    const handleToggleThermal = () => setThermalMode(prev => !prev);
     window.addEventListener('cmd_export_pdf', generatePDF);
     window.addEventListener('cmd_emergency_stop', triggerEmergencyStop);
+    window.addEventListener('cmd_toggle_thermal', handleToggleThermal);
     return () => {
       window.removeEventListener('cmd_export_pdf', generatePDF);
       window.removeEventListener('cmd_emergency_stop', triggerEmergencyStop);
+      window.removeEventListener('cmd_toggle_thermal', handleToggleThermal);
     };
   }, []);
 
@@ -200,7 +204,7 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      <DigitalTwin machines={liveMachines} onSelectMachine={setSelectedMachineId} />
+      <DigitalTwin machines={liveMachines} onSelectMachine={setSelectedMachineId} thermalMode={thermalMode} />
       <MachineHistoryModal machineId={selectedMachineId} onClose={() => setSelectedMachineId(null)} />
 
       {/* Expanded Executive KPI Grid */}
