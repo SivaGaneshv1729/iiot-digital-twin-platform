@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Server, Settings, Bell, Search, Package, LogOut, ScanEye, Globe, ClipboardList, Cpu, Sun, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { FactoryAssistant } from './FactoryAssistant';
+import { CommandPalette } from './CommandPalette';
 import './Layout.css';
 
 export const Layout = () => {
@@ -27,8 +28,13 @@ export const Layout = () => {
   };
 
   const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
+
+  useEffect(() => {
+    window.addEventListener('cmd_toggle_theme', toggleTheme);
+    return () => window.removeEventListener('cmd_toggle_theme', toggleTheme);
+  }, []);
 
   return (
     <div className="layout-container">
@@ -74,9 +80,13 @@ export const Layout = () => {
       <div className="main-wrapper">
         {/* Top Header */}
         <header className="top-header glass-panel">
-          <div className="search-bar">
+          <div 
+            className="search-bar" 
+            onClick={() => window.dispatchEvent(new Event('open_command_palette'))}
+            style={{ cursor: 'text' }}
+          >
             <Search size={18} className="search-icon" />
-            <input type="text" placeholder="Search machines, orders..." className="search-input" />
+            <input type="text" placeholder="Search commands... (Press Ctrl+K)" className="search-input" readOnly style={{ cursor: 'text' }} />
           </div>
           <div className="header-actions">
             <button className="icon-btn" onClick={toggleTheme} title="Toggle Theme">
@@ -106,6 +116,9 @@ export const Layout = () => {
       
       {/* AI Assistant */}
       <FactoryAssistant />
+      
+      {/* Omni-Search Command Palette */}
+      <CommandPalette />
     </div>
   );
 };

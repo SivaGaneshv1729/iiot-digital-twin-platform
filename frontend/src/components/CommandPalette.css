@@ -1,0 +1,106 @@
+.command-palette-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 15vh;
+}
+
+.command-palette {
+  width: 100%;
+  max-width: 600px;
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.command-input-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.command-icon {
+  color: var(--text-secondary);
+  margin-right: 12px;
+}
+
+.command-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  outline: none;
+}
+
+.command-badge {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.command-results {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.command-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.command-item.selected {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.command-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.command-title {
+  font-weight: 500;
+}
+
+.command-subtitle {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.command-section {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  opacity: 0.6;
+  letter-spacing: 0.5px;
+}
+
+.no-results {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-secondary);
+}

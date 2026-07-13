@@ -75,7 +75,6 @@ export const Dashboard = () => {
       setChartData(prev => {
         const newData = [...prev];
         const lastIndex = newData.length - 1;
-        // Gently fluctuate the last data point
         newData[lastIndex] = {
           ...newData[lastIndex],
           output: Math.max(180, Math.min(230, newData[lastIndex].output + (Math.random() * 10 - 5))),
@@ -85,6 +84,16 @@ export const Dashboard = () => {
       });
     }, 3000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Command Palette Event Listeners
+  useEffect(() => {
+    window.addEventListener('cmd_export_pdf', generatePDF);
+    window.addEventListener('cmd_emergency_stop', triggerEmergencyStop);
+    return () => {
+      window.removeEventListener('cmd_export_pdf', generatePDF);
+      window.removeEventListener('cmd_emergency_stop', triggerEmergencyStop);
+    };
   }, []);
 
   // Backend Initialization
