@@ -230,3 +230,103 @@
   text-align: center;
   color: var(--text-secondary);
 }
+
+/* ERP Tabs */
+.erp-tabs {
+  display: flex;
+  gap: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px 24px 0 24px;
+  margin-bottom: 16px;
+}
+
+.erp-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.erp-tab:hover {
+  color: var(--text-primary);
+}
+
+.erp-tab.active {
+  color: var(--accent-primary);
+  border-bottom-color: var(--accent-primary);
+}
+
+.erp-tab-content {
+  padding: 0 24px 24px 24px;
+}
+
+.status-completed {
+  background: rgba(139, 92, 246, 0.15);
+  color: #c084fc;
+}
+
+/* BOM Explorer */
+.bom-explorer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 16px 0;
+}
+
+.bom-card {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.bom-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.bom-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.bom-components {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bom-component-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+
+.bom-component-item .comp-name {
+  flex-grow: 1;
+  margin-left: 8px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.bom-component-item .comp-qty {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: bold;
+}

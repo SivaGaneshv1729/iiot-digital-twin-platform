@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { 
   Package, AlertTriangle, ArrowDownToLine, 
-  DollarSign, RefreshCcw, BrainCircuit, BarChart2 
+  DollarSign, RefreshCcw, BrainCircuit, BarChart2, Briefcase, Box, FileText, ChevronRight
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { 
@@ -51,9 +51,24 @@ const TreemapTooltip = ({ active, payload }: any) => {
   return null;
 };
 
+// Mock ERP Data
+const MOCK_ORDERS = [
+  { id: 'ORD-992', client: 'Tesla Inc.', product: 'EV Battery Casings', quantity: 50000, status: 'Active', progress: 68, machine: 'CNC-1' },
+  { id: 'ORD-993', client: 'Boeing', product: 'Turbine Blades', quantity: 1500, status: 'Active', progress: 24, machine: 'CNC-2' },
+  { id: 'ORD-994', client: 'Toyota', product: 'Engine Blocks', quantity: 12000, status: 'Pending', progress: 0, machine: 'Pending Assignment' },
+  { id: 'ORD-995', client: 'Sony', product: 'Circuit Boards v2', quantity: 100000, status: 'Completed', progress: 100, machine: 'Assembly-A' },
+];
+
+const MOCK_BOM = [
+  { id: 1, product: 'EV Battery Casings', components: [{ name: 'Aluminum Coils', qty: 1.5, unit: 'Tons' }, { name: 'Thermal Paste', qty: 200, unit: 'Liters' }] },
+  { id: 2, product: 'Turbine Blades', components: [{ name: 'Steel Sheets (Grade A)', qty: 3, unit: 'Tons' }, { name: 'Ceramic Coating', qty: 50, unit: 'Liters' }] },
+  { id: 3, product: 'Engine Blocks', components: [{ name: 'Cast Iron', qty: 5, unit: 'Tons' }, { name: 'Hydraulic Fluid', qty: 100, unit: 'Liters' }] }
+];
+
 export const Inventory = () => {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'ledger' | 'orders' | 'bom'>('ledger');
 
   useEffect(() => {
     const fetchInventory = async () => {
@@ -111,8 +126,8 @@ export const Inventory = () => {
   return (
     <div className="inventory-container">
       <div className="inventory-header">
-        <h1>Supply Chain & Logistics</h1>
-        <p className="subtitle">Real-time valuation, stock distribution, and AI restock predictions</p>
+        <h1>Enterprise ERP & Supply Chain</h1>
+        <p className="subtitle">Real-time capital valuation, manufacturing orders, and bill of materials</p>
       </div>
 
       <div className="inventory-analytics-grid">
@@ -128,10 +143,10 @@ export const Inventory = () => {
           </div>
           
           <div className="stat-card glass-panel">
-            <RefreshCcw size={28} className="text-accent" />
+            <Briefcase size={28} className="text-accent" />
             <div className="stat-info">
-              <h3>Inventory Turnover Rate</h3>
-              <span>12.4x <small style={{ fontSize: '1rem', color: '#94a3b8' }}>/ yr</small></span>
+              <h3>Live Order Fulfillment</h3>
+              <span>92.4% <small style={{ fontSize: '1rem', color: '#94a3b8' }}>On-Time</small></span>
             </div>
           </div>
 
@@ -194,54 +209,136 @@ export const Inventory = () => {
 
       </div>
 
-      {/* Inventory Master Ledger Table */}
+      {/* ERP Tabs Section */}
       <div className="inventory-table-wrapper glass-panel">
-        <div className="panel-header" style={{ marginBottom: '16px' }}>
-          <h3>Master Stock Ledger</h3>
+        <div className="erp-tabs">
+          <button 
+            className={`erp-tab ${activeTab === 'ledger' ? 'active' : ''}`}
+            onClick={() => setActiveTab('ledger')}
+          >
+            <Package size={16} /> Master Stock Ledger
+          </button>
+          <button 
+            className={`erp-tab ${activeTab === 'orders' ? 'active' : ''}`}
+            onClick={() => setActiveTab('orders')}
+          >
+            <Briefcase size={16} /> Manufacturing Orders
+          </button>
+          <button 
+            className={`erp-tab ${activeTab === 'bom' ? 'active' : ''}`}
+            onClick={() => setActiveTab('bom')}
+          >
+            <Box size={16} /> Bill of Materials (BOM)
+          </button>
         </div>
-        {loading ? (
-          <div className="loading-state">Loading inventory data...</div>
-        ) : (
-          <table className="inventory-table">
-            <thead>
-              <tr>
-                <th>Item Name</th>
-                <th>Category</th>
-                <th>Location</th>
-                <th>Quantity</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {inventory.map(item => {
-                const isLow = item.quantity <= item.min_threshold;
-                return (
-                  <tr key={item.id} className={isLow ? 'row-warning' : ''}>
-                    <td className="item-name">{item.item_name}</td>
-                    <td><span className="badge category-badge">{item.category}</span></td>
-                    <td>{item.location}</td>
-                    <td className="quantity-cell">
-                      {item.quantity} <span className="unit">{item.unit}</span>
+
+        <div className="erp-tab-content">
+          {activeTab === 'ledger' && (
+            <>
+              {loading ? (
+                <div className="loading-state">Loading inventory data...</div>
+              ) : (
+                <table className="inventory-table">
+                  <thead>
+                    <tr>
+                      <th>Item Name</th>
+                      <th>Category</th>
+                      <th>Location</th>
+                      <th>Quantity</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inventory.map(item => {
+                      const isLow = item.quantity <= item.min_threshold;
+                      return (
+                        <tr key={item.id} className={isLow ? 'row-warning' : ''}>
+                          <td className="item-name">{item.item_name}</td>
+                          <td><span className="badge category-badge">{item.category}</span></td>
+                          <td>{item.location}</td>
+                          <td className="quantity-cell">
+                            {item.quantity} <span className="unit">{item.unit}</span>
+                          </td>
+                          <td>
+                            {isLow ? (
+                              <span className="badge status-low"><AlertTriangle size={12}/> Critical</span>
+                            ) : (
+                              <span className="badge status-ok">Stable</span>
+                            )}
+                          </td>
+                          <td>
+                            <button className="action-btn">
+                              <ArrowDownToLine size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </>
+          )}
+
+          {activeTab === 'orders' && (
+            <table className="inventory-table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Client</th>
+                  <th>Product Target</th>
+                  <th>Assigned Machine</th>
+                  <th>Progress</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {MOCK_ORDERS.map(order => (
+                  <tr key={order.id}>
+                    <td className="item-name" style={{ color: '#3b82f6' }}>{order.id}</td>
+                    <td style={{ fontWeight: 600 }}>{order.client}</td>
+                    <td>{order.quantity.toLocaleString()} x {order.product}</td>
+                    <td><span className="badge category-badge">{order.machine}</span></td>
+                    <td style={{ width: '200px' }}>
+                      <div className="progress-bar-bg" style={{ width: '100%', height: '8px', background: '#1e293b', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div className="progress-bar-fill" style={{ width: `${order.progress}%`, height: '100%', background: order.progress === 100 ? '#10b981' : '#3b82f6' }}></div>
+                      </div>
+                      <span style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px', display: 'block' }}>{order.progress}% Completed</span>
                     </td>
                     <td>
-                      {isLow ? (
-                        <span className="badge status-low"><AlertTriangle size={12}/> Critical</span>
-                      ) : (
-                        <span className="badge status-ok">Stable</span>
-                      )}
-                    </td>
-                    <td>
-                      <button className="action-btn">
-                        <ArrowDownToLine size={16} />
-                      </button>
+                      <span className={`badge ${order.status === 'Active' ? 'status-ok' : order.status === 'Pending' ? 'status-low' : 'status-completed'}`}>
+                        {order.status}
+                      </span>
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {activeTab === 'bom' && (
+            <div className="bom-explorer">
+              {MOCK_BOM.map(bom => (
+                <div key={bom.id} className="bom-card">
+                  <div className="bom-header">
+                    <Package size={20} className="text-accent" />
+                    <h4>{bom.product}</h4>
+                  </div>
+                  <div className="bom-components">
+                    {bom.components.map((comp, idx) => (
+                      <div key={idx} className="bom-component-item">
+                        <ChevronRight size={16} className="text-secondary" />
+                        <span className="comp-name">{comp.name}</span>
+                        <span className="comp-qty">{comp.qty} {comp.unit} / batch</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
