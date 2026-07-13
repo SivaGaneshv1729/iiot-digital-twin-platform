@@ -92,19 +92,13 @@
   position: relative;
   overflow: hidden;
   min-height: 250px;
-  background-image: repeating-linear-gradient(
-    45deg,
-    rgba(255,255,255,0.02) 0px,
-    rgba(255,255,255,0.02) 20px,
-    transparent 20px,
-    transparent 40px
-  );
-  animation: conveyor 10s linear infinite;
 }
 
-@keyframes conveyor {
-  from { background-position: 0 0; }
-  to { background-position: -200px 200px; }
+.cv-active-feed {
+  background-image: url('/cv_engine_block.png');
+  background-size: cover;
+  background-position: center;
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
 }
 
 .cv-overlay {
@@ -147,29 +141,68 @@
 }
 
 .bounding-box.invalid {
-  top: 50%;
-  left: 60%;
+  top: 55%;
+  left: 65%;
   width: 90px;
   height: 90px;
   border-color: var(--danger);
-  animation: fadeInOut 4s infinite alternate-reverse;
+  animation: flashRed 1s infinite alternate;
+  background: rgba(239, 68, 68, 0.1);
 }
 
-@keyframes fadeInOut {
-  0%, 20% { opacity: 0; transform: scale(0.95); }
-  30%, 100% { opacity: 1; transform: scale(1); }
+@keyframes flashRed {
+  0% { opacity: 0; transform: scale(0.95); box-shadow: 0 0 0 rgba(239, 68, 68, 0); }
+  100% { opacity: 1; transform: scale(1.05); box-shadow: 0 0 15px rgba(239, 68, 68, 0.8); }
 }
 
 .defect-label {
   position: absolute;
   top: -24px;
   left: -2px;
-  background: var(--danger);
   color: white;
   font-size: 0.7rem;
+  font-weight: bold;
   padding: 2px 6px;
   border-radius: 4px;
   white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+
+.defect-label.ok {
+  background: var(--success);
+}
+
+.defect-label.error {
+  background: var(--danger);
+  animation: flashText 1s infinite alternate;
+}
+
+@keyframes flashText {
+  0% { opacity: 0.8; }
+  100% { opacity: 1; text-shadow: 0 0 8px white; }
+}
+
+.crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.crosshair::before, .crosshair::after {
+  content: '';
+  position: absolute;
+  background: rgba(255, 255, 255, 0.3);
+}
+.crosshair::before {
+  top: 50%; left: -10px; right: -10px; height: 1px;
+}
+.crosshair::after {
+  left: 50%; top: -10px; bottom: -10px; width: 1px;
 }
 
 .feed-info {

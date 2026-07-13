@@ -155,13 +155,16 @@ export const Quality = () => {
             <h3><ScanEye size={18} className="text-accent" /> Live Assembly Vision</h3>
             <span className="live-indicator">LIVE</span>
           </div>
-          <div className="camera-feed">
+          <div className="camera-feed cv-active-feed">
             <div className="cv-overlay">
-              <div className="bounding-box valid"></div>
+              <div className="bounding-box valid">
+                <span className="defect-label ok">PASS 99%</span>
+              </div>
               <div className="bounding-box invalid">
-                <span className="defect-label">Micro-fracture 89%</span>
+                <span className="defect-label error">DEFECT: Micro-fracture 89%</span>
               </div>
               <div className="scanning-line"></div>
+              <div className="crosshair"></div>
             </div>
             <div className="feed-info">
               <span>Cam: L-102</span>
