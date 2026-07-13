@@ -17,26 +17,44 @@ interface DigitalTwinProps {
   onSelectMachine?: (id: number) => void;
 }
 
-// Reusable 3D Machine component
+// Complex Animated CNC Machine Component
 const Machine3D = ({ machine, position, onClick }: { machine: Machine, position: [number, number, number], onClick?: () => void }) => {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const gantryRef = useRef<THREE.Group>(null);
+  const spindleRef = useRef<THREE.Mesh>(null);
+  const indicatorRef = useRef<THREE.Mesh>(null);
 
-  // Animate the machine slightly (bobbing up and down)
+  // Kinematics: Animate the machine parts based on status
   useFrame((state) => {
-    if (meshRef.current && machine.status === 'Running') {
-      meshRef.current.position.y = position[1] + 1 + Math.sin(state.clock.elapsedTime * 2 + position[0]) * 0.1;
+    if (machine.status === 'Running') {
+      // 1. Sliding Gantry Arm (Moves back and forth on X axis)
+      if (gantryRef.current) {
+        gantryRef.current.position.x = Math.sin(state.clock.elapsedTime * 3 + position[0]) * 0.4;
+      }
+      // 2. Spinning Spindle/Drill (Rotates rapidly on Y axis)
+      if (spindleRef.current) {
+        spindleRef.current.rotation.y += 0.5;
+      }
+      // 3. Pulsing Indicator Light
+      if (indicatorRef.current) {
+        (indicatorRef.current.material as THREE.MeshBasicMaterial).opacity = 0.5 + Math.sin(state.clock.elapsedTime * 8) * 0.5;
+      }
+    } else {
+      // If stopped, ensure the indicator is solid
+      if (indicatorRef.current) {
+        (indicatorRef.current.material as THREE.MeshBasicMaterial).opacity = 1;
+      }
     }
   });
 
   // Determine color and glow based on status
-  let color = '#3b82f6'; // Idle (Blue)
+  let themeColor = '#3b82f6'; // Idle (Blue)
   let emissiveIntensity = 0.5;
 
   if (machine.status === 'Running') {
-    color = '#10b981'; // Green
+    themeColor = '#10b981'; // Green
     emissiveIntensity = 0.8;
   } else if (machine.status === 'Maintenance' || machine.temperature > 85) {
-    color = '#ef4444'; // Red (Warning/Maintenance)
+    themeColor = '#ef4444'; // Red (Warning/Maintenance)
     emissiveIntensity = 1.2;
   }
 
@@ -47,21 +65,63 @@ const Machine3D = ({ machine, position, onClick }: { machine: Machine, position:
       onPointerOver={() => document.body.style.cursor = 'pointer'}
       onPointerOut={() => document.body.style.cursor = 'auto'}
     >
-      {/* The main body of the machine */}
-      <Box args={[1.5, 2, 1.5]} ref={meshRef} position={[0, 1, 0]} castShadow receiveShadow>
-        <meshStandardMaterial 
-          color={color} 
-          emissive={color}
-          emissiveIntensity={emissiveIntensity}
-          roughness={0.2}
-          metalness={0.8}
+      {/* 1. Base Chassis (Heavy Metal) */}
+      <Box args={[2, 0.4, 1.5]} position={[0, 0.2, 0]} castShadow receiveShadow>
+        <meshStandardMaterial color="#1e293b" metalness={0.8} roughness={0.3} />
+      </Box>
+
+      {/* 2. Protective Glass Housing */}
+      <Box args={[1.8, 1.2, 1.3]} position={[0, 1, 0]}>
+        <meshPhysicalMaterial 
+          color="#94a3b8" 
+          transparent={true} 
+          opacity={0.15} 
+          roughness={0.1} 
+          transmission={0.9} 
+          thickness={0.1}
         />
       </Box>
-      {/* Label/Indicator floating above */}
-      <mesh position={[0, 2.5, 0]}>
-        <sphereGeometry args={[0.2, 16, 16]} />
-        <meshBasicMaterial color={color} />
+
+      {/* 3. Animated Kinematic Gantry System inside the housing */}
+      <group ref={gantryRef} position={[0, 1.2, 0]}>
+        {/* Horizontal Rail */}
+        <Box args={[1.6, 0.1, 0.2]} position={[0, 0, -0.2]} castShadow>
+          <meshStandardMaterial color="#475569" metalness={0.9} />
+        </Box>
+        {/* Vertical Spindle Mount */}
+        <Box args={[0.2, 0.6, 0.3]} position={[0, -0.2, 0]} castShadow>
+          <meshStandardMaterial color="#334155" metalness={0.8} />
+        </Box>
+        {/* Spinning Drill / Toolhead */}
+        <Cylinder args={[0.05, 0.01, 0.4]} position={[0, -0.6, 0]} ref={spindleRef} castShadow>
+          <meshStandardMaterial color="#f8fafc" metalness={1} roughness={0.1} />
+        </Cylinder>
+      </group>
+
+      {/* 4. Processing Bed (Where the part sits) */}
+      <Box args={[1.2, 0.1, 0.8]} position={[0, 0.45, 0]} receiveShadow>
+        <meshStandardMaterial color="#0f172a" />
+      </Box>
+
+      {/* 5. Emissive Status Indicator Light (Top corner) */}
+      <mesh position={[0.8, 1.7, 0.5]} ref={indicatorRef}>
+        <sphereGeometry args={[0.08, 16, 16]} />
+        <meshBasicMaterial color={themeColor} transparent={true} />
       </mesh>
+      
+      {/* Soft Glow around the indicator */}
+      <mesh position={[0.8, 1.7, 0.5]}>
+        <sphereGeometry args={[0.15, 16, 16]} />
+        <meshBasicMaterial color={themeColor} transparent={true} opacity={0.3} />
+      </mesh>
+
+      {/* 6. Side Control Panel screen */}
+      <Box args={[0.1, 0.6, 0.4]} position={[1.05, 0.8, 0.2]}>
+        <meshStandardMaterial color="#0f172a" />
+      </Box>
+      <Box args={[0.02, 0.5, 0.3]} position={[1.1, 0.8, 0.2]}>
+        <meshBasicMaterial color={themeColor} />
+      </Box>
     </group>
   );
 };
