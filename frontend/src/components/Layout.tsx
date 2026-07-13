@@ -4,6 +4,7 @@ import { LayoutDashboard, Server, Settings, Bell, Search, Package, LogOut, ScanE
 import { useTranslation } from 'react-i18next';
 import { FactoryAssistant } from './FactoryAssistant';
 import { CommandPalette } from './CommandPalette';
+import { ReloadPrompt } from './ReloadPrompt';
 import './Layout.css';
 
 export const Layout = () => {
@@ -119,6 +120,9 @@ export const Layout = () => {
       
       {/* Omni-Search Command Palette */}
       <CommandPalette />
+      
+      {/* PWA Offline Prompt */}
+      <ReloadPrompt />
     </div>
   );
 };
