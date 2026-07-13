@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Grid, Box, Cylinder } from '@react-three/drei';
 import { XR, ARButton, createXRStore } from '@react-three/xr';
+import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import './DigitalTwin.css';
 
@@ -20,133 +21,207 @@ interface DigitalTwinProps {
   isEmergencyMode?: boolean;
 }
 
-// Complex Animated CNC Machine Component
-const Machine3D = ({ machine, position, thermalMode, onClick }: { machine: Machine, position: [number, number, number], thermalMode?: boolean, onClick?: () => void }) => {
-  const gantryRef = useRef<THREE.Group>(null);
-  const spindleRef = useRef<THREE.Mesh>(null);
-  const indicatorRef = useRef<THREE.Mesh>(null);
-  const thermalRef = useRef<THREE.Mesh>(null);
+// --------------------------------------------------------------------------
+// Robotic Arm Component (Articulated Kinematics)
+// --------------------------------------------------------------------------
+const RoboticArm = ({ position, speedOffset = 0, isEmergencyMode }: { position: [number, number, number], speedOffset?: number, isEmergencyMode?: boolean }) => {
+  const baseRef = useRef<THREE.Group>(null);
+  const joint1Ref = useRef<THREE.Group>(null);
+  const joint2Ref = useRef<THREE.Group>(null);
+  const headRef = useRef<THREE.Mesh>(null);
 
-  // Kinematics: Animate the machine parts based on status
   useFrame((state) => {
-    if (machine.status === 'Running') {
-      // 1. Sliding Gantry Arm (Moves back and forth on X axis)
-      if (gantryRef.current) {
-        gantryRef.current.position.x = Math.sin(state.clock.elapsedTime * 3 + position[0]) * 0.4;
-      }
-      // 2. Spinning Spindle/Drill (Rotates rapidly on Y axis)
-      if (spindleRef.current) {
-        spindleRef.current.rotation.y += 0.5;
-      }
-      // 3. Pulsing Indicator Light
-      if (indicatorRef.current) {
-        (indicatorRef.current.material as THREE.MeshBasicMaterial).opacity = 0.5 + Math.sin(state.clock.elapsedTime * 8) * 0.5;
-      }
-    } else {
-      // If stopped, ensure the indicator is solid
-      if (indicatorRef.current) {
-        (indicatorRef.current.material as THREE.MeshBasicMaterial).opacity = 1;
-      }
-    }
-
-    if (thermalMode && thermalRef.current) {
-      // Pulse the thermal aura slightly
-      const scale = 1 + Math.sin(state.clock.elapsedTime * 4) * 0.1;
-      thermalRef.current.scale.set(scale, scale, scale);
+    if (isEmergencyMode) return;
+    const t = state.clock.elapsedTime + speedOffset;
+    
+    if (baseRef.current) baseRef.current.rotation.y = Math.sin(t * 1.2) * 1.5;
+    if (joint1Ref.current) joint1Ref.current.rotation.z = Math.sin(t * 1.5) * 0.8 + 0.5;
+    if (joint2Ref.current) joint2Ref.current.rotation.z = Math.cos(t * 2) * 0.8 - 0.5;
+    
+    // Pulse laser head
+    if (headRef.current) {
+      (headRef.current.material as THREE.MeshBasicMaterial).opacity = 0.5 + Math.sin(t * 10) * 0.5;
     }
   });
 
-  // Determine color and glow based on status
-  let themeColor = '#3b82f6'; // Idle (Blue)
-
-  if (machine.status === 'Running') {
-    themeColor = '#10b981'; // Green
-  } else if (machine.status === 'Maintenance' || machine.temperature > 85) {
-    themeColor = '#ef4444'; // Red (Warning/Maintenance)
-  }
-
-  // Thermal Aura Color
-  let thermalColor = '#06b6d4'; // Cyan (Cool)
-  if (machine.temperature > 65) thermalColor = '#f59e0b'; // Yellow (Warm)
-  if (machine.temperature > 85) thermalColor = '#ef4444'; // Red (Hot)
-
   return (
-    <group 
-      position={position} 
-      onClick={(e) => { e.stopPropagation(); onClick && onClick(); }}
-      onPointerOver={() => document.body.style.cursor = 'pointer'}
-      onPointerOut={() => document.body.style.cursor = 'auto'}
-    >
-      {/* 1. Base Chassis (Heavy Metal) */}
-      <Box args={[2, 0.4, 1.5]} position={[0, 0.2, 0]} castShadow receiveShadow>
-        <meshStandardMaterial color="#1e293b" metalness={0.8} roughness={0.3} />
-      </Box>
-
-      {/* 2. Protective Glass Housing */}
-      <Box args={[1.8, 1.2, 1.3]} position={[0, 1, 0]}>
-        <meshPhysicalMaterial 
-          color="#94a3b8" 
-          transparent={true} 
-          opacity={0.15} 
-          roughness={0.1} 
-          transmission={0.9} 
-          thickness={0.1}
-        />
-      </Box>
-
-      {/* 3. Animated Kinematic Gantry System inside the housing */}
-      <group ref={gantryRef} position={[0, 1.2, 0]}>
-        {/* Horizontal Rail */}
-        <Box args={[1.6, 0.1, 0.2]} position={[0, 0, -0.2]} castShadow>
-          <meshStandardMaterial color="#475569" metalness={0.9} />
-        </Box>
-        {/* Vertical Spindle Mount */}
-        <Box args={[0.2, 0.6, 0.3]} position={[0, -0.2, 0]} castShadow>
-          <meshStandardMaterial color="#334155" metalness={0.8} />
-        </Box>
-        {/* Spinning Drill / Toolhead */}
-        <Cylinder args={[0.05, 0.01, 0.4]} position={[0, -0.6, 0]} ref={spindleRef} castShadow>
-          <meshStandardMaterial color="#f8fafc" metalness={1} roughness={0.1} />
-        </Cylinder>
-      </group>
-
-      {/* 4. Processing Bed (Where the part sits) */}
-      <Box args={[1.2, 0.1, 0.8]} position={[0, 0.45, 0]} receiveShadow>
-        <meshStandardMaterial color="#0f172a" />
-      </Box>
-
-      {/* 5. Emissive Status Indicator Light (Top corner) */}
-      <mesh position={[0.8, 1.7, 0.5]} ref={indicatorRef}>
-        <sphereGeometry args={[0.08, 16, 16]} />
-        <meshBasicMaterial color={themeColor} transparent={true} />
-      </mesh>
+    <group position={position}>
+      {/* Base Pedestal */}
+      <Cylinder args={[0.4, 0.5, 0.4]} position={[0, 0.2, 0]} castShadow>
+        <meshStandardMaterial color="#334155" metalness={0.8} />
+      </Cylinder>
       
-      {/* Soft Glow around the indicator */}
-      <mesh position={[0.8, 1.7, 0.5]}>
-        <sphereGeometry args={[0.15, 16, 16]} />
-        <meshBasicMaterial color={themeColor} transparent={true} opacity={0.3} />
-      </mesh>
-
-      {/* 6. Side Control Panel screen */}
-      <Box args={[0.1, 0.6, 0.4]} position={[1.05, 0.8, 0.2]}>
-        <meshStandardMaterial color="#0f172a" />
-      </Box>
-      <Box args={[0.02, 0.5, 0.3]} position={[1.1, 0.8, 0.2]}>
-        <meshBasicMaterial color={themeColor} />
-      </Box>
-
-      {/* 7. Thermal Scan Aura (Only visible if thermalMode is true) */}
-      {thermalMode && (
-        <mesh ref={thermalRef} position={[0, -0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <circleGeometry args={[2.5, 32]} />
-          <meshBasicMaterial color={thermalColor} transparent={true} opacity={0.4} side={THREE.DoubleSide} />
-        </mesh>
-      )}
+      {/* Swivel Base */}
+      <group ref={baseRef} position={[0, 0.4, 0]}>
+        <Box args={[0.3, 0.6, 0.3]} position={[0, 0.3, 0]} castShadow>
+          <meshStandardMaterial color="#f59e0b" metalness={0.5} roughness={0.2} /> {/* Orange Industrial */}
+        </Box>
+        
+        {/* Arm Segment 1 */}
+        <group ref={joint1Ref} position={[0, 0.6, 0]}>
+          <Cylinder args={[0.15, 0.15, 0.3]} rotation={[Math.PI/2, 0, 0]}>
+            <meshStandardMaterial color="#1e293b" />
+          </Cylinder>
+          <Box args={[0.2, 1.2, 0.2]} position={[0, 0.6, 0]} castShadow>
+             <meshStandardMaterial color="#f59e0b" metalness={0.5} />
+          </Box>
+          
+          {/* Arm Segment 2 */}
+          <group ref={joint2Ref} position={[0, 1.2, 0]}>
+            <Cylinder args={[0.12, 0.12, 0.25]} rotation={[Math.PI/2, 0, 0]}>
+              <meshStandardMaterial color="#1e293b" />
+            </Cylinder>
+            <Box args={[0.15, 1, 0.15]} position={[0, 0.5, 0]} castShadow>
+              <meshStandardMaterial color="#f59e0b" metalness={0.5} />
+            </Box>
+            
+            {/* Toolhead / Laser Welder */}
+            <group position={[0, 1, 0]}>
+              <Box args={[0.2, 0.3, 0.2]}>
+                 <meshStandardMaterial color="#0f172a" />
+              </Box>
+              <mesh position={[0, 0.2, 0]} ref={headRef}>
+                <sphereGeometry args={[0.1, 16, 16]} />
+                <meshBasicMaterial color="#3b82f6" transparent opacity={0.8} />
+              </mesh>
+            </group>
+          </group>
+        </group>
+      </group>
     </group>
   );
 };
 
-// Autonomous Guided Vehicle (AGV / Drone)
+// --------------------------------------------------------------------------
+// Complex High-End CNC Machine
+// --------------------------------------------------------------------------
+const HighEndMachine = ({ machine, position, onClick }: { machine: Machine, position: [number, number, number], onClick?: () => void }) => {
+  const spindleRef = useRef<THREE.Mesh>(null);
+  const dataStreamRef = useRef<THREE.Mesh>(null);
+  
+  useFrame((state) => {
+    if (machine.status === 'Running' && spindleRef.current) {
+      spindleRef.current.rotation.y += 0.8;
+      spindleRef.current.position.x = Math.sin(state.clock.elapsedTime * 2 + position[0]) * 0.3;
+    }
+    if (dataStreamRef.current) {
+      (dataStreamRef.current.material as THREE.MeshBasicMaterial).opacity = 0.3 + Math.sin(state.clock.elapsedTime * 5 + position[2]) * 0.3;
+    }
+  });
+
+  let statusColor = '#3b82f6';
+  if (machine.status === 'Running') statusColor = '#10b981';
+  if (machine.status === 'Maintenance' || machine.temperature > 85) statusColor = '#ef4444';
+
+  return (
+    <group position={position} onClick={(e) => { e.stopPropagation(); onClick && onClick(); }}>
+      {/* Heavy Steel Chassis */}
+      <Box args={[2.2, 0.6, 1.8]} position={[0, 0.3, 0]} castShadow receiveShadow>
+        <meshStandardMaterial color="#0f172a" metalness={0.9} roughness={0.4} />
+      </Box>
+
+      {/* Transparent Plasma Shield */}
+      <Box args={[2, 1.5, 1.6]} position={[0, 1.35, 0]}>
+        <meshPhysicalMaterial color="#94a3b8" transparent opacity={0.15} transmission={0.9} thickness={0.5} roughness={0} />
+      </Box>
+
+      {/* Internal Machining Bed */}
+      <Box args={[1.6, 0.2, 1.2]} position={[0, 0.7, 0]} receiveShadow>
+        <meshStandardMaterial color="#1e293b" metalness={0.8} />
+      </Box>
+
+      {/* Animated Spindle */}
+      <group position={[0, 1.8, 0]}>
+        <Cylinder args={[0.08, 0.02, 0.6]} position={[0, -0.3, 0]} ref={spindleRef} castShadow>
+          <meshStandardMaterial color="#f8fafc" metalness={1} roughness={0} />
+        </Cylinder>
+      </group>
+
+      {/* Holographic Status Screen */}
+      <Box args={[0.05, 0.8, 0.6]} position={[1.15, 1.4, 0]}>
+         <meshStandardMaterial color="#020617" />
+      </Box>
+      <mesh position={[1.18, 1.4, 0]} rotation={[0, Math.PI/2, 0]} ref={dataStreamRef}>
+         <planeGeometry args={[0.5, 0.7]} />
+         <meshBasicMaterial color={statusColor} transparent opacity={0.6} side={THREE.DoubleSide} />
+      </mesh>
+
+      {/* Neon Base Strip (Bloom target) */}
+      <Box args={[2.3, 0.05, 1.9]} position={[0, 0.02, 0]}>
+         <meshBasicMaterial color={statusColor} />
+      </Box>
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
+// Architectural Trusses & Catwalks
+// --------------------------------------------------------------------------
+const Architecture = () => {
+  return (
+    <group>
+      {/* Main Pillars */}
+      {[-12, 12].map(x => 
+        [-12, 12].map(z => (
+          <group key={`${x}-${z}`}>
+            <Cylinder args={[0.4, 0.4, 15]} position={[x, 7.5, z]} castShadow receiveShadow>
+              <meshStandardMaterial color="#1e293b" metalness={0.9} roughness={0.5} />
+            </Cylinder>
+            <Box args={[1, 1, 1]} position={[x, 15, z]}>
+               <meshBasicMaterial color="#3b82f6" /> {/* Glowing node */}
+            </Box>
+          </group>
+        ))
+      )}
+
+      {/* Glass Catwalk Level 2 */}
+      <group position={[0, 5, 0]}>
+        <Box args={[24, 0.2, 24]} receiveShadow>
+          <meshPhysicalMaterial color="#0f172a" transparent opacity={0.3} transmission={0.95} thickness={1} roughness={0.1} />
+        </Box>
+        {/* Support Beams for Catwalk */}
+        <Box args={[24, 0.4, 0.4]} position={[0, -0.3, -12]}><meshStandardMaterial color="#334155" metalness={0.8}/></Box>
+        <Box args={[24, 0.4, 0.4]} position={[0, -0.3, 12]}><meshStandardMaterial color="#334155" metalness={0.8}/></Box>
+        <Box args={[0.4, 0.4, 24]} position={[-12, -0.3, 0]}><meshStandardMaterial color="#334155" metalness={0.8}/></Box>
+        <Box args={[0.4, 0.4, 24]} position={[12, -0.3, 0]}><meshStandardMaterial color="#334155" metalness={0.8}/></Box>
+      </group>
+
+      {/* Central Quantum Server Core */}
+      <group position={[0, 7.5, 0]}>
+        <Cylinder args={[2, 2, 15]} castShadow receiveShadow>
+          <meshStandardMaterial color="#020617" metalness={0.9} roughness={0.2} />
+        </Cylinder>
+        {/* Pulsing Data Rings */}
+        <Cylinder args={[2.2, 2.2, 0.2]} position={[0, -5, 0]}><meshBasicMaterial color="#3b82f6" /></Cylinder>
+        <Cylinder args={[2.2, 2.2, 0.2]} position={[0, 0, 0]}><meshBasicMaterial color="#10b981" /></Cylinder>
+        <Cylinder args={[2.2, 2.2, 0.2]} position={[0, 5, 0]}><meshBasicMaterial color="#3b82f6" /></Cylinder>
+      </group>
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
+// Conveyor Belts
+// --------------------------------------------------------------------------
+const ConveyorLine = ({ position, length }: { position: [number, number, number], length: number }) => {
+  return (
+    <group position={position}>
+      <Box args={[length, 0.4, 1.2]} position={[0, 0.2, 0]} castShadow receiveShadow>
+        <meshStandardMaterial color="#1e293b" metalness={0.5} roughness={0.5} />
+      </Box>
+      {/* Conveyor Belt Surface */}
+      <Box args={[length, 0.05, 1]} position={[0, 0.42, 0]}>
+        <meshStandardMaterial color="#0f172a" roughness={0.8} />
+      </Box>
+      <Box args={[length, 0.05, 0.05]} position={[0, 0.2, 0.65]}><meshBasicMaterial color="#f59e0b" /></Box>
+      <Box args={[length, 0.05, 0.05]} position={[0, 0.2, -0.65]}><meshBasicMaterial color="#f59e0b" /></Box>
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
+// AGV Drone
+// --------------------------------------------------------------------------
 const AGV3D = ({ waypoints, speed, isEmergencyMode }: { waypoints: [number, number, number][], speed: number, isEmergencyMode?: boolean }) => {
   const agvRef = useRef<THREE.Group>(null);
   const scannerRef = useRef<THREE.Mesh>(null);
@@ -154,115 +229,61 @@ const AGV3D = ({ waypoints, speed, isEmergencyMode }: { waypoints: [number, numb
 
   useFrame((state, delta) => {
     if (!agvRef.current) return;
-
-    // Flash scanner light if in emergency
     if (scannerRef.current) {
-      if (isEmergencyMode) {
-        (scannerRef.current.material as THREE.MeshBasicMaterial).color.set('#ef4444'); // Red
-        (scannerRef.current.material as THREE.MeshBasicMaterial).opacity = 0.5 + Math.sin(state.clock.elapsedTime * 10) * 0.5;
-      } else {
-        (scannerRef.current.material as THREE.MeshBasicMaterial).color.set('#06b6d4'); // Cyan
-        (scannerRef.current.material as THREE.MeshBasicMaterial).opacity = 0.8;
-      }
+      const color = isEmergencyMode ? '#ef4444' : '#06b6d4';
+      (scannerRef.current.material as THREE.MeshBasicMaterial).color.set(color);
+      (scannerRef.current.material as THREE.MeshBasicMaterial).opacity = isEmergencyMode ? 0.5 + Math.sin(state.clock.elapsedTime * 10) * 0.5 : 0.8;
     }
 
-    if (isEmergencyMode) return; // Halt movement
-
-    // Pathfinding Logic
+    if (isEmergencyMode) return;
     const currentPos = agvRef.current.position;
     const targetPos = new THREE.Vector3(...waypoints[targetIndex]);
-    
-    // Calculate direction and distance
     const direction = new THREE.Vector3().subVectors(targetPos, currentPos);
     const distance = direction.length();
 
     if (distance < 0.1) {
-      // Reached waypoint, go to next
-      setTargetIndex((prev: number) => (prev + 1) % waypoints.length);
+      setTargetIndex((prev) => (prev + 1) % waypoints.length);
     } else {
-      // Move towards target
       direction.normalize();
       currentPos.add(direction.multiplyScalar(speed * delta));
-      
-      // Look at target (smooth rotation would be better, but instant is fine for now)
       agvRef.current.lookAt(targetPos);
     }
   });
 
   return (
     <group ref={agvRef} position={waypoints[0]}>
-      {/* AGV Chassis */}
       <Box args={[0.8, 0.3, 1.2]} position={[0, 0.15, 0]} castShadow>
         <meshStandardMaterial color="#334155" roughness={0.4} metalness={0.6} />
       </Box>
-      {/* AGV Cargo Tray */}
       <Box args={[0.6, 0.05, 0.8]} position={[0, 0.32, 0]}>
         <meshStandardMaterial color="#0f172a" />
       </Box>
-      {/* Scanner / Headlight */}
       <mesh ref={scannerRef} position={[0, 0.2, 0.61]}>
         <planeGeometry args={[0.6, 0.1]} />
-        <meshBasicMaterial color="#06b6d4" transparent opacity={0.8} />
+        <meshBasicMaterial transparent opacity={0.8} />
       </mesh>
     </group>
   );
 };
 
-const Floor = ({ level, height }: { level: number, height: number }) => {
-  return (
-    <group position={[0, height, 0]}>
-      {/* Glass Floor */}
-      <Box args={[14, 0.2, 14]} receiveShadow>
-        <meshPhysicalMaterial 
-          color="#1e293b" 
-          transparent={true} 
-          opacity={0.3} 
-          roughness={0.1}
-          transmission={0.9}
-          thickness={0.5}
-        />
-      </Box>
-      <Grid 
-        infiniteGrid={false}
-        args={[14, 14]}
-        position={[0, 0.11, 0]}
-        sectionColor="#3b82f6" 
-        cellColor="#1e293b" 
-        sectionSize={2} 
-        cellSize={0.5}
-      />
-      {/* Structural Pillars */}
-      {level > 1 && (
-        <>
-          <Cylinder args={[0.2, 0.2, 5]} position={[-6.8, -2.5, -6.8]} material-color="#334155" />
-          <Cylinder args={[0.2, 0.2, 5]} position={[6.8, -2.5, -6.8]} material-color="#334155" />
-          <Cylinder args={[0.2, 0.2, 5]} position={[-6.8, -2.5, 6.8]} material-color="#334155" />
-          <Cylinder args={[0.2, 0.2, 5]} position={[6.8, -2.5, 6.8]} material-color="#334155" />
-        </>
-      )}
-    </group>
-  );
-};
-
+// --------------------------------------------------------------------------
+// Main Composition
+// --------------------------------------------------------------------------
 export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergencyMode }: DigitalTwinProps) => {
-  // Setup XR Store for v6
   const [store] = useState(() => createXRStore());
 
-  // Map machines to different floors (Y-axis = 0, 5, 10)
-  const positions: [number, number, number][] = [
-    [-3, 0.1, -3], // Floor 1
-    [3, 0.1, 3],   // Floor 1
-    [-3, 5.1, 2],  // Floor 2
-    [3, 5.1, -2],  // Floor 2
-    [0, 10.1, 0]   // Floor 3
+  // Layout: Floor 1 CNC Machines
+  const f1_positions: [number, number, number][] = [
+    [-6, 0, -8], [-2, 0, -8], [2, 0, -8], [6, 0, -8],
+    [-6, 0, 8],  [-2, 0, 8],  [2, 0, 8],  [6, 0, 8]
   ];
 
   return (
     <div className="digital-twin-container glass-panel">
       <div className="panel-header" style={{ position: 'absolute', zIndex: 10, margin: '16px' }}>
-        <h3>3-Story Factory Architecture</h3>
-        <span className="badge" style={{ background: thermalMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.1)', color: thermalMode ? '#ef4444' : 'white', transition: 'all 0.3s' }}>
-          {thermalMode ? 'Thermal Scan Active' : 'Multi-Floor 3D View'}
+        <h3>Gigafactory Digital Twin 3D</h3>
+        <span className="badge" style={{ background: thermalMode || isEmergencyMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.1)', color: thermalMode || isEmergencyMode ? '#ef4444' : 'white', transition: 'all 0.3s' }}>
+          {isEmergencyMode ? 'EMERGENCY LOCKDOWN' : thermalMode ? 'Thermal Scan Active' : 'Live Operations'}
         </span>
       </div>
       
@@ -270,73 +291,91 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
         store={store}
         className="glass-panel" 
         style={{ position: 'absolute', bottom: '16px', right: '16px', zIndex: 10, padding: '8px 16px', border: '1px solid #3b82f6', color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold' }}
-      />
-      <Canvas shadows camera={{ position: [20, 15, 20], fov: 45 }}>
+      >
+        Enter AR
+      </ARButton>
+
+      <Canvas shadows camera={{ position: [30, 25, 30], fov: 45 }}>
+        {/* Post-Processing for High-End Cinematic Look */}
+        <EffectComposer>
+          <Bloom luminanceThreshold={0.2} mipmapBlur intensity={1.5} />
+          <Vignette eskil={false} offset={0.1} darkness={1.1} />
+        </EffectComposer>
+
         <XR store={store}>
-          <color attach="background" args={['#0a0a0f']} />
-        
-        {/* Lighting */}
-        <ambientLight intensity={0.4} />
-        <directionalLight position={[10, 20, 10]} intensity={1.5} castShadow />
-        <pointLight position={[-10, 10, -10]} intensity={0.5} color="#3b82f6" />
-        <pointLight position={[10, 15, -10]} intensity={0.5} color="#10b981" />
-        
-        {/* Controls */}
-        <OrbitControls 
-          enablePan={true} 
-          minPolarAngle={0} 
-          maxPolarAngle={Math.PI / 2}
-          minDistance={10}
-          maxDistance={50}
-          target={[0, 5, 0]}
-        />
+          <color attach="background" args={['#020617']} /> {/* Ultra dark slate */}
+          <fog attach="fog" args={['#020617', 20, 100]} />
 
-        {/* Base Ground */}
-        <Grid 
-          infiniteGrid 
-          fadeDistance={50} 
-          sectionColor="#0f172a" 
-          cellColor="#020617" 
-          sectionSize={4} 
-          cellSize={1}
-          position={[0, -0.1, 0]}
-        />
-
-        {/* 3 Floors */}
-        <Floor level={1} height={0} />
-        <Floor level={2} height={5} />
-        <Floor level={3} height={10} />
-
-        {/* Central Elevator/Server Core */}
-        <Box args={[3, 10, 3]} position={[0, 5, -5]} castShadow receiveShadow>
-          <meshStandardMaterial color="#1e293b" metalness={0.7} roughness={0.2} />
-        </Box>
-        <Box args={[3, 5, 3]} position={[0, 2.5, -5]} castShadow receiveShadow>
-          <meshStandardMaterial color="#3b82f6" metalness={0.7} roughness={0.2} />
-        </Box>
-
-        {/* Render Machines */}
-        {machines.slice(0, 5).map((machine, index) => (
-          <Machine3D 
-            key={machine.id} 
-            machine={machine} 
-            position={positions[index % positions.length]} 
-            thermalMode={thermalMode}
-            onClick={() => onSelectMachine && onSelectMachine(machine.id)}
+          {/* Cinematic Lighting */}
+          <ambientLight intensity={isEmergencyMode ? 0.1 : 0.3} />
+          
+          {/* Main God Ray / Spotlight */}
+          <spotLight 
+            position={[0, 40, 0]} 
+            angle={0.6} 
+            penumbra={0.5} 
+            intensity={isEmergencyMode ? 5 : 2} 
+            color={isEmergencyMode ? "#ef4444" : "#ffffff"} 
+            castShadow 
+            shadow-bias={-0.0001}
           />
-        ))}
 
-        {/* Autonomous AGVs */}
-        <AGV3D 
-          waypoints={[[-3, 0.1, -1], [3, 0.1, -1], [3, 0.1, 5], [-3, 0.1, 5]]} 
-          speed={2} 
-          isEmergencyMode={isEmergencyMode} 
-        />
-        <AGV3D 
-          waypoints={[[3, 5.1, 0], [-3, 5.1, 0], [-3, 5.1, 4], [3, 5.1, 4]]} 
-          speed={1.5} 
-          isEmergencyMode={isEmergencyMode} 
-        />
+          <pointLight position={[-15, 10, -15]} intensity={1} color={isEmergencyMode ? "#ef4444" : "#3b82f6"} />
+          <pointLight position={[15, 10, 15]} intensity={1} color={isEmergencyMode ? "#ef4444" : "#10b981"} />
+
+          <OrbitControls 
+            enablePan={true} 
+            minPolarAngle={0} 
+            maxPolarAngle={Math.PI / 2 - 0.05}
+            minDistance={10}
+            maxDistance={80}
+            target={[0, 5, 0]}
+            autoRotate={!isEmergencyMode}
+            autoRotateSpeed={0.5}
+          />
+
+          {/* Glowing Ground Grid */}
+          <Grid 
+            infiniteGrid 
+            fadeDistance={80} 
+            sectionColor={isEmergencyMode ? "#7f1d1d" : "#0f172a"} 
+            cellColor={isEmergencyMode ? "#450a0a" : "#020617"} 
+            sectionSize={10} 
+            cellSize={2}
+            position={[0, -0.05, 0]}
+          />
+
+          <Architecture />
+
+          {/* Ground Floor Conveyor System */}
+          <ConveyorLine position={[-8, 0, 0]} length={20} />
+          <ConveyorLine position={[8, 0, 0]} length={20} />
+
+          {/* Robotic Arms next to conveyors */}
+          <RoboticArm position={[-6, 0, -3]} speedOffset={0} isEmergencyMode={isEmergencyMode} />
+          <RoboticArm position={[-6, 0, 3]} speedOffset={1} isEmergencyMode={isEmergencyMode} />
+          <RoboticArm position={[6, 0, -3]} speedOffset={2} isEmergencyMode={isEmergencyMode} />
+          <RoboticArm position={[6, 0, 3]} speedOffset={3} isEmergencyMode={isEmergencyMode} />
+
+          {/* Dynamic Machines */}
+          {f1_positions.map((pos, idx) => {
+            // Distribute the state data across the visual array
+            const machineData = machines[idx % machines.length] || { id: idx, name: `CNC-${idx}`, status: 'Idle', temperature: 40, running_hours: 0 };
+            return (
+              <HighEndMachine 
+                key={idx}
+                machine={machineData}
+                position={pos}
+                onClick={() => onSelectMachine && onSelectMachine(machineData.id)}
+              />
+            );
+          })}
+
+          {/* AGV Swarm */}
+          <AGV3D waypoints={[[-10, 0, -10], [10, 0, -10], [10, 0, -5], [-10, 0, -5]]} speed={2} isEmergencyMode={isEmergencyMode} />
+          <AGV3D waypoints={[[10, 0, 10], [-10, 0, 10], [-10, 0, 5], [10, 0, 5]]} speed={2.5} isEmergencyMode={isEmergencyMode} />
+          <AGV3D waypoints={[[0, 5.2, 10], [-10, 5.2, 10], [-10, 5.2, -10], [0, 5.2, -10]]} speed={3} isEmergencyMode={isEmergencyMode} />
+
         </XR>
       </Canvas>
     </div>
