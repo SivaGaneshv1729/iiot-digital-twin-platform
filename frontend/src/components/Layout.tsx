@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Server, Settings, Bell, Search, Package, LogOut, ScanEye, Globe, ClipboardList, Cpu, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, Server, Settings, Bell, Search, Package, LogOut, ScanEye, Globe, ClipboardList, Cpu, Sun, Moon, Video } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { FactoryAssistant } from './FactoryAssistant';
 import { CommandPalette } from './CommandPalette';
@@ -65,6 +65,10 @@ export const Layout = () => {
           <NavLink to="/global" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
             <Globe size={20} />
             <span>Global Network</span>
+          </NavLink>
+          <NavLink to="/security" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
+            <Video size={20} />
+            <span>Security CCTV</span>
           </NavLink>
           <NavLink to="/audit" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
             <ClipboardList size={20} />

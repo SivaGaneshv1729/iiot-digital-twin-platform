@@ -8,6 +8,7 @@ import { Quality } from './pages/Quality';
 import { AuditLogs } from './pages/AuditLogs';
 import { MLOps } from './pages/MLOps';
 import { GlobalNetwork } from './pages/GlobalNetwork';
+import { Security } from './pages/Security';
 import { Login } from './pages/Login';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -36,6 +37,7 @@ function App() {
           <Route path="audit" element={<AuditLogs />} />
           <Route path="mlops" element={<MLOps />} />
           <Route path="global" element={<GlobalNetwork />} />
+          <Route path="security" element={<Security />} />
         </Route>
       </Routes>
     </BrowserRouter>
