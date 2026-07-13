@@ -94,7 +94,7 @@ router.post('/:id/status', requireAdmin, async (req, res) => {
         await query('UPDATE machines SET status = $1 WHERE id = $2', [status, id]);
         
         // Log the action in the audit ledger
-        const actionText = `Set Machine M-${100+parseInt(id)} to ${status}`;
+        const actionText = `Set Machine M-${100+parseInt(id as string)} to ${status}`;
         await query('INSERT INTO audit_logs (user_id, action) VALUES ($1, $2)', [user.id, actionText]);
 
         // Broadcast updated machine state to all clients for Bi-directional Digital Twin

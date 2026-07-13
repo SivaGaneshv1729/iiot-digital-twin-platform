@@ -3,6 +3,9 @@ import cors from 'cors';
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import rateLimit from 'express-rate-limit';
+import * as dotenv from 'dotenv';
+import http from 'http';
+import { Server } from 'socket.io';
 import { swaggerSpec } from './swagger';
 
 import machinesRouter from './routes/machines';

@@ -5,8 +5,8 @@ import { ShieldAlert, CheckCircle } from 'lucide-react';
 import { io } from 'socket.io-client';
 
 export const GlobalNetwork = () => {
-  const { t } = useTranslation();
-  const globeEl = useRef<any>();
+  const { t } = useTranslation('translation');
+  const globeEl = useRef<any>(null);
   const [dimensions, setDimensions] = useState({ width: window.innerWidth - 250, height: window.innerHeight - 100 });
   const [isEmergency, setIsEmergency] = useState(false);
 

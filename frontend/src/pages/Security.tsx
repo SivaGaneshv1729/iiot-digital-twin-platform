@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AlertOctagon, Video, ShieldAlert, Zap } from 'lucide-react';
+import { AlertOctagon, ShieldAlert } from 'lucide-react';
 import { io } from 'socket.io-client';
 import './Security.css';
 

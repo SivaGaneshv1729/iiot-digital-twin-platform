@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { 
   Package, AlertTriangle, ArrowDownToLine, 
-  DollarSign, RefreshCcw, BrainCircuit, BarChart2, Briefcase, Box, FileText, ChevronRight
+  DollarSign, BrainCircuit, BarChart2, Briefcase, Box, ChevronRight
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { 

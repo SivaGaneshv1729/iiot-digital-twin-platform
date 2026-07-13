@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Grid, Box, Cylinder } from '@react-three/drei';
 import * as THREE from 'three';
@@ -57,14 +57,11 @@ const Machine3D = ({ machine, position, thermalMode, onClick }: { machine: Machi
 
   // Determine color and glow based on status
   let themeColor = '#3b82f6'; // Idle (Blue)
-  let emissiveIntensity = 0.5;
 
   if (machine.status === 'Running') {
     themeColor = '#10b981'; // Green
-    emissiveIntensity = 0.8;
   } else if (machine.status === 'Maintenance' || machine.temperature > 85) {
     themeColor = '#ef4444'; // Red (Warning/Maintenance)
-    emissiveIntensity = 1.2;
   }
 
   // Thermal Aura Color
@@ -180,7 +177,7 @@ const AGV3D = ({ waypoints, speed, isEmergencyMode }: { waypoints: [number, numb
 
     if (distance < 0.1) {
       // Reached waypoint, go to next
-      setTargetIndex((prev) => (prev + 1) % waypoints.length);
+      setTargetIndex((prev: number) => (prev + 1) % waypoints.length);
     } else {
       // Move towards target
       direction.normalize();
