@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Grid, Box, Cylinder } from '@react-three/drei';
+import { XR, ARButton, createXRStore } from '@react-three/xr';
 import * as THREE from 'three';
 import './DigitalTwin.css';
 
@@ -244,6 +245,9 @@ const Floor = ({ level, height }: { level: number, height: number }) => {
 };
 
 export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergencyMode }: DigitalTwinProps) => {
+  // Setup XR Store for v6
+  const [store] = useState(() => createXRStore());
+
   // Map machines to different floors (Y-axis = 0, 5, 10)
   const positions: [number, number, number][] = [
     [-3, 0.1, -3], // Floor 1
@@ -262,8 +266,14 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
         </span>
       </div>
       
+      <ARButton 
+        store={store}
+        className="glass-panel" 
+        style={{ position: 'absolute', bottom: '16px', right: '16px', zIndex: 10, padding: '8px 16px', border: '1px solid #3b82f6', color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold' }}
+      />
       <Canvas shadows camera={{ position: [20, 15, 20], fov: 45 }}>
-        <color attach="background" args={['#0a0a0f']} />
+        <XR store={store}>
+          <color attach="background" args={['#0a0a0f']} />
         
         {/* Lighting */}
         <ambientLight intensity={0.4} />
@@ -327,6 +337,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
           speed={1.5} 
           isEmergencyMode={isEmergencyMode} 
         />
+        </XR>
       </Canvas>
     </div>
   );

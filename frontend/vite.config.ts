@@ -6,6 +6,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       registerType: 'autoUpdate',
       includeAssets: ['logo.svg'],
       manifest: {
@@ -24,8 +27,8 @@ export default defineConfig({
           }
         ]
       },
-      workbox: {
-        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024 // 10 MB
+      injectManifest: {
+        maximumFileSizeToCacheInBytes: 15 * 1024 * 1024 // 15 MB
       }
     })
   ],
