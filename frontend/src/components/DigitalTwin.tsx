@@ -16,6 +16,7 @@ interface DigitalTwinProps {
   machines: Machine[];
   onSelectMachine?: (id: number) => void;
   thermalMode?: boolean;
+  isEmergencyMode?: boolean;
 }
 
 // Complex Animated CNC Machine Component
@@ -147,6 +148,68 @@ const Machine3D = ({ machine, position, thermalMode, onClick }: { machine: Machi
   );
 };
 
+// Autonomous Guided Vehicle (AGV / Drone)
+const AGV3D = ({ waypoints, speed, isEmergencyMode }: { waypoints: [number, number, number][], speed: number, isEmergencyMode?: boolean }) => {
+  const agvRef = useRef<THREE.Group>(null);
+  const scannerRef = useRef<THREE.Mesh>(null);
+  const [targetIndex, setTargetIndex] = useState(1);
+
+  useFrame((state, delta) => {
+    if (!agvRef.current) return;
+
+    // Flash scanner light if in emergency
+    if (scannerRef.current) {
+      if (isEmergencyMode) {
+        (scannerRef.current.material as THREE.MeshBasicMaterial).color.set('#ef4444'); // Red
+        (scannerRef.current.material as THREE.MeshBasicMaterial).opacity = 0.5 + Math.sin(state.clock.elapsedTime * 10) * 0.5;
+      } else {
+        (scannerRef.current.material as THREE.MeshBasicMaterial).color.set('#06b6d4'); // Cyan
+        (scannerRef.current.material as THREE.MeshBasicMaterial).opacity = 0.8;
+      }
+    }
+
+    if (isEmergencyMode) return; // Halt movement
+
+    // Pathfinding Logic
+    const currentPos = agvRef.current.position;
+    const targetPos = new THREE.Vector3(...waypoints[targetIndex]);
+    
+    // Calculate direction and distance
+    const direction = new THREE.Vector3().subVectors(targetPos, currentPos);
+    const distance = direction.length();
+
+    if (distance < 0.1) {
+      // Reached waypoint, go to next
+      setTargetIndex((prev) => (prev + 1) % waypoints.length);
+    } else {
+      // Move towards target
+      direction.normalize();
+      currentPos.add(direction.multiplyScalar(speed * delta));
+      
+      // Look at target (smooth rotation would be better, but instant is fine for now)
+      agvRef.current.lookAt(targetPos);
+    }
+  });
+
+  return (
+    <group ref={agvRef} position={waypoints[0]}>
+      {/* AGV Chassis */}
+      <Box args={[0.8, 0.3, 1.2]} position={[0, 0.15, 0]} castShadow>
+        <meshStandardMaterial color="#334155" roughness={0.4} metalness={0.6} />
+      </Box>
+      {/* AGV Cargo Tray */}
+      <Box args={[0.6, 0.05, 0.8]} position={[0, 0.32, 0]}>
+        <meshStandardMaterial color="#0f172a" />
+      </Box>
+      {/* Scanner / Headlight */}
+      <mesh ref={scannerRef} position={[0, 0.2, 0.61]}>
+        <planeGeometry args={[0.6, 0.1]} />
+        <meshBasicMaterial color="#06b6d4" transparent opacity={0.8} />
+      </mesh>
+    </group>
+  );
+};
+
 const Floor = ({ level, height }: { level: number, height: number }) => {
   return (
     <group position={[0, height, 0]}>
@@ -183,7 +246,7 @@ const Floor = ({ level, height }: { level: number, height: number }) => {
   );
 };
 
-export const DigitalTwin = ({ machines, onSelectMachine, thermalMode }: DigitalTwinProps) => {
+export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergencyMode }: DigitalTwinProps) => {
   // Map machines to different floors (Y-axis = 0, 5, 10)
   const positions: [number, number, number][] = [
     [-3, 0.1, -3], // Floor 1
@@ -255,6 +318,18 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode }: DigitalT
             onClick={() => onSelectMachine && onSelectMachine(machine.id)}
           />
         ))}
+
+        {/* Autonomous AGVs */}
+        <AGV3D 
+          waypoints={[[-3, 0.1, -1], [3, 0.1, -1], [3, 0.1, 5], [-3, 0.1, 5]]} 
+          speed={2} 
+          isEmergencyMode={isEmergencyMode} 
+        />
+        <AGV3D 
+          waypoints={[[3, 5.1, 0], [-3, 5.1, 0], [-3, 5.1, 4], [3, 5.1, 4]]} 
+          speed={1.5} 
+          isEmergencyMode={isEmergencyMode} 
+        />
       </Canvas>
     </div>
   );

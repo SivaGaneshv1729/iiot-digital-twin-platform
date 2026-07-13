@@ -204,7 +204,7 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      <DigitalTwin machines={liveMachines} onSelectMachine={setSelectedMachineId} thermalMode={thermalMode} />
+      <DigitalTwin machines={liveMachines} onSelectMachine={setSelectedMachineId} thermalMode={thermalMode} isEmergencyMode={isEmergencyMode} />
       <MachineHistoryModal machineId={selectedMachineId} onClose={() => setSelectedMachineId(null)} />
 
       {/* Expanded Executive KPI Grid */}
