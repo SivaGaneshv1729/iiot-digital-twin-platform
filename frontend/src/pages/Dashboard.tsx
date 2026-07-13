@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { 
   ComposedChart, Line, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
 import { 
-  Activity, Zap, Wifi, TrendingUp, DollarSign, Leaf, CheckCircle, Clock, Download, AlertOctagon, Bell
+  Activity, Zap, Wifi, TrendingUp, DollarSign, Leaf, CheckCircle, Clock, Download, AlertOctagon, Bell, Mic, MicOff
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { useTranslation } from 'react-i18next';
@@ -50,6 +50,70 @@ export const Dashboard = () => {
   
   const [chartData, setChartData] = useState(INITIAL_CHART_DATA);
   const [actions, setActions] = useState(INITIAL_ACTIONS);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  // Initialize Speech Recognition
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        console.log("Voice Command Recognized:", transcript);
+        handleVoiceCommand(transcript);
+        setIsListening(false);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error("Speech recognition error", event.error);
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+    }
+  }, [thermalMode, isEmergencyMode]);
+
+  const handleVoiceCommand = (command: string) => {
+    const synth = window.speechSynthesis;
+    const speak = (text: string) => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      synth.speak(utterance);
+    };
+
+    if (command.includes('emergency stop')) {
+      triggerEmergencyStop(true); // true to skip window.confirm for voice
+      speak('Emergency stop activated. All machines halted.');
+    } else if (command.includes('thermal scan') || command.includes('thermal mode')) {
+      setThermalMode(true);
+      speak('Thermal scan mode activated.');
+    } else if (command.includes('normal view') || command.includes('normal mode')) {
+      setThermalMode(false);
+      speak('Returning to normal view.');
+    } else if (command.includes('export') || command.includes('report')) {
+      generatePDF();
+      speak('Exporting PDF report.');
+    } else {
+      speak('Command not recognized.');
+    }
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+    } else {
+      recognitionRef.current?.start();
+      setIsListening(true);
+    }
+  };
 
   const generatePDF = async () => {
     const dashboardElement = document.querySelector('.dashboard-container') as HTMLElement;
@@ -90,12 +154,14 @@ export const Dashboard = () => {
   // Command Palette Event Listeners
   useEffect(() => {
     const handleToggleThermal = () => setThermalMode(prev => !prev);
+    const handleEStopEvent = () => triggerEmergencyStop();
+    
     window.addEventListener('cmd_export_pdf', generatePDF);
-    window.addEventListener('cmd_emergency_stop', triggerEmergencyStop);
+    window.addEventListener('cmd_emergency_stop', handleEStopEvent);
     window.addEventListener('cmd_toggle_thermal', handleToggleThermal);
     return () => {
       window.removeEventListener('cmd_export_pdf', generatePDF);
-      window.removeEventListener('cmd_emergency_stop', triggerEmergencyStop);
+      window.removeEventListener('cmd_emergency_stop', handleEStopEvent);
       window.removeEventListener('cmd_toggle_thermal', handleToggleThermal);
     };
   }, []);
@@ -143,8 +209,8 @@ export const Dashboard = () => {
     setActions(prev => prev.map(a => a.id === id ? { ...a, status } : a));
   };
 
-  const triggerEmergencyStop = async () => {
-    if (!window.confirm("CRITICAL WARNING: This will immediately halt all factory production lines. Are you absolutely sure?")) return;
+  const triggerEmergencyStop = async (bypassConfirm = false) => {
+    if (!bypassConfirm && !window.confirm("CRITICAL WARNING: This will immediately halt all factory production lines. Are you absolutely sure?")) return;
     
     try {
       const token = localStorage.getItem('token');
@@ -228,7 +294,17 @@ export const Dashboard = () => {
         
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <button 
-            onClick={triggerEmergencyStop}
+            onClick={toggleListening} 
+            className={`glass-panel ${isListening ? 'listening-pulse' : ''}`}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', background: isListening ? 'rgba(236, 72, 153, 0.2)' : 'rgba(236, 72, 153, 0.1)', color: '#ec4899', border: '1px solid #ec4899' }}
+            title="Voice Commands"
+          >
+            {isListening ? <Mic size={16} /> : <MicOff size={16} />}
+            <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>AI Voice</span>
+          </button>
+          
+          <button 
+            onClick={() => triggerEmergencyStop()}
             className="btn-danger glass-panel"
             style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', background: 'rgba(220, 38, 38, 0.2)', color: '#ef4444', border: '2px solid #dc2626', fontWeight: 'bold' }}
             title="Halt all production immediately"
