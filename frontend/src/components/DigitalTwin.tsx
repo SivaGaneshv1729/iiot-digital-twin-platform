@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Grid, Box } from '@react-three/drei';
+import { OrbitControls, Grid, Box, Cylinder } from '@react-three/drei';
 import * as THREE from 'three';
 import './DigitalTwin.css';
 
@@ -24,7 +24,7 @@ const Machine3D = ({ machine, position, onClick }: { machine: Machine, position:
   // Animate the machine slightly (bobbing up and down)
   useFrame((state) => {
     if (meshRef.current && machine.status === 'Running') {
-      meshRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 2 + position[0]) * 0.1;
+      meshRef.current.position.y = position[1] + 1 + Math.sin(state.clock.elapsedTime * 2 + position[0]) * 0.1;
     }
   });
 
@@ -66,49 +66,101 @@ const Machine3D = ({ machine, position, onClick }: { machine: Machine, position:
   );
 };
 
+const Floor = ({ level, height }: { level: number, height: number }) => {
+  return (
+    <group position={[0, height, 0]}>
+      {/* Glass Floor */}
+      <Box args={[14, 0.2, 14]} receiveShadow>
+        <meshPhysicalMaterial 
+          color="#1e293b" 
+          transparent={true} 
+          opacity={0.3} 
+          roughness={0.1}
+          transmission={0.9}
+          thickness={0.5}
+        />
+      </Box>
+      <Grid 
+        infiniteGrid={false}
+        args={[14, 14]}
+        position={[0, 0.11, 0]}
+        sectionColor="#3b82f6" 
+        cellColor="#1e293b" 
+        sectionSize={2} 
+        cellSize={0.5}
+      />
+      {/* Structural Pillars */}
+      {level > 1 && (
+        <>
+          <Cylinder args={[0.2, 0.2, 5]} position={[-6.8, -2.5, -6.8]} material-color="#334155" />
+          <Cylinder args={[0.2, 0.2, 5]} position={[6.8, -2.5, -6.8]} material-color="#334155" />
+          <Cylinder args={[0.2, 0.2, 5]} position={[-6.8, -2.5, 6.8]} material-color="#334155" />
+          <Cylinder args={[0.2, 0.2, 5]} position={[6.8, -2.5, 6.8]} material-color="#334155" />
+        </>
+      )}
+    </group>
+  );
+};
+
 export const DigitalTwin = ({ machines, onSelectMachine }: DigitalTwinProps) => {
-  // Map machines to fixed positions on the grid
+  // Map machines to different floors (Y-axis = 0, 5, 10)
   const positions: [number, number, number][] = [
-    [-3, 0, -3],
-    [3, 0, -3],
-    [-3, 0, 3],
-    [3, 0, 3],
-    [0, 0, 0]
+    [-3, 0.1, -3], // Floor 1
+    [3, 0.1, 3],   // Floor 1
+    [-3, 5.1, 2],  // Floor 2
+    [3, 5.1, -2],  // Floor 2
+    [0, 10.1, 0]   // Floor 3
   ];
 
   return (
     <div className="digital-twin-container glass-panel">
       <div className="panel-header" style={{ position: 'absolute', zIndex: 10, margin: '16px' }}>
-        <h3>3D Factory Floor</h3>
-        <span className="badge" style={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}>Live Digital Twin</span>
+        <h3>3-Story Factory Architecture</h3>
+        <span className="badge" style={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}>Multi-Floor 3D View</span>
       </div>
       
-      <Canvas shadows camera={{ position: [8, 6, 8], fov: 45 }}>
+      <Canvas shadows camera={{ position: [20, 15, 20], fov: 45 }}>
         <color attach="background" args={['#0a0a0f']} />
         
         {/* Lighting */}
         <ambientLight intensity={0.4} />
-        <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
+        <directionalLight position={[10, 20, 10]} intensity={1.5} castShadow />
         <pointLight position={[-10, 10, -10]} intensity={0.5} color="#3b82f6" />
+        <pointLight position={[10, 15, -10]} intensity={0.5} color="#10b981" />
         
         {/* Controls */}
         <OrbitControls 
-          enablePan={false} 
+          enablePan={true} 
           minPolarAngle={0} 
-          maxPolarAngle={Math.PI / 2 - 0.1}
-          minDistance={5}
-          maxDistance={20}
+          maxPolarAngle={Math.PI / 2}
+          minDistance={10}
+          maxDistance={50}
+          target={[0, 5, 0]}
         />
 
-        {/* Floor Grid */}
+        {/* Base Ground */}
         <Grid 
           infiniteGrid 
-          fadeDistance={30} 
-          sectionColor="#3b82f6" 
-          cellColor="#1e293b" 
-          sectionSize={2} 
-          cellSize={0.5}
+          fadeDistance={50} 
+          sectionColor="#0f172a" 
+          cellColor="#020617" 
+          sectionSize={4} 
+          cellSize={1}
+          position={[0, -0.1, 0]}
         />
+
+        {/* 3 Floors */}
+        <Floor level={1} height={0} />
+        <Floor level={2} height={5} />
+        <Floor level={3} height={10} />
+
+        {/* Central Elevator/Server Core */}
+        <Box args={[3, 10, 3]} position={[0, 5, -5]} castShadow receiveShadow>
+          <meshStandardMaterial color="#1e293b" metalness={0.7} roughness={0.2} />
+        </Box>
+        <Box args={[3, 5, 3]} position={[0, 2.5, -5]} castShadow receiveShadow>
+          <meshStandardMaterial color="#3b82f6" metalness={0.7} roughness={0.2} />
+        </Box>
 
         {/* Render Machines */}
         {machines.slice(0, 5).map((machine, index) => (
