@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, Activity } from 'lucide-react';
+import { X, Activity, Play, Pause, AlertTriangle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useTranslation } from 'react-i18next';
 import './MachineHistoryModal.css';
@@ -82,6 +82,24 @@ export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalP
     }
   }, [machineId]);
 
+  const setMachineStatus = async (status: string) => {
+    if (!machineId) return;
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`http://localhost:4000/api/machines/${machineId}/status`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status })
+      });
+      // The backend will broadcast a WebSocket 'telemetry_update' which the dashboard will catch.
+    } catch (err) {
+      console.error('Failed to set machine status:', err);
+    }
+  };
+
   if (!machineId) return null;
 
   return (
@@ -149,6 +167,32 @@ export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalP
                   <div style={{ width: '12px', height: '3px', backgroundColor: '#c084fc', borderBottom: '2px dashed #c084fc' }}></div> PyTorch LSTM Forecast
                 </span>
               </div>
+              
+              {/* Bi-directional Control Panel */}
+              <div style={{ marginTop: '24px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '16px' }}>
+                <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '12px' }}>Command & Control (Bi-directional Link)</h3>
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                  <button 
+                    onClick={() => setMachineStatus('Running')}
+                    style={{ flex: 1, padding: '8px', borderRadius: '6px', backgroundColor: 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981', color: '#10b981', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontWeight: 'bold' }}
+                  >
+                    <Play size={16} /> Start
+                  </button>
+                  <button 
+                    onClick={() => setMachineStatus('Idle')}
+                    style={{ flex: 1, padding: '8px', borderRadius: '6px', backgroundColor: 'rgba(245, 158, 11, 0.2)', border: '1px solid #f59e0b', color: '#f59e0b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontWeight: 'bold' }}
+                  >
+                    <Pause size={16} /> Halt
+                  </button>
+                  <button 
+                    onClick={() => setMachineStatus('Maintenance')}
+                    style={{ flex: 1, padding: '8px', borderRadius: '6px', backgroundColor: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontWeight: 'bold' }}
+                  >
+                    <AlertTriangle size={16} /> Maintenance
+                  </button>
+                </div>
+              </div>
+
             </div>
           )}
         </div>

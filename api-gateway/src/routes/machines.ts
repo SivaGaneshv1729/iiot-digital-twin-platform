@@ -97,6 +97,13 @@ router.post('/:id/status', requireAdmin, async (req, res) => {
         const actionText = `Set Machine M-${100+parseInt(id)} to ${status}`;
         await query('INSERT INTO audit_logs (user_id, action) VALUES ($1, $2)', [user.id, actionText]);
 
+        // Broadcast updated machine state to all clients for Bi-directional Digital Twin
+        const io = req.app.get('io');
+        if (io) {
+            const allMachines = await query('SELECT * FROM machines ORDER BY id ASC');
+            io.emit('telemetry_update', allMachines.rows);
+        }
+
         res.json({ message: `Machine ${id} status updated to ${status}` });
     } catch (err) {
         console.error('Error updating machine status:', err);
