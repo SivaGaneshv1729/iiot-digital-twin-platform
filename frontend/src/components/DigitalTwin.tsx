@@ -92,67 +92,6 @@ const RoboticArm = ({ position, speedOffset = 0, isEmergencyMode }: { position: 
   );
 };
 
-// --------------------------------------------------------------------------
-// Complex High-End CNC Machine
-// --------------------------------------------------------------------------
-const HighEndMachine = ({ machine, position, onClick }: { machine: Machine, position: [number, number, number], onClick?: () => void }) => {
-  const spindleRef = useRef<THREE.Mesh>(null);
-  const dataStreamRef = useRef<THREE.Mesh>(null);
-  
-  useFrame((state) => {
-    if (machine.status === 'Running' && spindleRef.current) {
-      spindleRef.current.rotation.y += 0.8;
-      spindleRef.current.position.x = Math.sin(state.clock.elapsedTime * 2 + position[0]) * 0.3;
-    }
-    if (dataStreamRef.current) {
-      (dataStreamRef.current.material as THREE.MeshBasicMaterial).opacity = 0.3 + Math.sin(state.clock.elapsedTime * 5 + position[2]) * 0.3;
-    }
-  });
-
-  let statusColor = '#3b82f6';
-  if (machine.status === 'Running') statusColor = '#10b981';
-  if (machine.status === 'Maintenance' || machine.temperature > 85) statusColor = '#ef4444';
-
-  return (
-    <group position={position} onClick={(e) => { e.stopPropagation(); onClick && onClick(); }}>
-      {/* Heavy Steel Chassis */}
-      <Box args={[2.2, 0.6, 1.8]} position={[0, 0.3, 0]} castShadow receiveShadow>
-        <meshStandardMaterial color="#0f172a" metalness={0.9} roughness={0.4} />
-      </Box>
-
-      {/* Transparent Plasma Shield */}
-      <Box args={[2, 1.5, 1.6]} position={[0, 1.35, 0]}>
-        <meshPhysicalMaterial color="#94a3b8" transparent opacity={0.15} transmission={0.9} thickness={0.5} roughness={0} />
-      </Box>
-
-      {/* Internal Machining Bed */}
-      <Box args={[1.6, 0.2, 1.2]} position={[0, 0.7, 0]} receiveShadow>
-        <meshStandardMaterial color="#1e293b" metalness={0.8} />
-      </Box>
-
-      {/* Animated Spindle */}
-      <group position={[0, 1.8, 0]}>
-        <Cylinder args={[0.08, 0.02, 0.6]} position={[0, -0.3, 0]} ref={spindleRef} castShadow>
-          <meshStandardMaterial color="#f8fafc" metalness={1} roughness={0} />
-        </Cylinder>
-      </group>
-
-      {/* Holographic Status Screen */}
-      <Box args={[0.05, 0.8, 0.6]} position={[1.15, 1.4, 0]}>
-         <meshStandardMaterial color="#020617" />
-      </Box>
-      <mesh position={[1.18, 1.4, 0]} rotation={[0, Math.PI/2, 0]} ref={dataStreamRef}>
-         <planeGeometry args={[0.5, 0.7]} />
-         <meshBasicMaterial color={statusColor} transparent opacity={0.6} side={THREE.DoubleSide} />
-      </mesh>
-
-      {/* Neon Base Strip (Bloom target) */}
-      <Box args={[2.3, 0.05, 1.9]} position={[0, 0.02, 0]}>
-         <meshBasicMaterial color={statusColor} />
-      </Box>
-    </group>
-  );
-};
 
 // --------------------------------------------------------------------------
 // Campus Structures (High-Fidelity Buildings, Roads, Silos)
@@ -445,6 +384,56 @@ const CameraController = ({ viewMode }: { viewMode: string }) => {
 };
 
 // --------------------------------------------------------------------------
+// Live Factory Machinery (Unit 1 Interior)
+// --------------------------------------------------------------------------
+const CNCMachine = ({ position, machine, theme, onClick }: { position: [number, number, number], machine: any, theme: string, onClick?: () => void }) => {
+  const spindleRef = useRef<THREE.Group>(null);
+  const isRunning = machine?.status === 'Running';
+  const isWarning = machine?.status === 'Maintenance' || machine?.status === 'Offline';
+  
+  const statusColor = isRunning ? '#10b981' : isWarning ? '#ef4444' : '#f59e0b';
+
+  useFrame((state, delta) => {
+    if (spindleRef.current && isRunning) {
+      spindleRef.current.rotation.y += 15 * delta; // Spin fast when running
+      spindleRef.current.position.y = Math.sin(state.clock.elapsedTime * 5) * 0.5 + 12; // Move up and down
+    }
+  });
+
+  return (
+    <group position={position} onClick={(e) => { e.stopPropagation(); onClick && onClick(); }}>
+      {/* Machine Base */}
+      <Box args={[12, 6, 8]} position={[0, 3, 0]}>
+        <meshStandardMaterial color={theme === 'light' ? "#cbd5e1" : "#1e293b"} metalness={0.7} roughness={0.3} />
+      </Box>
+      {/* Enclosure / Glass viewing area */}
+      <Box args={[10, 8, 6]} position={[0, 10, 0]}>
+        <meshStandardMaterial color={theme === 'light' ? "#94a3b8" : "#0f172a"} transparent opacity={0.4} />
+      </Box>
+      
+      {/* Active Spindle / Drill */}
+      <group position={[0, 12, 0]} ref={spindleRef}>
+        <Cylinder args={[0.5, 0.1, 4]} position={[0, -2, 0]}>
+          <meshStandardMaterial color="#94a3b8" metalness={0.9} />
+        </Cylinder>
+      </group>
+
+      {/* Status Light Indicator */}
+      <Cylinder args={[0.3, 0.3, 1]} position={[4, 14.5, 2]}>
+        <meshStandardMaterial color={statusColor} emissive={statusColor} emissiveIntensity={2} />
+      </Cylinder>
+
+      {/* Floating UI */}
+      <Html position={[0, 16, 0]} center zIndexRange={[100, 0]}>
+        <div style={{ background: 'rgba(0,0,0,0.8)', border: `1px solid ${statusColor}`, color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', whiteSpace: 'nowrap', pointerEvents: 'none' }}>
+          {machine?.id || 'CNC-XX'} <span style={{ color: statusColor }}>●</span>
+        </div>
+      </Html>
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
 // Warehouse Racks (Logistics Zone)
 // --------------------------------------------------------------------------
 const WarehouseRacks = ({ position }: { position: [number, number, number] }) => {
@@ -674,21 +663,23 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
           {/* Core Terrain and Campus Buildings */}
           <CampusEnvironment theme={theme} oee={oee} throughput={throughput} />
 
-          {/* Unit 1: Manufacturing Assembly Interior */}
+          {/* Unit 1: Manufacturing Assembly Interior (Live Machines) */}
           <group position={[-50, 0, -50]}>
             <Grid infiniteGrid={false} args={[75, 75]} sectionColor="#3b82f6" cellColor="#0ea5e9" position={[0, 0.1, 0]} />
             
-            {/* Dynamic Machines */}
-            {f1_positions.map((pos, idx) => {
-              const machineData = machines[idx % machines.length] || { id: idx, name: `CNC-${idx}`, status: 'Idle', temperature: 40, running_hours: 0 };
-              return (
-                <HighEndMachine 
-                  key={idx}
-                  machine={machineData}
-                  position={pos}
-                  onClick={() => onSelectMachine && onSelectMachine(machineData.id)}
-                />
-              );
+            {machines && machines.map((machine: any, index: number) => {
+               // Render 2 columns, 3 rows of machines inside Unit 1
+               const x = (index % 2) * 25 - 12.5;
+               const z = Math.floor(index / 2) * 20 - 20;
+               return (
+                  <CNCMachine 
+                    key={machine.id || index} 
+                    position={[x, 0, z]} 
+                    machine={machine} 
+                    theme={theme} 
+                    onClick={() => onSelectMachine && onSelectMachine(machine.id)} 
+                  />
+               )
             })}
 
             {/* Conveyor Systems & Arms */}
