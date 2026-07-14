@@ -13,14 +13,60 @@
 }
 
 .history-modal {
-  width: 90%;
-  max-width: 700px;
-  background: rgba(15, 23, 42, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-secondary);
+  width: 900px;
+  max-width: 95%;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.split-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
   padding: 24px;
-  animation: slideUp 0.3s ease-out forwards;
+}
+
+@media (max-width: 800px) {
+  .split-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hologram-container {
+  position: relative;
+  height: 450px;
+  background: #020617;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.05);
+  overflow: hidden;
+}
+
+.hologram-overlay-text {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+}
+
+.temp-display {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 2rem;
+  font-weight: bold;
+  text-shadow: 0 0 10px currentColor;
+  margin-top: 4px;
+}
+
+.analytics-container {
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-header {
