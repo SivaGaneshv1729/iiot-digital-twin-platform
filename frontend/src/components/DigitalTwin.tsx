@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Grid, Box, Cylinder } from '@react-three/drei';
 import { XR, ARButton, createXRStore } from '@react-three/xr';
@@ -157,7 +157,7 @@ const HighEndMachine = ({ machine, position, onClick }: { machine: Machine, posi
 // --------------------------------------------------------------------------
 // Architectural Trusses & Catwalks (Massive Scale)
 // --------------------------------------------------------------------------
-const Architecture = () => {
+const Architecture = ({ theme }: { theme: string }) => {
   // Generate a massive grid of structural pillars (-40 to +40)
   const pillars = [];
   for (let x = -40; x <= 40; x += 20) {
@@ -171,14 +171,14 @@ const Architecture = () => {
       {/* Massive Pillar Grid */}
       {pillars.map(([x, z]) => (
         <group key={`${x}-${z}`}>
-          <Cylinder args={[0.6, 0.6, 20]} position={[x, 10, z]} castShadow receiveShadow>
-            <meshStandardMaterial color="#1e293b" metalness={0.9} roughness={0.5} />
+          <Cylinder args={[0.6, 0.6, 40]} position={[x, 20, z]} castShadow receiveShadow>
+            <meshStandardMaterial color={theme === 'light' ? "#94a3b8" : "#1e293b"} metalness={0.9} roughness={0.5} />
           </Cylinder>
           {/* High-bay Lighting Node */}
-          <Box args={[1.5, 0.5, 1.5]} position={[x, 20, z]}>
+          <Box args={[1.5, 0.5, 1.5]} position={[x, 40, z]}>
              <meshBasicMaterial color="#3b82f6" opacity={0.8} transparent />
           </Box>
-          <pointLight position={[x, 19, z]} intensity={0.5} distance={30} color="#e0f2fe" />
+          <pointLight position={[x, 39, z]} intensity={theme === 'light' ? 0.2 : 0.5} distance={30} color="#e0f2fe" />
         </group>
       ))}
 
@@ -209,7 +209,7 @@ const Architecture = () => {
       <group position={[0, 0, 50]}>
         {/* Factory Exterior Wall */}
         <Box args={[80, 20, 1]} position={[0, 10, -8]} castShadow receiveShadow>
-          <meshStandardMaterial color="#0f172a" metalness={0.8} />
+          <meshStandardMaterial color={theme === 'light' ? "#cbd5e1" : "#0f172a"} metalness={0.8} />
         </Box>
         {/* Multiple Bay Doors */}
         {[-30, -15, 0, 15, 30].map((x) => (
@@ -377,6 +377,19 @@ const AGV3D = ({ waypoints, speed, isEmergencyMode }: { waypoints: [number, numb
 // --------------------------------------------------------------------------
 export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergencyMode }: DigitalTwinProps) => {
   const [store] = useState(() => createXRStore());
+  const [theme, setTheme] = useState(document.documentElement.getAttribute('data-theme') || 'dark');
+
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'data-theme') {
+          setTheme(document.documentElement.getAttribute('data-theme') || 'dark');
+        }
+      });
+    });
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
 
   // Expanded Machine Positions
   const f1_positions: [number, number, number][] = [];
@@ -411,18 +424,18 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
         </EffectComposer>
 
         <XR store={store}>
-          <color attach="background" args={['#020617']} /> {/* Ultra dark slate */}
-          <fog attach="fog" args={['#020617', 50, 200]} /> {/* Increased fog distance */}
+          <color attach="background" args={[theme === 'light' ? '#f8fafc' : '#020617']} />
+          <fog attach="fog" args={[theme === 'light' ? '#f8fafc' : '#020617', 50, 200]} />
 
           {/* Cinematic Lighting */}
-          <ambientLight intensity={isEmergencyMode ? 0.1 : 0.3} />
+          <ambientLight intensity={isEmergencyMode ? 0.1 : theme === 'light' ? 0.6 : 0.3} />
           
           {/* Main God Ray / Spotlight */}
           <spotLight 
             position={[0, 80, 0]} 
             angle={0.8} 
             penumbra={0.5} 
-            intensity={isEmergencyMode ? 8 : 4} 
+            intensity={isEmergencyMode ? 8 : theme === 'light' ? 2 : 4} 
             color={isEmergencyMode ? "#ef4444" : "#ffffff"} 
             castShadow 
             shadow-bias={-0.0001}
@@ -439,18 +452,27 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
             autoRotateSpeed={0.3}
           />
 
-          {/* Massive Ground Grid */}
-          <Grid 
-            infiniteGrid 
-            fadeDistance={200} 
-            sectionColor={isEmergencyMode ? "#7f1d1d" : "#0f172a"} 
-            cellColor={isEmergencyMode ? "#450a0a" : "#020617"} 
-            sectionSize={20} 
-            cellSize={4}
-            position={[0, -0.05, 0]}
-          />
+          {/* Multi-Story Grids */}
+          {[0, 15, 30].map(y => (
+            <group key={`floor-${y}`} position={[0, y - 0.05, 0]}>
+              <Grid 
+                infiniteGrid 
+                fadeDistance={200} 
+                sectionColor={isEmergencyMode ? "#7f1d1d" : theme === 'light' ? "#cbd5e1" : "#0f172a"} 
+                cellColor={isEmergencyMode ? "#450a0a" : theme === 'light' ? "#f1f5f9" : "#020617"} 
+                sectionSize={20} 
+                cellSize={4}
+              />
+              {/* Glass Floor for higher levels */}
+              {y > 0 && (
+                <Box args={[100, 0.2, 100]} position={[0, 0, 0]} receiveShadow>
+                  <meshPhysicalMaterial color={theme === 'light' ? "#ffffff" : "#0f172a"} transparent opacity={0.15} transmission={0.95} thickness={1} roughness={0.1} />
+                </Box>
+              )}
+            </group>
+          ))}
 
-          <Architecture />
+          <Architecture theme={theme} />
 
           {/* Massive Warehouse Racks Zone */}
           <WarehouseRacks position={[-30, 0, -35]} />
