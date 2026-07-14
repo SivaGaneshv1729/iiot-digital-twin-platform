@@ -57,6 +57,54 @@ const CCTVFeed = ({ id, title, imageSrc, isEmergency }: CCTVFeedProps) => {
   );
 };
 
+const CyberThreatMonitor = () => {
+  const [threats, setThreats] = useState<{ id: number; type: string; ip: string; status: string; time: string }[]>([]);
+
+  useEffect(() => {
+    let idCounter = 0;
+    const interval = setInterval(() => {
+      const threatTypes = ['DDoS Attempt', 'Unauthorized Port Scan', 'SQL Injection Probe', 'Failed SSH Login', 'Malware Signature Detected'];
+      const statuses = ['BLOCKED', 'BLOCKED', 'QUARANTINED', 'DROPPED', 'ANALYZING'];
+      const newThreat = {
+        id: idCounter++,
+        type: threatTypes[Math.floor(Math.random() * threatTypes.length)],
+        ip: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+        status: statuses[Math.floor(Math.random() * statuses.length)],
+        time: new Date().toISOString().substring(11, 19)
+      };
+      
+      setThreats(prev => [newThreat, ...prev].slice(0, 8));
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="cyber-threat-monitor">
+      <div className="cyber-header">
+        <ShieldAlert size={18} className="cyber-icon" />
+        <h3>CYBER THREAT INTELLIGENCE (IDS/IPS)</h3>
+        <div className="live-badge">ACTIVE</div>
+      </div>
+      <div className="cyber-terminal">
+        {threats.length === 0 ? (
+          <div className="terminal-line">Initializing Intrusion Detection System...</div>
+        ) : (
+          threats.map(t => (
+            <div key={t.id} className="terminal-line">
+              <span className="term-time">[{t.time}]</span> 
+              <span className="term-ip">{t.ip}</span> 
+              <span className="term-type">{t.type}</span>
+              <span className={`term-status ${t.status.toLowerCase()}`}>{t.status}</span>
+            </div>
+          ))
+        )}
+        <div className="terminal-cursor">_</div>
+      </div>
+    </div>
+  );
+};
+
 export const Security = () => {
   const { t } = useTranslation();
   const [isEmergencyMode, setIsEmergencyMode] = useState(false);
@@ -114,31 +162,49 @@ export const Security = () => {
         </div>
       </div>
 
-      <div className="cctv-grid">
-        <CCTVFeed 
-          id="CAM_01" 
-          title="Floor 1: Heavy Assembly Line" 
-          imageSrc="/cctv_assembly.png" 
-          isEmergency={isEmergencyMode} 
-        />
-        <CCTVFeed 
-          id="CAM_02" 
-          title="Floor 2: Main AI Server Core" 
-          imageSrc="/cctv_server.png" 
-          isEmergency={isEmergencyMode} 
-        />
-        <CCTVFeed 
-          id="CAM_03" 
-          title="Loading Dock / Logistics" 
-          imageSrc="/cctv_dock.png" 
-          isEmergency={isEmergencyMode} 
-        />
-        <CCTVFeed 
-          id="CAM_04" 
-          title="Autonomous Drone Charging Bay" 
-          imageSrc="/cctv_drone.png" 
-          isEmergency={isEmergencyMode} 
-        />
+      <div className="security-content-grid">
+        {/* Cyber Security Column */}
+        <div className="cyber-column">
+          <CyberThreatMonitor />
+          
+          <div className="security-stats glass-panel">
+            <h3>Firewall Status</h3>
+            <div className="stat-row"><span>Inbound Traffic</span> <span className="stat-value safe">14.2 GB/s</span></div>
+            <div className="stat-row"><span>Threats Blocked (24h)</span> <span className="stat-value warning">8,492</span></div>
+            <div className="stat-row"><span>Encryption Level</span> <span className="stat-value safe">AES-256-GCM</span></div>
+            <div className="stat-row"><span>Zero-Trust Network</span> <span className="stat-value safe">ENFORCED</span></div>
+          </div>
+        </div>
+
+        {/* Physical Security CCTV Column */}
+        <div className="cctv-column">
+          <div className="cctv-grid">
+            <CCTVFeed 
+              id="CAM_01" 
+              title="Floor 1: Heavy Assembly Line" 
+              imageSrc="/cctv/cctv_assembly_floor_1783936023913.png" 
+              isEmergency={isEmergencyMode} 
+            />
+            <CCTVFeed 
+              id="CAM_02" 
+              title="Floor 2: Main AI Server Core" 
+              imageSrc="/cctv/cctv_server_core_1783936034747.png" 
+              isEmergency={isEmergencyMode} 
+            />
+            <CCTVFeed 
+              id="CAM_03" 
+              title="Loading Dock / Logistics" 
+              imageSrc="/cctv/cctv_loading_dock_1783936045989.png" 
+              isEmergency={isEmergencyMode} 
+            />
+            <CCTVFeed 
+              id="CAM_04" 
+              title="Autonomous Drone Charging Bay" 
+              imageSrc="/cctv/cctv_drone_bay_1783936057618.png" 
+              isEmergency={isEmergencyMode} 
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
