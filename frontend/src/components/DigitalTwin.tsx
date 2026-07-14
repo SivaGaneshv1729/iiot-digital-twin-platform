@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Grid, Box, Cylinder, Text, FlyControls, Environment, Html, Instances, Instance } from '@react-three/drei';
+import { MapControls, Grid, Box, Cylinder, Text, FlyControls, Environment, Html, Instances, Instance } from '@react-three/drei';
 import { XR, ARButton, createXRStore } from '@react-three/xr';
 // import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
@@ -374,8 +374,8 @@ const CameraController = ({ viewMode }: { viewMode: string }) => {
       (controls as any).target.lerp(targetLookAt.current, 3 * delta);
     }
 
-    // Stop lerping when close to target, allowing user to click and drag
-    if (state.camera.position.distanceTo(targetPos.current) < 0.5) {
+    // Stop lerping when close to target (use a very forgiving threshold so it doesn't get stuck)
+    if (state.camera.position.distanceTo(targetPos.current) < 2.0) {
       isTransitioning.current = false;
     }
   });
@@ -649,8 +649,11 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
           {viewMode === 'Drone' ? (
              <FlyControls movementSpeed={50} rollSpeed={0.5} dragToLook={true} />
           ) : (
-            <OrbitControls 
-              enablePan={true} 
+            <MapControls 
+              makeDefault
+              enablePan={true}
+              enableZoom={true}
+              enableRotate={true}
               minPolarAngle={0} 
               maxPolarAngle={Math.PI / 2 - 0.05}
               minDistance={10}
