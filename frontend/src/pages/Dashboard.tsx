@@ -287,13 +287,13 @@ export const Dashboard = () => {
           <AlertOctagon size={24} /> CRITICAL ALERT: GLOBAL EMERGENCY STOP ACTIVATED. ALL MACHINES HALTED.
         </div>
       )}
-      <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h1>{t('Executive Command Center')}</h1>
           <p className="subtitle">{t('Bridging AI Telemetry with Business Financial Impact')}</p>
         </div>
         
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
           <button 
             onClick={toggleListening} 
             className={`glass-panel ${isListening ? 'listening-pulse' : ''}`}
