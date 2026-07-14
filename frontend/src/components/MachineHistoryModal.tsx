@@ -3,7 +3,7 @@ import { X, Activity, Play, Pause, AlertTriangle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useTranslation } from 'react-i18next';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Box, Cylinder } from '@react-three/drei';
+import { OrbitControls, Box, Environment, ContactShadows } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import './MachineHistoryModal.css';
@@ -20,37 +20,104 @@ const MachineHologram = ({ temperature }: { temperature: number }) => {
   };
 
   const glowColor = getGlowColor();
+  
+  // Animation speed scales with temperature (e.g. hotter = faster)
+  const animSpeed = Math.max(1, (temperature / 30)); 
 
-  const groupRef = React.useRef<THREE.Group>(null);
+  const mainGroupRef = React.useRef<THREE.Group>(null);
+  const fanRef1 = React.useRef<THREE.Mesh>(null);
+  const fanRef2 = React.useRef<THREE.Mesh>(null);
+  
+  // Piston refs
+  const p1 = React.useRef<THREE.Mesh>(null);
+  const p2 = React.useRef<THREE.Mesh>(null);
+  const p3 = React.useRef<THREE.Mesh>(null);
+  const p4 = React.useRef<THREE.Mesh>(null);
   
   useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += 0.005;
-      groupRef.current.position.y = Math.sin(state.clock.elapsedTime) * 0.1;
+    const t = state.clock.elapsedTime;
+    
+    // Slowly rotate the entire assembly
+    if (mainGroupRef.current) {
+      mainGroupRef.current.rotation.y = t * 0.2;
+      mainGroupRef.current.position.y = Math.sin(t * 2) * 0.05; // slight hover
     }
+    
+    // Spin cooling fans
+    if (fanRef1.current) fanRef1.current.rotation.y = t * 5 * animSpeed;
+    if (fanRef2.current) fanRef2.current.rotation.y = -t * 5 * animSpeed;
+    
+    // Pump pistons in sequence
+    if (p1.current) p1.current.position.y = Math.sin(t * 10 * animSpeed) * 0.4 + 0.2;
+    if (p2.current) p2.current.position.y = Math.sin(t * 10 * animSpeed + Math.PI/2) * 0.4 + 0.2;
+    if (p3.current) p3.current.position.y = Math.sin(t * 10 * animSpeed + Math.PI) * 0.4 + 0.2;
+    if (p4.current) p4.current.position.y = Math.sin(t * 10 * animSpeed + Math.PI*1.5) * 0.4 + 0.2;
   });
 
   return (
-    <group ref={groupRef}>
-      {/* Base */}
-      <Box args={[3, 0.5, 2]} position={[0, -1, 0]}>
-        <meshStandardMaterial color="#1e293b" wireframe />
-      </Box>
+    <group ref={mainGroupRef} position={[0, -0.5, 0]}>
       
-      {/* Engine Core */}
-      <Cylinder args={[0.8, 0.8, 2, 16]} position={[0, 0.5, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <meshStandardMaterial color={glowColor} emissive={glowColor} emissiveIntensity={2} />
-      </Cylinder>
+      {/* 1. Transparent Cybernetic Outer Casing */}
+      <mesh position={[0, 1, 0]}>
+        <boxGeometry args={[3, 2, 1.5]} />
+        <meshPhysicalMaterial 
+          color="#a8b2c1" 
+          transmission={0.9} // Glass effect
+          opacity={1}
+          metalness={0.8}
+          roughness={0.1}
+          ior={1.5}
+          thickness={0.5}
+          transparent
+        />
+      </mesh>
       
-      {/* Top Vents */}
-      <Box args={[1.5, 0.2, 1]} position={[0, 1.6, 0]}>
-        <meshStandardMaterial color="#334155" wireframe />
+      <Box args={[3.1, 2.1, 1.6]} position={[0, 1, 0]}>
+        <meshBasicMaterial color={glowColor} wireframe transparent opacity={0.15} />
       </Box>
 
-      {/* Floating Rings */}
-      <Cylinder args={[1, 1, 0.1, 32]} position={[0, 0.5, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <meshStandardMaterial color={glowColor} emissive={glowColor} emissiveIntensity={5} wireframe />
-      </Cylinder>
+      {/* 2. Base Plate */}
+      <mesh position={[0, -0.1, 0]}>
+        <boxGeometry args={[3.4, 0.2, 1.9]} />
+        <meshStandardMaterial color="#1e293b" metalness={0.9} roughness={0.4} />
+      </mesh>
+
+      {/* 3. Internal Working Systems (Pistons & Cylinders) */}
+      <group position={[0, 0.5, 0]}>
+        {[-1, -0.33, 0.33, 1].map((x, i) => (
+          <group key={i} position={[x, 0, 0]}>
+            {/* Cylinder Housing */}
+            <mesh position={[0, 0, 0]}>
+              <cylinderGeometry args={[0.25, 0.25, 1, 16]} />
+              <meshStandardMaterial color="#334155" metalness={0.8} roughness={0.2} />
+            </mesh>
+            {/* Piston Head */}
+            <mesh ref={i === 0 ? p1 : i === 1 ? p2 : i === 2 ? p3 : p4}>
+              <cylinderGeometry args={[0.22, 0.22, 0.4, 16]} />
+              <meshStandardMaterial color="#94a3b8" metalness={1} roughness={0.1} />
+            </mesh>
+          </group>
+        ))}
+      </group>
+
+      {/* 4. Glowing Energy Core */}
+      <mesh position={[0, 1, 0]}>
+        <boxGeometry args={[2.8, 0.1, 1.2]} />
+        <meshStandardMaterial color={glowColor} emissive={glowColor} emissiveIntensity={5} />
+      </mesh>
+
+      {/* 5. Cooling Fans on Top */}
+      <group position={[0, 2.1, 0]}>
+        <mesh position={[-0.8, 0, 0]} ref={fanRef1}>
+          <cylinderGeometry args={[0.5, 0.5, 0.1, 8]} />
+          <meshStandardMaterial color="#0f172a" metalness={0.8} roughness={0.2} />
+        </mesh>
+        <mesh position={[0.8, 0, 0]} ref={fanRef2}>
+          <cylinderGeometry args={[0.5, 0.5, 0.1, 8]} />
+          <meshStandardMaterial color="#0f172a" metalness={0.8} roughness={0.2} />
+        </mesh>
+      </group>
+
     </group>
   );
 };
@@ -179,13 +246,22 @@ export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalP
                     {history[history.length - 1]?.temperature.toFixed(1)}°C
                   </div>
                 </div>
-                <Canvas camera={{ position: [4, 3, 4], fov: 45 }}>
-                  <ambientLight intensity={0.2} />
-                  <pointLight position={[10, 10, 10]} />
+                <Canvas camera={{ position: [5, 4, 5], fov: 40 }}>
+                  <ambientLight intensity={0.5} />
+                  <pointLight position={[10, 10, 10]} intensity={1} />
+                  
+                  {/* Studio Environment for highly realistic reflections on metal/glass */}
+                  <Environment preset="city" />
+
                   <MachineHologram temperature={history[history.length - 1]?.temperature || 50} />
-                  <OrbitControls enableZoom={false} autoRotate={false} />
+                  
+                  {/* High quality contact shadow under the machine */}
+                  <ContactShadows resolution={1024} scale={10} blur={2} opacity={0.6} far={10} color="#000" position={[0, -0.6, 0]} />
+                  
+                  <OrbitControls enableZoom={false} autoRotate={false} minPolarAngle={Math.PI/4} maxPolarAngle={Math.PI/2} />
+                  
                   <EffectComposer>
-                    <Bloom luminanceThreshold={0.2} luminanceSmoothing={0.9} height={300} intensity={1.5} />
+                    <Bloom luminanceThreshold={0.5} luminanceSmoothing={0.9} height={300} intensity={1.5} />
                   </EffectComposer>
                 </Canvas>
               </>
