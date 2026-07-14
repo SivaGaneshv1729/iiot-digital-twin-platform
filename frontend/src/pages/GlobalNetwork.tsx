@@ -4,6 +4,17 @@ import { useTranslation } from 'react-i18next';
 import { ShieldAlert, CheckCircle, ExternalLink } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
+import * as THREE from 'three';
+
+// Generate Satellites data
+const NUM_SATELLITES = 45;
+const satellitesData = [...Array(NUM_SATELLITES).keys()].map(() => ({
+  lat: (Math.random() - 0.5) * 180,
+  lng: (Math.random() - 0.5) * 360,
+  alt: Math.random() * 0.4 + 0.1, // Altitude
+  speed: Math.random() * 0.5 + 0.1, // Orbit speed
+  color: ['#38bdf8', '#c084fc', '#f472b6', '#10b981'][Math.floor(Math.random() * 4)]
+}));
 
 export const GlobalNetwork = () => {
   const { t } = useTranslation('translation');
@@ -127,6 +138,23 @@ export const GlobalNetwork = () => {
         </div>
       </div>
 
+      {/* Aerospace IoT Tracking Panel */}
+      <div style={{ position: 'absolute', bottom: 20, right: 20, zIndex: 10, background: 'rgba(15, 23, 42, 0.8)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <h3 style={{ margin: 0, fontSize: '0.9rem', color: '#38bdf8' }}>Aerospace IoT Constellation</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#94a3b8', gap: '24px' }}>
+          <span>Active Satellites:</span>
+          <span style={{ color: '#fff', fontWeight: 'bold' }}>{NUM_SATELLITES}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#94a3b8' }}>
+          <span>Orbital Velocity:</span>
+          <span style={{ color: '#10b981', fontWeight: 'bold' }}>17,500 mph</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#94a3b8' }}>
+          <span>Downlink Status:</span>
+          <span style={{ color: '#10b981', fontWeight: 'bold' }}>Nominal</span>
+        </div>
+      </div>
+
       <Globe
         ref={globeEl}
         width={dimensions.width}
@@ -157,6 +185,25 @@ export const GlobalNetwork = () => {
         labelResolution={2}
         onPointClick={(point: any) => navigate(`/?factory=${encodeURIComponent(point.name)}`)}
         pointLabel="name"
+        
+        customLayerData={satellitesData}
+        customThreeObject={(d: any) => {
+          const group = new THREE.Group();
+          const geometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+          const material = new THREE.MeshBasicMaterial({ color: d.color });
+          const mesh = new THREE.Mesh(geometry, material);
+          group.add(mesh);
+          return group;
+        }}
+        customThreeObjectUpdate={(obj: any, d: any) => {
+          if (globeEl.current) {
+            // Move satellite
+            d.lng += d.speed;
+            if (d.lng > 180) d.lng -= 360;
+            // Update 3D position
+            Object.assign(obj.position, globeEl.current.getCoords(d.lat, d.lng, d.alt));
+          }
+        }}
       />
     </div>
   );
