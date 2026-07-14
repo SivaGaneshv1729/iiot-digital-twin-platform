@@ -395,44 +395,49 @@ const AGV3D = ({ waypoints, speed, isEmergencyMode }: { waypoints: [number, numb
 // --------------------------------------------------------------------------
 const CameraController = ({ viewMode }: { viewMode: string }) => {
   const { controls } = useThree();
+  const targetPos = useRef(new THREE.Vector3(0, 150, 180));
+  const targetLookAt = useRef(new THREE.Vector3(0, 0, 0));
+  const isTransitioning = useRef(false);
   
   useEffect(() => {
-    // We simply want the useFrame below to lerp the camera and target based on viewMode.
-    // The actual lerping happens on every frame.
-  }, [viewMode]);
-
-  useFrame((state, delta) => {
-    if (viewMode === 'Drone') return; // Allow FlyControls to have full authority
-
-    const targetPos = new THREE.Vector3();
-    const targetLookAt = new THREE.Vector3();
-
+    if (viewMode === 'Drone') return;
+    isTransitioning.current = true;
+    
     switch (viewMode) {
       case 'Unit1':
-        targetPos.set(-50, 40, 10);
-        targetLookAt.set(-50, 10, -50);
+        targetPos.current.set(-50, 40, 10);
+        targetLookAt.current.set(-50, 10, -50);
         break;
       case 'Unit2':
-        targetPos.set(60, 60, 20);
-        targetLookAt.set(60, 10, -50);
+        targetPos.current.set(60, 60, 20);
+        targetLookAt.current.set(60, 10, -50);
         break;
       case 'Tower':
-        targetPos.set(-60, 20, 120);
-        targetLookAt.set(0, 50, 60);
+        targetPos.current.set(-60, 20, 120);
+        targetLookAt.current.set(0, 50, 60);
         break;
       case 'Global':
       default:
-        targetPos.set(0, 150, 180);
-        targetLookAt.set(0, 0, 0);
+        targetPos.current.set(0, 150, 180);
+        targetLookAt.current.set(0, 0, 0);
         break;
     }
+  }, [viewMode]);
+
+  useFrame((state, delta) => {
+    if (viewMode === 'Drone' || !isTransitioning.current) return;
 
     // Smoothly interpolate camera position
-    state.camera.position.lerp(targetPos, 2 * delta);
+    state.camera.position.lerp(targetPos.current, 3 * delta);
     
     // Smoothly interpolate orbit controls target
     if ((controls as any)?.target) {
-      (controls as any).target.lerp(targetLookAt, 2 * delta);
+      (controls as any).target.lerp(targetLookAt.current, 3 * delta);
+    }
+
+    // Stop lerping when close to target, allowing user to click and drag
+    if (state.camera.position.distanceTo(targetPos.current) < 0.5) {
+      isTransitioning.current = false;
     }
   });
 
