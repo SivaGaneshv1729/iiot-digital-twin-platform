@@ -12,6 +12,7 @@ import html2canvas from 'html2canvas';
 import { ModelMetrics } from '../components/ModelMetrics';
 import { DigitalTwin } from '../components/DigitalTwin';
 import { MachineHistoryModal } from '../components/MachineHistoryModal';
+import { CCTVPanel } from '../components/CCTVPanel';
 import './Dashboard.css';
 
 // Initial Base Data for the Chart
@@ -470,6 +471,9 @@ export const Dashboard = () => {
             )}
           </div>
         </div>
+
+        {/* Live CCTV Panel */}
+        <CCTVPanel isEmergencyMode={isEmergencyMode} />
 
       </div>
     </div>

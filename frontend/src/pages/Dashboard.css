@@ -73,7 +73,7 @@
 /* Lower Section Grid */
 .dashboard-lower-grid {
   display: grid;
-  grid-template-columns: 2fr 1.2fr;
+  grid-template-columns: 2fr 1fr 1fr;
   gap: 24px;
 }
 
