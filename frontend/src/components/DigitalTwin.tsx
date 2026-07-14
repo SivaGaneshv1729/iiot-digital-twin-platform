@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Grid, Box, Cylinder, Text } from '@react-three/drei';
+import { OrbitControls, Grid, Box, Cylinder, Text, FlyControls } from '@react-three/drei';
 import { XR, ARButton, createXRStore } from '@react-three/xr';
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
@@ -448,6 +448,8 @@ const CameraController = ({ viewMode }: { viewMode: string }) => {
   }, [viewMode]);
 
   useFrame((state, delta) => {
+    if (viewMode === 'Drone') return; // Allow FlyControls to have full authority
+
     const targetPos = new THREE.Vector3();
     const targetLookAt = new THREE.Vector3();
 
@@ -532,7 +534,22 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
           onClick={() => setViewMode('Tower')}
           style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Tower' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Tower' ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
         >R&D Tower</button>
+        <button 
+          onClick={() => setViewMode('Drone')}
+          style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Drone' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Drone' ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '4px' }}
+        >🚁 Drone</button>
       </div>
+
+      {viewMode === 'Drone' && (
+        <div style={{ position: 'absolute', top: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 10, background: 'rgba(0,0,0,0.7)', color: 'white', padding: '12px 24px', borderRadius: '12px', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <p style={{ margin: 0, fontSize: '0.95rem', fontWeight: 'bold', color: '#38bdf8' }}>DRONE EXPLORATION ACTIVE</p>
+          <ul style={{ margin: '8px 0 0', paddingLeft: '20px', fontSize: '0.85rem', lineHeight: '1.6' }}>
+            <li><strong>W A S D</strong> - Fly Forward/Left/Back/Right</li>
+            <li><strong>R / F</strong> - Fly Up / Down</li>
+            <li><strong>Click & Drag</strong> - Look Around</li>
+          </ul>
+        </div>
+      )}
 
       <div style={{ position: 'absolute', bottom: 20, right: 20, zIndex: 10 }}>
         <h3>Gigafactory Digital Twin 3D (2-Acre Scale)</h3>
@@ -549,7 +566,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
         Enter AR
       </ARButton>
 
-      <Canvas shadows camera={{ position: [0, 150, 150], fov: 45 }}>
+      <Canvas shadows camera={{ position: [0, 150, 150], fov: 45, near: 0.1, far: 2000 }}>
         {/* Post-Processing for High-End Cinematic Look */}
         <EffectComposer>
           <Bloom luminanceThreshold={0.2} mipmapBlur intensity={1.5} />
@@ -577,15 +594,19 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
             shadow-camera-bottom={-100}
           />
 
-          <OrbitControls 
-            enablePan={true} 
-            minPolarAngle={0} 
-            maxPolarAngle={Math.PI / 2 - 0.05}
-            minDistance={10}
-            maxDistance={500}
-            autoRotate={!isEmergencyMode && viewMode === 'Global'}
-            autoRotateSpeed={0.3}
-          />
+          {viewMode === 'Drone' ? (
+             <FlyControls movementSpeed={50} rollSpeed={0.5} dragToLook={true} />
+          ) : (
+            <OrbitControls 
+              enablePan={true} 
+              minPolarAngle={0} 
+              maxPolarAngle={Math.PI / 2 - 0.05}
+              minDistance={10}
+              maxDistance={500}
+              autoRotate={!isEmergencyMode && viewMode === 'Global'}
+              autoRotateSpeed={0.3}
+            />
+          )}
 
           {/* Core Terrain and Campus Buildings */}
           <CampusEnvironment theme={theme} />
