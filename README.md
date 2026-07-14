@@ -15,7 +15,11 @@ Featuring a WebGL 3D Digital Twin, Real-Time WebSockets Telemetry, Time-Series A
 
 ## 🌟 Core Enterprise Features
 
-*   **🌐 3D Digital Twin (WebGL):** Real-time 3D visualization of the factory floor using `Three.js` and `React Three Fiber`. Machines physically react and glow (Green/Red) based on live IoT health status. Includes raycasting interactivity for dynamic data fetching on mesh click.
+*   **🌐 3D Digital Twin (WebGL):** Real-time 3D visualization of a massive 2-acre factory campus using `Three.js` and `React Three Fiber`. 
+    *   **Live 3D Machinery**: CNC machines physically react to their backend IoT status (animated spindles when "Running", warning lights when "Offline").
+    *   **AI Anomaly Heatmaps**: Real-time rendering of glowing hazard zones and dynamic lighting shifts when the AI detects bottlenecks or thermal risks.
+    *   **Holographic Overlays**: Dynamic HTML labels floating in 3D space tracking live Machine IDs and statuses.
+    *   **Cinematic CAD Controls**: Seamless navigation across the massive campus using traditional CAD-style `OrbitControls` (Left-click orbit, Right-click pan) and Drone fly-through modes.
 *   **⚡ Real-Time Data Streaming (Redis Pub/Sub):** Bi-directional WebSockets (`Socket.io`) backed by a Redis Message Broker, streaming live machine telemetry directly to the dashboard, eliminating REST polling.
 *   **📈 Time-Series Historical Analytics:** Automated ingestion pipeline from Redis to PostgreSQL `telemetry_history` tables. Visualized on the frontend via interactive `Recharts` glassmorphism modals.
 *   **📦 Dynamic Supply Chain ERP:** IoT Edge Simulator executes live SQL decrements against the `inventory` table based on production output.
