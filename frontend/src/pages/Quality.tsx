@@ -155,20 +155,25 @@ export const Quality = () => {
             <h3><ScanEye size={18} className="text-accent" /> Live Assembly Vision</h3>
             <span className="live-indicator">LIVE</span>
           </div>
-          <div className="camera-feed cv-active-feed">
+          <div className="camera-feed cv-active-feed" style={{ backgroundImage: 'url(/cctv/cv_engine_block.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
             <div className="cv-overlay">
-              <div className="bounding-box valid">
-                <span className="defect-label ok">PASS 99%</span>
+              <div className="bounding-box valid box-1">
+                <span className="defect-label ok">CYLINDER_01 PASS 99%</span>
               </div>
-              <div className="bounding-box invalid">
+              <div className="bounding-box valid box-2">
+                <span className="defect-label ok">CYLINDER_02 PASS 98%</span>
+              </div>
+              <div className="bounding-box invalid box-3 pulse-error">
                 <span className="defect-label error">DEFECT: Micro-fracture 89%</span>
               </div>
               <div className="scanning-line"></div>
               <div className="crosshair"></div>
+              
+              <div className="laser-grid"></div>
             </div>
-            <div className="feed-info">
-              <span>Cam: L-102</span>
-              <span>Model: YOLO-v8</span>
+            <div className="feed-info glass-panel" style={{ padding: '4px 8px', borderRadius: '4px' }}>
+              <span>Cam: L-102 (Assembly Floor)</span>
+              <span style={{ color: '#10b981', fontWeight: 'bold' }}>Model: YOLO-v8x</span>
             </div>
           </div>
         </div>
