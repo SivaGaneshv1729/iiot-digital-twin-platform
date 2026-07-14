@@ -251,6 +251,49 @@ const ConveyorLine = ({ position, length }: { position: [number, number, number]
 };
 
 // --------------------------------------------------------------------------
+// Supply Chain & Logistics Truck
+// --------------------------------------------------------------------------
+const LogisticsTruck = ({ startPosition, delay, isEmergencyMode }: { startPosition: [number, number, number], delay: number, isEmergencyMode?: boolean }) => {
+  const truckRef = useRef<THREE.Group>(null);
+  
+  useFrame((state) => {
+    if (!truckRef.current || isEmergencyMode) return;
+    const t = state.clock.elapsedTime + delay;
+    
+    // Simple looping animation along the Z-axis road
+    // Move from Z = 25 to Z = -2, wait, then leave
+    const cycle = t % 15;
+    if (cycle < 5) {
+      // Arriving
+      truckRef.current.position.z = 25 - (cycle * 5.4);
+    } else if (cycle < 10) {
+      // Loading at dock
+      truckRef.current.position.z = -2;
+    } else {
+      // Departing
+      truckRef.current.position.z = -2 + ((cycle - 10) * 5.4);
+    }
+  });
+
+  return (
+    <group ref={truckRef} position={startPosition}>
+      {/* Truck Cab */}
+      <Box args={[1.5, 1.2, 1.2]} position={[0, 0.6, 2.5]} castShadow>
+        <meshStandardMaterial color="#3b82f6" metalness={0.8} />
+      </Box>
+      {/* Truck Trailer */}
+      <Box args={[1.8, 1.8, 4.5]} position={[0, 0.9, 0]} castShadow>
+        <meshStandardMaterial color="#f8fafc" roughness={0.9} />
+      </Box>
+      {/* Tail Lights (Bloom target) */}
+      <Box args={[1.6, 0.2, 0.1]} position={[0, 0.4, -2.25]}>
+        <meshBasicMaterial color="#ef4444" />
+      </Box>
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
 // AGV Drone
 // --------------------------------------------------------------------------
 const AGV3D = ({ waypoints, speed, isEmergencyMode }: { waypoints: [number, number, number][], speed: number, isEmergencyMode?: boolean }) => {
@@ -406,6 +449,10 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
           <AGV3D waypoints={[[-10, 0, -10], [10, 0, -10], [10, 0, -5], [-10, 0, -5]]} speed={2} isEmergencyMode={isEmergencyMode} />
           <AGV3D waypoints={[[10, 0, 10], [-10, 0, 10], [-10, 0, 5], [10, 0, 5]]} speed={2.5} isEmergencyMode={isEmergencyMode} />
           <AGV3D waypoints={[[0, 5.2, 10], [-10, 5.2, 10], [-10, 5.2, -10], [0, 5.2, -10]]} speed={3} isEmergencyMode={isEmergencyMode} />
+
+          {/* Logistics Trucks on Exterior Road */}
+          <LogisticsTruck startPosition={[-3, 0.1, 20]} delay={0} isEmergencyMode={isEmergencyMode} />
+          <LogisticsTruck startPosition={[3, 0.1, 20]} delay={7.5} isEmergencyMode={isEmergencyMode} />
 
         </XR>
       </Canvas>
