@@ -426,14 +426,14 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
 
         <XR store={store}>
           <color attach="background" args={[theme === 'light' ? '#f1f5f9' : '#020617']} />
-          <fog attach="fog" args={[theme === 'light' ? '#f1f5f9' : '#020617', 80, 400]} />
+          <fog attach="fog" args={[theme === 'light' ? '#f1f5f9' : '#020617', 200, 800]} />
 
           {/* Cinematic Lighting: Sun & Ambient */}
-          <ambientLight intensity={isEmergencyMode ? 0.1 : theme === 'light' ? 0.8 : 0.3} />
+          <ambientLight intensity={isEmergencyMode ? 0.2 : theme === 'light' ? 1.0 : 0.6} />
           
           <directionalLight 
             position={[100, 150, 50]} 
-            intensity={isEmergencyMode ? 2 : theme === 'light' ? 3 : 1}
+            intensity={isEmergencyMode ? 2 : theme === 'light' ? 2 : 1.5}
             color={isEmergencyMode ? "#ef4444" : theme === 'light' ? "#ffffff" : "#60a5fa"}
             castShadow 
             shadow-mapSize={[2048, 2048]}
@@ -448,7 +448,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
             minPolarAngle={0} 
             maxPolarAngle={Math.PI / 2 - 0.05}
             minDistance={40}
-            maxDistance={350}
+            maxDistance={500}
             target={[0, 0, 0]}
             autoRotate={!isEmergencyMode}
             autoRotateSpeed={0.3}
