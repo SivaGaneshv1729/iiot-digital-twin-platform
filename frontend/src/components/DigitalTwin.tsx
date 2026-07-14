@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Grid, Box, Cylinder } from '@react-three/drei';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { OrbitControls, Grid, Box, Cylinder, Text } from '@react-three/drei';
 import { XR, ARButton, createXRStore } from '@react-three/xr';
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
@@ -155,23 +155,78 @@ const HighEndMachine = ({ machine, position, onClick }: { machine: Machine, posi
 };
 
 // --------------------------------------------------------------------------
-// Campus Structures (Buildings, Roads, Silos)
+// Campus Structures (High-Fidelity Buildings, Roads, Silos)
 // --------------------------------------------------------------------------
-const Building = ({ position, args, theme, isGlass = false }: any) => (
+const Building = ({ position, args, theme, isGlass = false, label = "" }: any) => {
+  const [w, h, d] = args;
+  return (
+    <group position={position}>
+      {/* Concrete Foundation Base */}
+      <Box args={[w + 2, 2, d + 2]} position={[0, -h/2 + 1, 0]} castShadow receiveShadow>
+        <meshStandardMaterial color={theme === 'light' ? "#cbd5e1" : "#1e293b"} roughness={0.9} />
+      </Box>
+
+      {/* Main Body */}
+      {isGlass ? (
+        <group>
+          {/* Glass Shell */}
+          <Box args={args} castShadow receiveShadow>
+            <meshPhysicalMaterial color={theme === 'light' ? "#f8fafc" : "#0f172a"} transparent opacity={0.3} transmission={0.9} thickness={0.5} roughness={0.1} />
+          </Box>
+          {/* Internal Support Columns */}
+          <Box args={[w - 1, h - 2, 1]} position={[0, 0, d/2 - 1]}>
+             <meshStandardMaterial color="#334155" />
+          </Box>
+          <Box args={[w - 1, h - 2, 1]} position={[0, 0, -d/2 + 1]}>
+             <meshStandardMaterial color="#334155" />
+          </Box>
+          {/* Segmented Window Grid (Wireframe over body) */}
+          <Box args={[w + 0.1, h + 0.1, d + 0.1]}>
+            <meshBasicMaterial color={theme === 'light' ? "#94a3b8" : "#334155"} wireframe />
+          </Box>
+        </group>
+      ) : (
+        <Box args={args} castShadow receiveShadow>
+          <meshStandardMaterial color={theme === 'light' ? "#f1f5f9" : "#1e293b"} metalness={0.5} roughness={0.8} />
+        </Box>
+      )}
+
+      {/* Roof Parapet */}
+      <Box args={[w + 0.5, 1.5, d + 0.5]} position={[0, h/2 + 0.75, 0]} castShadow>
+        <meshStandardMaterial color={theme === 'light' ? "#94a3b8" : "#0f172a"} roughness={0.8} />
+      </Box>
+
+      {/* Floating Hologram Label */}
+      {label && (
+        <Text 
+          position={[0, h/2 + 10, 0]} 
+          fontSize={8} 
+          color={theme === 'light' ? "#2563eb" : "#38bdf8"} 
+          anchorX="center" 
+          anchorY="middle"
+          outlineWidth={0.2}
+          outlineColor={theme === 'light' ? "#ffffff" : "#000000"}
+        >
+          {label}
+        </Text>
+      )}
+    </group>
+  );
+};
+
+const Tree = ({ position, theme }: any) => (
   <group position={position}>
-    {isGlass ? (
-      <Box args={args} castShadow receiveShadow>
-        <meshPhysicalMaterial color={theme === 'light' ? "#e2e8f0" : "#0f172a"} transparent opacity={0.2} transmission={0.9} thickness={0.5} roughness={0.1} />
-      </Box>
-    ) : (
-      <Box args={args} castShadow receiveShadow>
-        <meshStandardMaterial color={theme === 'light' ? "#f1f5f9" : "#1e293b"} metalness={0.5} roughness={0.8} />
-      </Box>
-    )}
-    {/* Outline/Frame */}
-    <Box args={[args[0] + 0.5, args[1] + 0.5, args[2] + 0.5]}>
-      <meshBasicMaterial color={theme === 'light' ? "#cbd5e1" : "#334155"} wireframe />
-    </Box>
+    {/* Trunk */}
+    <Cylinder args={[0.5, 0.5, 4]} position={[0, 2, 0]} castShadow>
+       <meshStandardMaterial color={theme === 'light' ? "#78350f" : "#451a03"} roughness={1} />
+    </Cylinder>
+    {/* Leaves */}
+    <Cylinder args={[0, 3, 8]} position={[0, 7, 0]} castShadow>
+       <meshStandardMaterial color={theme === 'light' ? "#22c55e" : "#064e3b"} roughness={0.9} />
+    </Cylinder>
+    <Cylinder args={[0, 2.5, 6]} position={[0, 10, 0]} castShadow>
+       <meshStandardMaterial color={theme === 'light' ? "#4ade80" : "#065f46"} roughness={0.9} />
+    </Cylinder>
   </group>
 );
 
@@ -202,14 +257,22 @@ const CampusEnvironment = ({ theme }: { theme: string }) => {
 
       {/* Buildings */}
       {/* Unit 1: Assembly (Glass Roof to see inside) */}
-      <Building position={[-50, 15, -50]} args={[80, 30, 80]} theme={theme} isGlass={true} />
+      <Building position={[-50, 15, -50]} args={[80, 30, 80]} theme={theme} isGlass={true} label="UNIT 1: ASSEMBLY" />
       
       {/* Unit 2: Logistics (Opaque with glass accents) */}
-      <Building position={[60, 20, -50]} args={[70, 40, 70]} theme={theme} isGlass={true} />
+      <Building position={[60, 20, -50]} args={[70, 40, 70]} theme={theme} isGlass={true} label="UNIT 2: LOGISTICS" />
 
       {/* R&D / Admin Tower */}
-      <Building position={[0, 50, 60]} args={[40, 100, 40]} theme={theme} isGlass={true} />
+      <Building position={[0, 50, 60]} args={[40, 100, 40]} theme={theme} isGlass={true} label="R&D HQ" />
       <Building position={[0, 5, 80]} args={[60, 10, 20]} theme={theme} isGlass={false} />
+
+      {/* Landscaping Trees */}
+      {[-80, -60, -40, -20, 20, 40, 60, 80].map(x => (
+         <Tree key={`tree-top-${x}`} position={[x, 0, -100]} theme={theme} />
+      ))}
+      {[-80, -60, -40, -20, 20, 40, 60, 80].map(x => (
+         <Tree key={`tree-mid-${x}`} position={[x, 0, -20]} theme={theme} />
+      ))}
 
       {/* Industrial Silos / Cooling Towers */}
       {[-80, -65, -50].map((z) => (
@@ -374,11 +437,59 @@ const AGV3D = ({ waypoints, speed, isEmergencyMode }: { waypoints: [number, numb
 };
 
 // --------------------------------------------------------------------------
+// Cinematic Camera Controller
+// --------------------------------------------------------------------------
+const CameraController = ({ viewMode }: { viewMode: string }) => {
+  const { controls } = useThree();
+  
+  useEffect(() => {
+    // We simply want the useFrame below to lerp the camera and target based on viewMode.
+    // The actual lerping happens on every frame.
+  }, [viewMode]);
+
+  useFrame((state, delta) => {
+    const targetPos = new THREE.Vector3();
+    const targetLookAt = new THREE.Vector3();
+
+    switch (viewMode) {
+      case 'Unit1':
+        targetPos.set(-50, 40, 10);
+        targetLookAt.set(-50, 10, -50);
+        break;
+      case 'Unit2':
+        targetPos.set(60, 60, 20);
+        targetLookAt.set(60, 10, -50);
+        break;
+      case 'Tower':
+        targetPos.set(-60, 20, 120);
+        targetLookAt.set(0, 50, 60);
+        break;
+      case 'Global':
+      default:
+        targetPos.set(0, 150, 180);
+        targetLookAt.set(0, 0, 0);
+        break;
+    }
+
+    // Smoothly interpolate camera position
+    state.camera.position.lerp(targetPos, 2 * delta);
+    
+    // Smoothly interpolate orbit controls target
+    if ((controls as any)?.target) {
+      (controls as any).target.lerp(targetLookAt, 2 * delta);
+    }
+  });
+
+  return null;
+};
+
+// --------------------------------------------------------------------------
 // Main Composition
 // --------------------------------------------------------------------------
 export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergencyMode }: DigitalTwinProps) => {
   const [store] = useState(() => createXRStore());
   const [theme, setTheme] = useState(document.documentElement.getAttribute('data-theme') || 'dark');
+  const [viewMode, setViewMode] = useState('Global');
 
   useEffect(() => {
     const observer = new MutationObserver((mutations) => {
@@ -401,8 +512,29 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
   }
 
   return (
-    <div className="digital-twin-container glass-panel">
-      <div className="panel-header" style={{ position: 'absolute', zIndex: 10, margin: '16px' }}>
+    <div className="digital-twin-wrapper" style={{ height: '600px', width: '100%', borderRadius: '12px', overflow: 'hidden', position: 'relative' }}>
+      
+      {/* Cinematic View Control Panel */}
+      <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10, display: 'flex', gap: '12px', background: 'var(--bg-glass)', padding: '8px 16px', borderRadius: '30px', backdropFilter: 'blur(10px)', border: '1px solid var(--border-color)', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>
+        <button 
+          onClick={() => setViewMode('Global')}
+          style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Global' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Global' ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
+        >Global Map</button>
+        <button 
+          onClick={() => setViewMode('Unit1')}
+          style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Unit1' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Unit1' ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
+        >Unit 1: Assembly</button>
+        <button 
+          onClick={() => setViewMode('Unit2')}
+          style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Unit2' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Unit2' ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
+        >Unit 2: Logistics</button>
+        <button 
+          onClick={() => setViewMode('Tower')}
+          style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Tower' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Tower' ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
+        >R&D Tower</button>
+      </div>
+
+      <div style={{ position: 'absolute', bottom: 20, right: 20, zIndex: 10 }}>
         <h3>Gigafactory Digital Twin 3D (2-Acre Scale)</h3>
         <span className="badge" style={{ background: thermalMode || isEmergencyMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.1)', color: thermalMode || isEmergencyMode ? '#ef4444' : 'white', transition: 'all 0.3s' }}>
           {isEmergencyMode ? 'EMERGENCY LOCKDOWN' : thermalMode ? 'Thermal Scan Active' : 'Live Operations'}
@@ -423,6 +555,8 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
           <Bloom luminanceThreshold={0.2} mipmapBlur intensity={1.5} />
           <Vignette eskil={false} offset={0.1} darkness={1.1} />
         </EffectComposer>
+
+        <CameraController viewMode={viewMode} />
 
         <XR store={store}>
           <color attach="background" args={[theme === 'light' ? '#f1f5f9' : '#020617']} />
@@ -447,10 +581,9 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
             enablePan={true} 
             minPolarAngle={0} 
             maxPolarAngle={Math.PI / 2 - 0.05}
-            minDistance={40}
+            minDistance={10}
             maxDistance={500}
-            target={[0, 0, 0]}
-            autoRotate={!isEmergencyMode}
+            autoRotate={!isEmergencyMode && viewMode === 'Global'}
             autoRotateSpeed={0.3}
           />
 
