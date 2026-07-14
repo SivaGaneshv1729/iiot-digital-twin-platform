@@ -155,78 +155,110 @@ const HighEndMachine = ({ machine, position, onClick }: { machine: Machine, posi
 };
 
 // --------------------------------------------------------------------------
-// Architectural Trusses & Catwalks
+// Architectural Trusses & Catwalks (Massive Scale)
 // --------------------------------------------------------------------------
 const Architecture = () => {
+  // Generate a massive grid of structural pillars (-40 to +40)
+  const pillars = [];
+  for (let x = -40; x <= 40; x += 20) {
+    for (let z = -40; z <= 40; z += 20) {
+      pillars.push([x, z]);
+    }
+  }
+
   return (
     <group>
-      {/* Main Pillars */}
-      {[-12, 12].map(x => 
-        [-12, 12].map(z => (
-          <group key={`${x}-${z}`}>
-            <Cylinder args={[0.4, 0.4, 15]} position={[x, 7.5, z]} castShadow receiveShadow>
-              <meshStandardMaterial color="#1e293b" metalness={0.9} roughness={0.5} />
-            </Cylinder>
-            <Box args={[1, 1, 1]} position={[x, 15, z]}>
-               <meshBasicMaterial color="#3b82f6" /> {/* Glowing node */}
-            </Box>
-          </group>
-        ))
-      )}
+      {/* Massive Pillar Grid */}
+      {pillars.map(([x, z]) => (
+        <group key={`${x}-${z}`}>
+          <Cylinder args={[0.6, 0.6, 20]} position={[x, 10, z]} castShadow receiveShadow>
+            <meshStandardMaterial color="#1e293b" metalness={0.9} roughness={0.5} />
+          </Cylinder>
+          {/* High-bay Lighting Node */}
+          <Box args={[1.5, 0.5, 1.5]} position={[x, 20, z]}>
+             <meshBasicMaterial color="#3b82f6" opacity={0.8} transparent />
+          </Box>
+          <pointLight position={[x, 19, z]} intensity={0.5} distance={30} color="#e0f2fe" />
+        </group>
+      ))}
 
-      {/* Glass Catwalk Level 2 */}
-      <group position={[0, 5, 0]}>
-        <Box args={[24, 0.2, 24]} receiveShadow>
-          <meshPhysicalMaterial color="#0f172a" transparent opacity={0.3} transmission={0.95} thickness={1} roughness={0.1} />
+      {/* Epic Glass Mezzanine Control Room */}
+      <group position={[0, 10, 0]}>
+        <Box args={[40, 0.5, 30]} receiveShadow>
+          <meshPhysicalMaterial color="#0f172a" transparent opacity={0.4} transmission={0.95} thickness={1} roughness={0.1} />
         </Box>
-        {/* Support Beams for Catwalk */}
-        <Box args={[24, 0.4, 0.4]} position={[0, -0.3, -12]}><meshStandardMaterial color="#334155" metalness={0.8}/></Box>
-        <Box args={[24, 0.4, 0.4]} position={[0, -0.3, 12]}><meshStandardMaterial color="#334155" metalness={0.8}/></Box>
-        <Box args={[0.4, 0.4, 24]} position={[-12, -0.3, 0]}><meshStandardMaterial color="#334155" metalness={0.8}/></Box>
-        <Box args={[0.4, 0.4, 24]} position={[12, -0.3, 0]}><meshStandardMaterial color="#334155" metalness={0.8}/></Box>
+        {/* Support Beams for Mezzanine */}
+        <Box args={[40, 0.8, 0.8]} position={[0, -0.6, -15]}><meshStandardMaterial color="#334155" metalness={0.8}/></Box>
+        <Box args={[40, 0.8, 0.8]} position={[0, -0.6, 15]}><meshStandardMaterial color="#334155" metalness={0.8}/></Box>
+        <Box args={[0.8, 0.8, 30]} position={[-20, -0.6, 0]}><meshStandardMaterial color="#334155" metalness={0.8}/></Box>
+        <Box args={[0.8, 0.8, 30]} position={[20, -0.6, 0]}><meshStandardMaterial color="#334155" metalness={0.8}/></Box>
+        
+        {/* Central Quantum Server Core on Mezzanine */}
+        <group position={[0, 5, 0]}>
+          <Cylinder args={[3, 3, 10]} castShadow receiveShadow>
+            <meshStandardMaterial color="#020617" metalness={0.9} roughness={0.2} />
+          </Cylinder>
+          {/* Pulsing Data Rings */}
+          <Cylinder args={[3.2, 3.2, 0.3]} position={[0, -3, 0]}><meshBasicMaterial color="#3b82f6" /></Cylinder>
+          <Cylinder args={[3.2, 3.2, 0.3]} position={[0, 0, 0]}><meshBasicMaterial color="#10b981" /></Cylinder>
+          <Cylinder args={[3.2, 3.2, 0.3]} position={[0, 3, 0]}><meshBasicMaterial color="#3b82f6" /></Cylinder>
+        </group>
       </group>
 
-      {/* Central Quantum Server Core */}
-      <group position={[0, 7.5, 0]}>
-        <Cylinder args={[2, 2, 15]} castShadow receiveShadow>
-          <meshStandardMaterial color="#020617" metalness={0.9} roughness={0.2} />
-        </Cylinder>
-        {/* Pulsing Data Rings */}
-        <Cylinder args={[2.2, 2.2, 0.2]} position={[0, -5, 0]}><meshBasicMaterial color="#3b82f6" /></Cylinder>
-        <Cylinder args={[2.2, 2.2, 0.2]} position={[0, 0, 0]}><meshBasicMaterial color="#10b981" /></Cylinder>
-        <Cylinder args={[2.2, 2.2, 0.2]} position={[0, 5, 0]}><meshBasicMaterial color="#3b82f6" /></Cylinder>
-      </group>
-
-      {/* Exterior Environment: Loading Dock & Road */}
-      <group position={[0, 0, 20]}>
-        {/* Factory Exterior Wall with Bay Doors */}
-        <Box args={[24, 15, 0.5]} position={[0, 7.5, -8]} castShadow receiveShadow>
+      {/* Exterior Environment: Massive Loading Dock & Road */}
+      <group position={[0, 0, 50]}>
+        {/* Factory Exterior Wall */}
+        <Box args={[80, 20, 1]} position={[0, 10, -8]} castShadow receiveShadow>
           <meshStandardMaterial color="#0f172a" metalness={0.8} />
         </Box>
-        {/* Bay Door 1 */}
-        <Box args={[4, 5, 0.6]} position={[-5, 2.5, -8]}>
-          <meshStandardMaterial color="#f59e0b" metalness={0.6} roughness={0.7} />
-        </Box>
-        {/* Bay Door 2 */}
-        <Box args={[4, 5, 0.6]} position={[5, 2.5, -8]}>
-          <meshStandardMaterial color="#f59e0b" metalness={0.6} roughness={0.7} />
-        </Box>
+        {/* Multiple Bay Doors */}
+        {[-30, -15, 0, 15, 30].map((x) => (
+          <Box key={`bay-${x}`} args={[6, 8, 1.2]} position={[x, 4, -8]}>
+            <meshStandardMaterial color="#f59e0b" metalness={0.6} roughness={0.7} />
+          </Box>
+        ))}
 
         {/* Loading Dock Platform */}
-        <Box args={[24, 0.5, 4]} position={[0, 0.25, -6]} receiveShadow>
+        <Box args={[80, 1, 6]} position={[0, 0.5, -5]} receiveShadow>
           <meshStandardMaterial color="#1e293b" />
         </Box>
 
         {/* Asphalt Road */}
-        <Box args={[40, 0.1, 12]} position={[0, 0, 2]} receiveShadow>
+        <Box args={[100, 0.1, 20]} position={[0, 0, 8]} receiveShadow>
           <meshStandardMaterial color="#020617" roughness={0.9} />
         </Box>
         
         {/* Glowing Road Markings */}
-        <Box args={[40, 0.15, 0.2]} position={[0, 0, 2]}>
+        <Box args={[100, 0.15, 0.4]} position={[0, 0, 8]}>
           <meshBasicMaterial color="#eab308" />
         </Box>
       </group>
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
+// Warehouse Racks (Logistics Zone)
+// --------------------------------------------------------------------------
+const WarehouseRacks = ({ position }: { position: [number, number, number] }) => {
+  return (
+    <group position={position}>
+      {/* Rack Framework */}
+      <Box args={[30, 15, 4]} position={[0, 7.5, 0]} castShadow>
+        <meshStandardMaterial color="#334155" metalness={0.8} wireframe />
+      </Box>
+      {/* Shelves & Crates */}
+      {[2, 6, 10, 14].map((y) => (
+        <group key={`shelf-${y}`} position={[0, y, 0]}>
+          <Box args={[30, 0.2, 4]}><meshStandardMaterial color="#1e293b" /></Box>
+          {/* Crates */}
+          {[-12, -6, 0, 6, 12].map((x) => (
+             <Box key={`crate-${x}`} args={[3, 2.5, 3]} position={[x, 1.35, 0]} castShadow>
+               <meshStandardMaterial color={Math.random() > 0.8 ? '#f59e0b' : '#0ea5e9'} roughness={0.6} />
+             </Box>
+          ))}
+        </group>
+      ))}
     </group>
   );
 };
@@ -262,16 +294,16 @@ const LogisticsTruck = ({ startPosition, delay, isEmergencyMode }: { startPositi
     
     // Simple looping animation along the Z-axis road
     // Move from Z = 25 to Z = -2, wait, then leave
-    const cycle = t % 15;
-    if (cycle < 5) {
+    const cycle = t % 20;
+    if (cycle < 8) {
       // Arriving
-      truckRef.current.position.z = 25 - (cycle * 5.4);
-    } else if (cycle < 10) {
+      truckRef.current.position.z = 60 - (cycle * 6.25);
+    } else if (cycle < 13) {
       // Loading at dock
-      truckRef.current.position.z = -2;
+      truckRef.current.position.z = 10;
     } else {
       // Departing
-      truckRef.current.position.z = -2 + ((cycle - 10) * 5.4);
+      truckRef.current.position.z = 10 + ((cycle - 13) * 7);
     }
   });
 
@@ -346,16 +378,18 @@ const AGV3D = ({ waypoints, speed, isEmergencyMode }: { waypoints: [number, numb
 export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergencyMode }: DigitalTwinProps) => {
   const [store] = useState(() => createXRStore());
 
-  // Layout: Floor 1 CNC Machines
-  const f1_positions: [number, number, number][] = [
-    [-6, 0, -8], [-2, 0, -8], [2, 0, -8], [6, 0, -8],
-    [-6, 0, 8],  [-2, 0, 8],  [2, 0, 8],  [6, 0, 8]
-  ];
+  // Expanded Machine Positions
+  const f1_positions: [number, number, number][] = [];
+  for (let x = -30; x <= 30; x += 15) {
+    for (let z = -20; z <= 20; z += 10) {
+      if (Math.abs(x) > 5) f1_positions.push([x, 0, z]); // Leave center aisle open
+    }
+  }
 
   return (
     <div className="digital-twin-container glass-panel">
       <div className="panel-header" style={{ position: 'absolute', zIndex: 10, margin: '16px' }}>
-        <h3>Gigafactory Digital Twin 3D</h3>
+        <h3>Gigafactory Digital Twin 3D (2-Acre Scale)</h3>
         <span className="badge" style={{ background: thermalMode || isEmergencyMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.1)', color: thermalMode || isEmergencyMode ? '#ef4444' : 'white', transition: 'all 0.3s' }}>
           {isEmergencyMode ? 'EMERGENCY LOCKDOWN' : thermalMode ? 'Thermal Scan Active' : 'Live Operations'}
         </span>
@@ -369,7 +403,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
         Enter AR
       </ARButton>
 
-      <Canvas shadows camera={{ position: [30, 25, 30], fov: 45 }}>
+      <Canvas shadows camera={{ position: [80, 50, 80], fov: 45 }}>
         {/* Post-Processing for High-End Cinematic Look */}
         <EffectComposer>
           <Bloom luminanceThreshold={0.2} mipmapBlur intensity={1.5} />
@@ -378,62 +412,68 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
 
         <XR store={store}>
           <color attach="background" args={['#020617']} /> {/* Ultra dark slate */}
-          <fog attach="fog" args={['#020617', 20, 100]} />
+          <fog attach="fog" args={['#020617', 50, 200]} /> {/* Increased fog distance */}
 
           {/* Cinematic Lighting */}
           <ambientLight intensity={isEmergencyMode ? 0.1 : 0.3} />
           
           {/* Main God Ray / Spotlight */}
           <spotLight 
-            position={[0, 40, 0]} 
-            angle={0.6} 
+            position={[0, 80, 0]} 
+            angle={0.8} 
             penumbra={0.5} 
-            intensity={isEmergencyMode ? 5 : 2} 
+            intensity={isEmergencyMode ? 8 : 4} 
             color={isEmergencyMode ? "#ef4444" : "#ffffff"} 
             castShadow 
             shadow-bias={-0.0001}
           />
-
-          <pointLight position={[-15, 10, -15]} intensity={1} color={isEmergencyMode ? "#ef4444" : "#3b82f6"} />
-          <pointLight position={[15, 10, 15]} intensity={1} color={isEmergencyMode ? "#ef4444" : "#10b981"} />
 
           <OrbitControls 
             enablePan={true} 
             minPolarAngle={0} 
             maxPolarAngle={Math.PI / 2 - 0.05}
             minDistance={10}
-            maxDistance={80}
-            target={[0, 5, 0]}
+            maxDistance={150}
+            target={[0, 10, 0]}
             autoRotate={!isEmergencyMode}
-            autoRotateSpeed={0.5}
+            autoRotateSpeed={0.3}
           />
 
-          {/* Glowing Ground Grid */}
+          {/* Massive Ground Grid */}
           <Grid 
             infiniteGrid 
-            fadeDistance={80} 
+            fadeDistance={200} 
             sectionColor={isEmergencyMode ? "#7f1d1d" : "#0f172a"} 
             cellColor={isEmergencyMode ? "#450a0a" : "#020617"} 
-            sectionSize={10} 
-            cellSize={2}
+            sectionSize={20} 
+            cellSize={4}
             position={[0, -0.05, 0]}
           />
 
           <Architecture />
 
-          {/* Ground Floor Conveyor System */}
-          <ConveyorLine position={[-8, 0, 0]} length={20} />
-          <ConveyorLine position={[8, 0, 0]} length={20} />
+          {/* Massive Warehouse Racks Zone */}
+          <WarehouseRacks position={[-30, 0, -35]} />
+          <WarehouseRacks position={[0, 0, -35]} />
+          <WarehouseRacks position={[30, 0, -35]} />
 
-          {/* Robotic Arms next to conveyors */}
-          <RoboticArm position={[-6, 0, -3]} speedOffset={0} isEmergencyMode={isEmergencyMode} />
-          <RoboticArm position={[-6, 0, 3]} speedOffset={1} isEmergencyMode={isEmergencyMode} />
-          <RoboticArm position={[6, 0, -3]} speedOffset={2} isEmergencyMode={isEmergencyMode} />
-          <RoboticArm position={[6, 0, 3]} speedOffset={3} isEmergencyMode={isEmergencyMode} />
+          {/* Expanded Conveyor Systems */}
+          {[-20, 0, 20].map(z => (
+             <ConveyorLine key={`conv-${z}`} position={[-15, 0, z]} length={40} />
+          ))}
+
+          {/* Dense Robotic Arm Swarm */}
+          {[-20, 0, 20].map((z, i) => (
+             <group key={`arms-${z}`}>
+               <RoboticArm position={[-18, 0, z - 3]} speedOffset={i*0.5} isEmergencyMode={isEmergencyMode} />
+               <RoboticArm position={[-12, 0, z + 3]} speedOffset={i*0.5+1} isEmergencyMode={isEmergencyMode} />
+               <RoboticArm position={[12, 0, z - 3]} speedOffset={i*0.5+2} isEmergencyMode={isEmergencyMode} />
+               <RoboticArm position={[18, 0, z + 3]} speedOffset={i*0.5+3} isEmergencyMode={isEmergencyMode} />
+             </group>
+          ))}
 
           {/* Dynamic Machines */}
           {f1_positions.map((pos, idx) => {
-            // Distribute the state data across the visual array
             const machineData = machines[idx % machines.length] || { id: idx, name: `CNC-${idx}`, status: 'Idle', temperature: 40, running_hours: 0 };
             return (
               <HighEndMachine 
@@ -445,14 +485,18 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
             );
           })}
 
-          {/* AGV Swarm */}
-          <AGV3D waypoints={[[-10, 0, -10], [10, 0, -10], [10, 0, -5], [-10, 0, -5]]} speed={2} isEmergencyMode={isEmergencyMode} />
-          <AGV3D waypoints={[[10, 0, 10], [-10, 0, 10], [-10, 0, 5], [10, 0, 5]]} speed={2.5} isEmergencyMode={isEmergencyMode} />
-          <AGV3D waypoints={[[0, 5.2, 10], [-10, 5.2, 10], [-10, 5.2, -10], [0, 5.2, -10]]} speed={3} isEmergencyMode={isEmergencyMode} />
+          {/* Massive AGV Swarm */}
+          <AGV3D waypoints={[[-35, 0, -25], [35, 0, -25], [35, 0, -15], [-35, 0, -15]]} speed={4} isEmergencyMode={isEmergencyMode} />
+          <AGV3D waypoints={[[35, 0, 25], [-35, 0, 25], [-35, 0, 15], [35, 0, 15]]} speed={5} isEmergencyMode={isEmergencyMode} />
+          <AGV3D waypoints={[[-5, 10.2, 25], [-25, 10.2, 25], [-25, 10.2, -25], [-5, 10.2, -25]]} speed={6} isEmergencyMode={isEmergencyMode} />
+          <AGV3D waypoints={[[5, 10.2, -25], [25, 10.2, -25], [25, 10.2, 25], [5, 10.2, 25]]} speed={6} isEmergencyMode={isEmergencyMode} />
 
-          {/* Logistics Trucks on Exterior Road */}
-          <LogisticsTruck startPosition={[-3, 0.1, 20]} delay={0} isEmergencyMode={isEmergencyMode} />
-          <LogisticsTruck startPosition={[3, 0.1, 20]} delay={7.5} isEmergencyMode={isEmergencyMode} />
+          {/* Expanded Logistics Trucks */}
+          <LogisticsTruck startPosition={[-30, 0.1, 58]} delay={0} isEmergencyMode={isEmergencyMode} />
+          <LogisticsTruck startPosition={[-15, 0.1, 58]} delay={5} isEmergencyMode={isEmergencyMode} />
+          <LogisticsTruck startPosition={[0, 0.1, 58]} delay={10} isEmergencyMode={isEmergencyMode} />
+          <LogisticsTruck startPosition={[15, 0.1, 58]} delay={15} isEmergencyMode={isEmergencyMode} />
+          <LogisticsTruck startPosition={[30, 0.1, 58]} delay={20} isEmergencyMode={isEmergencyMode} />
 
         </XR>
       </Canvas>
