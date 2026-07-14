@@ -1,6 +1,6 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Grid, Box, Cylinder, Text, FlyControls } from '@react-three/drei';
+import { OrbitControls, Grid, Box, Cylinder, Text, FlyControls, Environment, Html, Instances, Instance } from '@react-three/drei';
 import { XR, ARButton, createXRStore } from '@react-three/xr';
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
@@ -214,65 +214,81 @@ const Building = ({ position, args, theme, isGlass = false, label = "" }: any) =
   );
 };
 
-const Tree = ({ position, theme }: any) => (
-  <group position={position}>
-    {/* Trunk */}
-    <Cylinder args={[0.5, 0.5, 4]} position={[0, 2, 0]} castShadow>
-       <meshStandardMaterial color={theme === 'light' ? "#78350f" : "#451a03"} roughness={1} />
-    </Cylinder>
-    {/* Leaves */}
-    <Cylinder args={[0, 3, 8]} position={[0, 7, 0]} castShadow>
-       <meshStandardMaterial color={theme === 'light' ? "#22c55e" : "#064e3b"} roughness={0.9} />
-    </Cylinder>
-    <Cylinder args={[0, 2.5, 6]} position={[0, 10, 0]} castShadow>
-       <meshStandardMaterial color={theme === 'light' ? "#4ade80" : "#065f46"} roughness={0.9} />
-    </Cylinder>
-  </group>
-);
-
-const CampusEnvironment = ({ theme }: { theme: string }) => {
+// --------------------------------------------------------------------------
+// Campus Environment (Optimized)
+// --------------------------------------------------------------------------
+const CampusEnvironment = ({ theme, oee, throughput }: { theme: string, oee: number, throughput: number }) => {
   return (
     <group>
-      {/* Massive Ground Plane */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.2, 0]} receiveShadow>
+      {/* Massive Terrain Plane */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, -0.1, 0]}>
         <planeGeometry args={[400, 400]} />
-        <meshStandardMaterial color={theme === 'light' ? "#f8fafc" : "#020617"} roughness={1} />
-      </mesh>
-
-      {/* Main Intersecting Roads */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.1, 0]} receiveShadow>
-        <planeGeometry args={[400, 16]} />
-        <meshStandardMaterial color={theme === 'light' ? "#94a3b8" : "#0f172a"} roughness={0.9} />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.15, 0]} receiveShadow>
-        <planeGeometry args={[16, 400]} />
-        <meshStandardMaterial color={theme === 'light' ? "#94a3b8" : "#0f172a"} roughness={0.9} />
+        <meshStandardMaterial color={theme === 'light' ? "#e2e8f0" : "#020617"} roughness={0.8} />
       </mesh>
       
-      {/* Road Markings */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]}>
-        <planeGeometry args={[400, 0.4]} />
-        <meshBasicMaterial color="#eab308" />
-      </mesh>
+      {/* Grid Helper (Cyber map feel) */}
+      <Grid infiniteGrid fadeDistance={200} cellColor={theme === 'light' ? "#94a3b8" : "#334155"} sectionColor={theme === 'light' ? "#64748b" : "#475569"} />
 
       {/* Buildings */}
       {/* Unit 1: Assembly (Glass Roof to see inside) */}
-      <Building position={[-50, 15, -50]} args={[80, 30, 80]} theme={theme} isGlass={true} label="UNIT 1: ASSEMBLY" />
+      <group position={[-50, 15, -50]}>
+        <Building position={[0, 0, 0]} args={[80, 30, 80]} theme={theme} isGlass={true} label="UNIT 1: ASSEMBLY" />
+        <Html position={[0, 35, 0]} center zIndexRange={[100, 0]}>
+          <div style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(56, 189, 248, 0.5)', padding: '10px 15px', borderRadius: '8px', color: 'white', backdropFilter: 'blur(5px)', display: 'flex', flexDirection: 'column', gap: '5px', pointerEvents: 'none', minWidth: '150px' }}>
+            <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Live Metrics</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontWeight: 'bold' }}>OEE:</span>
+              <span style={{ color: oee > 80 ? '#4ade80' : '#f59e0b' }}>{oee}%</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontWeight: 'bold' }}>Output:</span>
+              <span style={{ color: '#38bdf8' }}>{throughput} UPH</span>
+            </div>
+          </div>
+        </Html>
+      </group>
       
       {/* Unit 2: Logistics (Opaque with glass accents) */}
-      <Building position={[60, 20, -50]} args={[70, 40, 70]} theme={theme} isGlass={true} label="UNIT 2: LOGISTICS" />
+      <group position={[60, 20, -50]}>
+        <Building position={[0, 0, 0]} args={[70, 40, 70]} theme={theme} isGlass={true} label="UNIT 2: LOGISTICS" />
+        <Html position={[0, 40, 0]} center zIndexRange={[100, 0]}>
+          <div style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(245, 158, 11, 0.5)', padding: '10px 15px', borderRadius: '8px', color: 'white', backdropFilter: 'blur(5px)', display: 'flex', flexDirection: 'column', gap: '5px', pointerEvents: 'none', minWidth: '150px' }}>
+            <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Inventory Status</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontWeight: 'bold' }}>Capacity:</span>
+              <span style={{ color: '#f59e0b' }}>87%</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontWeight: 'bold' }}>Active AGVs:</span>
+              <span style={{ color: '#38bdf8' }}>24</span>
+            </div>
+          </div>
+        </Html>
+      </group>
 
       {/* R&D / Admin Tower */}
       <Building position={[0, 50, 60]} args={[40, 100, 40]} theme={theme} isGlass={true} label="R&D HQ" />
       <Building position={[0, 5, 80]} args={[60, 10, 20]} theme={theme} isGlass={false} />
 
-      {/* Landscaping Trees */}
-      {[-80, -60, -40, -20, 20, 40, 60, 80].map(x => (
-         <Tree key={`tree-top-${x}`} position={[x, 0, -100]} theme={theme} />
-      ))}
-      {[-80, -60, -40, -20, 20, 40, 60, 80].map(x => (
-         <Tree key={`tree-mid-${x}`} position={[x, 0, -20]} theme={theme} />
-      ))}
+      {/* Landscaping Trees (Optimized rendering manually or via instances) */}
+      <Instances range={16}>
+        <cylinderGeometry args={[0.5, 0.5, 4]} />
+        <meshStandardMaterial color={theme === 'light' ? "#78350f" : "#451a03"} roughness={1} />
+        {[-80, -60, -40, -20, 20, 40, 60, 80].map((x, i) => <Instance key={`trunk-t-${i}`} position={[x, 2, -100]} />)}
+        {[-80, -60, -40, -20, 20, 40, 60, 80].map((x, i) => <Instance key={`trunk-m-${i}`} position={[x, 2, -20]} />)}
+      </Instances>
+      <Instances range={16}>
+        <cylinderGeometry args={[0, 3, 8]} />
+        <meshStandardMaterial color={theme === 'light' ? "#22c55e" : "#064e3b"} roughness={0.9} />
+        {[-80, -60, -40, -20, 20, 40, 60, 80].map((x, i) => <Instance key={`leaf1-t-${i}`} position={[x, 7, -100]} />)}
+        {[-80, -60, -40, -20, 20, 40, 60, 80].map((x, i) => <Instance key={`leaf1-m-${i}`} position={[x, 7, -20]} />)}
+      </Instances>
+      <Instances range={16}>
+        <cylinderGeometry args={[0, 2.5, 6]} />
+        <meshStandardMaterial color={theme === 'light' ? "#4ade80" : "#065f46"} roughness={0.9} />
+        {[-80, -60, -40, -20, 20, 40, 60, 80].map((x, i) => <Instance key={`leaf2-t-${i}`} position={[x, 10, -100]} />)}
+        {[-80, -60, -40, -20, 20, 40, 60, 80].map((x, i) => <Instance key={`leaf2-m-${i}`} position={[x, 10, -20]} />)}
+      </Instances>
 
       {/* Industrial Silos / Cooling Towers */}
       {[-80, -65, -50].map((z) => (
@@ -286,105 +302,43 @@ const CampusEnvironment = ({ theme }: { theme: string }) => {
         </group>
       ))}
 
-      {/* Solar Panels on Unit 2 Roof */}
-      <group position={[60, 40.5, -50]}>
-         {[-20, 0, 20].map(x => 
-           [-20, 0, 20].map(z => (
-             <mesh key={`solar-${x}-${z}`} position={[x, 0, z]} rotation={[-Math.PI / 2 + 0.2, 0, 0]} castShadow>
-                <planeGeometry args={[15, 10]} />
-                <meshStandardMaterial color="#020617" metalness={0.9} roughness={0.1} />
-             </mesh>
-           ))
-         )}
-      </group>
+      {/* Solar Panel Arrays (Unit 2 Roof) */}
+      <OptimizedSolarGrid position={[40, 40, -70]} theme={theme} />
+      <OptimizedSolarGrid position={[80, 40, -70]} theme={theme} />
+      <OptimizedSolarGrid position={[60, 40, -30]} theme={theme} />
     </group>
   );
 };
 
-// --------------------------------------------------------------------------
-// Warehouse Racks (Logistics Zone)
-// --------------------------------------------------------------------------
-const WarehouseRacks = ({ position }: { position: [number, number, number] }) => {
-  return (
-    <group position={position}>
-      {/* Rack Framework */}
-      <Box args={[30, 15, 4]} position={[0, 7.5, 0]} castShadow>
-        <meshStandardMaterial color="#334155" metalness={0.8} wireframe />
-      </Box>
-      {/* Shelves & Crates */}
-      {[2, 6, 10, 14].map((y) => (
-        <group key={`shelf-${y}`} position={[0, y, 0]}>
-          <Box args={[30, 0.2, 4]}><meshStandardMaterial color="#1e293b" /></Box>
-          {/* Crates */}
-          {[-12, -6, 0, 6, 12].map((x) => (
-             <Box key={`crate-${x}`} args={[3, 2.5, 3]} position={[x, 1.35, 0]} castShadow>
-               <meshStandardMaterial color={Math.random() > 0.8 ? '#f59e0b' : '#0ea5e9'} roughness={0.6} />
-             </Box>
-          ))}
-        </group>
-      ))}
-    </group>
-  );
-};
-
-// --------------------------------------------------------------------------
-// Conveyor Belts
-// --------------------------------------------------------------------------
-const ConveyorLine = ({ position, length }: { position: [number, number, number], length: number }) => {
-  return (
-    <group position={position}>
-      <Box args={[length, 0.4, 1.2]} position={[0, 0.2, 0]} castShadow receiveShadow>
-        <meshStandardMaterial color="#1e293b" metalness={0.5} roughness={0.5} />
-      </Box>
-      {/* Conveyor Belt Surface */}
-      <Box args={[length, 0.05, 1]} position={[0, 0.42, 0]}>
-        <meshStandardMaterial color="#0f172a" roughness={0.8} />
-      </Box>
-      <Box args={[length, 0.05, 0.05]} position={[0, 0.2, 0.65]}><meshBasicMaterial color="#f59e0b" /></Box>
-      <Box args={[length, 0.05, 0.05]} position={[0, 0.2, -0.65]}><meshBasicMaterial color="#f59e0b" /></Box>
-    </group>
-  );
-};
-
-// --------------------------------------------------------------------------
-// Supply Chain & Logistics Truck
-// --------------------------------------------------------------------------
-const LogisticsTruck = ({ startPosition, delay, isEmergencyMode }: { startPosition: [number, number, number], delay: number, isEmergencyMode?: boolean }) => {
-  const truckRef = useRef<THREE.Group>(null);
-  
+const SolarPanel = ({ position, rotation, theme }: any) => {
+  const groupRef = useRef<THREE.Group>(null);
+  const time = useMemo(() => Math.random() * 100, []);
   useFrame((state) => {
-    if (!truckRef.current || isEmergencyMode) return;
-    const t = state.clock.elapsedTime + delay;
-    
-    // Move along X axis on the main road (z = 4)
-    const cycle = t % 30;
-    if (cycle < 15) {
-      // Driving left to right
-      truckRef.current.position.x = -150 + (cycle * 20);
-      truckRef.current.position.z = 4;
-      truckRef.current.rotation.y = Math.PI / 2;
-    } else {
-      // Driving right to left on other lane
-      truckRef.current.position.x = 150 - ((cycle - 15) * 20);
-      truckRef.current.position.z = -4;
-      truckRef.current.rotation.y = -Math.PI / 2;
-    }
+    if (groupRef.current) groupRef.current.position.y = Math.sin(state.clock.elapsedTime + time) * 0.1;
   });
+  const yOffset = Math.sin(time * 2) * 0.1;
+  const panelColor = Math.random() > 0.5 ? (theme === 'light' ? "#3b82f6" : "#0ea5e9") : (theme === 'light' ? "#8b5cf6" : "#6366f1");
 
   return (
-    <group ref={truckRef} position={startPosition}>
-      {/* Truck Cab */}
-      <Box args={[1.5, 1.2, 1.2]} position={[0, 0.6, 2.5]} castShadow>
-        <meshStandardMaterial color="#3b82f6" metalness={0.8} />
+    <group position={position} rotation={rotation} ref={groupRef}>
+      <Box args={[1.8, 0.1, 1.2]} position={[0, yOffset + 0.5, 0]} castShadow>
+        <meshStandardMaterial color={panelColor} metalness={0.8} roughness={0.2} />
       </Box>
-      {/* Truck Trailer */}
-      <Box args={[1.8, 1.8, 4.5]} position={[0, 0.9, 0]} castShadow>
-        <meshStandardMaterial color="#f8fafc" roughness={0.9} />
-      </Box>
-      {/* Tail Lights (Bloom target) */}
-      <Box args={[1.6, 0.2, 0.1]} position={[0, 0.4, -2.25]}>
-        <meshBasicMaterial color="#ef4444" />
-      </Box>
+      <Cylinder args={[0.05, 0.05, 0.5]} position={[0, yOffset + 0.25, 0]} castShadow>
+        <meshStandardMaterial color="#64748b" />
+      </Cylinder>
+    </group>
+  );
+};
+
+const OptimizedSolarGrid = ({ position, theme }: any) => {
+  return (
+    <group position={position}>
+      {[-20, 0, 20].map((x) => 
+        [-20, 0, 20].map((z) => (
+          <SolarPanel key={`sp-${x}-${z}`} position={[x, 0, z]} rotation={[0.2, 0, 0]} theme={theme} />
+        ))
+      )}
     </group>
   );
 };
@@ -486,12 +440,113 @@ const CameraController = ({ viewMode }: { viewMode: string }) => {
 };
 
 // --------------------------------------------------------------------------
+// Warehouse Racks (Logistics Zone)
+// --------------------------------------------------------------------------
+const WarehouseRacks = ({ position }: { position: [number, number, number] }) => {
+  return (
+    <group position={position}>
+      {/* Rack Framework */}
+      <Box args={[30, 15, 4]} position={[0, 7.5, 0]} castShadow>
+        <meshStandardMaterial color="#334155" metalness={0.8} wireframe />
+      </Box>
+      {/* Shelves & Crates */}
+      {[2, 6, 10, 14].map((y) => (
+        <group key={`shelf-${y}`} position={[0, y, 0]}>
+          <Box args={[30, 0.2, 4]}><meshStandardMaterial color="#1e293b" /></Box>
+          {/* Crates */}
+          {[-12, -6, 0, 6, 12].map((x) => (
+             <Box key={`crate-${x}`} args={[3, 2.5, 3]} position={[x, 1.35, 0]} castShadow>
+               <meshStandardMaterial color={Math.random() > 0.8 ? '#f59e0b' : '#0ea5e9'} roughness={0.6} />
+             </Box>
+          ))}
+        </group>
+      ))}
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
+// Conveyor Belts
+// --------------------------------------------------------------------------
+const ConveyorLine = ({ position, length }: { position: [number, number, number], length: number }) => {
+  return (
+    <group position={position}>
+      <Box args={[length, 0.4, 1.2]} position={[0, 0.2, 0]} castShadow receiveShadow>
+        <meshStandardMaterial color="#1e293b" metalness={0.5} roughness={0.5} />
+      </Box>
+      {/* Conveyor Belt Surface */}
+      <Box args={[length, 0.05, 1]} position={[0, 0.42, 0]}>
+        <meshStandardMaterial color="#0f172a" roughness={0.8} />
+      </Box>
+      <Box args={[length, 0.05, 0.05]} position={[0, 0.2, 0.65]}><meshBasicMaterial color="#f59e0b" /></Box>
+      <Box args={[length, 0.05, 0.05]} position={[0, 0.2, -0.65]}><meshBasicMaterial color="#f59e0b" /></Box>
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
+// Supply Chain & Logistics Truck
+// --------------------------------------------------------------------------
+const LogisticsTruck = ({ startPosition, delay, isEmergencyMode }: { startPosition: [number, number, number], delay: number, isEmergencyMode?: boolean }) => {
+  const truckRef = useRef<THREE.Group>(null);
+  
+  useFrame((state) => {
+    if (!truckRef.current || isEmergencyMode) return;
+    const t = state.clock.elapsedTime + delay;
+    
+    // Move along X axis on the main road (z = 4)
+    const cycle = t % 30;
+    if (cycle < 15) {
+      // Driving left to right
+      truckRef.current.position.x = -150 + (cycle * 20);
+      truckRef.current.position.z = 4;
+      truckRef.current.rotation.y = Math.PI / 2;
+    } else {
+      // Driving right to left on other lane
+      truckRef.current.position.x = 150 - ((cycle - 15) * 20);
+      truckRef.current.position.z = -4;
+      truckRef.current.rotation.y = -Math.PI / 2;
+    }
+  });
+
+  return (
+    <group ref={truckRef} position={startPosition}>
+      {/* Truck Cab */}
+      <Box args={[1.5, 1.2, 1.2]} position={[0, 0.6, 2.5]} castShadow>
+        <meshStandardMaterial color="#3b82f6" metalness={0.8} />
+      </Box>
+      {/* Truck Trailer */}
+      <Box args={[1.8, 1.8, 4.5]} position={[0, 0.9, 0]} castShadow>
+        <meshStandardMaterial color="#f8fafc" roughness={0.9} />
+      </Box>
+      {/* Tail Lights (Bloom target) */}
+      <Box args={[1.6, 0.2, 0.1]} position={[0, 0.4, -2.25]}>
+        <meshBasicMaterial color="#ef4444" />
+      </Box>
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
 // Main Composition
 // --------------------------------------------------------------------------
 export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergencyMode }: DigitalTwinProps) => {
   const [store] = useState(() => createXRStore());
   const [theme, setTheme] = useState(document.documentElement.getAttribute('data-theme') || 'dark');
   const [viewMode, setViewMode] = useState('Global');
+
+  // Calculate live metrics from props
+  const oee = useMemo(() => {
+    if (!machines || machines.length === 0) return 92;
+    const running = machines.filter(m => m.status === 'Running').length;
+    return Math.round((running / machines.length) * 100);
+  }, [machines]);
+
+  const throughput = useMemo(() => {
+    if (!machines || machines.length === 0) return 450;
+    const running = machines.filter(m => m.status === 'Running').length;
+    return running * 45;
+  }, [machines]);
 
   useEffect(() => {
     const observer = new MutationObserver((mutations) => {
@@ -578,6 +633,9 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
         <XR store={store}>
           <color attach="background" args={[theme === 'light' ? '#f1f5f9' : '#020617']} />
           <fog attach="fog" args={[theme === 'light' ? '#f1f5f9' : '#020617', 200, 800]} />
+          
+          {/* HDR Environment Lighting */}
+          <Environment preset={theme === 'light' ? "city" : "night"} background={false} />
 
           {/* Cinematic Lighting: Sun & Ambient */}
           <ambientLight intensity={isEmergencyMode ? 0.2 : theme === 'light' ? 1.0 : 0.6} />
@@ -609,7 +667,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
           )}
 
           {/* Core Terrain and Campus Buildings */}
-          <CampusEnvironment theme={theme} />
+          <CampusEnvironment theme={theme} oee={oee} throughput={throughput} />
 
           {/* Unit 1: Manufacturing Assembly Interior */}
           <group position={[-50, 0, -50]}>
