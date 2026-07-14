@@ -2,7 +2,7 @@ import { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Grid, Box, Cylinder, Text, FlyControls, Environment, Html, Instances, Instance } from '@react-three/drei';
 import { XR, ARButton, createXRStore } from '@react-three/xr';
-import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
+// import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import './DigitalTwin.css';
 
@@ -169,9 +169,9 @@ const Building = ({ position, args, theme, isGlass = false, label = "" }: any) =
       {/* Main Body */}
       {isGlass ? (
         <group>
-          {/* Glass Shell */}
+          {/* Glass Shell - Using StandardMaterial instead of expensive PhysicalMaterial transmission */}
           <Box args={args} castShadow receiveShadow>
-            <meshPhysicalMaterial color={theme === 'light' ? "#f8fafc" : "#0f172a"} transparent opacity={0.3} transmission={0.9} thickness={0.5} roughness={0.1} />
+            <meshStandardMaterial color={theme === 'light' ? "#f8fafc" : "#0f172a"} transparent opacity={0.5} roughness={0.1} metalness={0.8} />
           </Box>
           {/* Internal Support Columns */}
           <Box args={[w - 1, h - 2, 1]} position={[0, 0, d/2 - 1]}>
@@ -321,10 +321,10 @@ const SolarPanel = ({ position, rotation, theme }: any) => {
 
   return (
     <group position={position} rotation={rotation} ref={groupRef}>
-      <Box args={[1.8, 0.1, 1.2]} position={[0, yOffset + 0.5, 0]} castShadow>
+      <Box args={[1.8, 0.1, 1.2]} position={[0, yOffset + 0.5, 0]}>
         <meshStandardMaterial color={panelColor} metalness={0.8} roughness={0.2} />
       </Box>
-      <Cylinder args={[0.05, 0.05, 0.5]} position={[0, yOffset + 0.25, 0]} castShadow>
+      <Cylinder args={[0.05, 0.05, 0.5]} position={[0, yOffset + 0.25, 0]}>
         <meshStandardMaterial color="#64748b" />
       </Cylinder>
     </group>
@@ -453,9 +453,9 @@ const WarehouseRacks = ({ position }: { position: [number, number, number] }) =>
       {[2, 6, 10, 14].map((y) => (
         <group key={`shelf-${y}`} position={[0, y, 0]}>
           <Box args={[30, 0.2, 4]}><meshStandardMaterial color="#1e293b" /></Box>
-          {/* Crates */}
+          {/* Crates - Shadows disabled for performance */}
           {[-12, -6, 0, 6, 12].map((x) => (
-             <Box key={`crate-${x}`} args={[3, 2.5, 3]} position={[x, 1.35, 0]} castShadow>
+             <Box key={`crate-${x}`} args={[3, 2.5, 3]} position={[x, 1.35, 0]}>
                <meshStandardMaterial color={Math.random() > 0.8 ? '#f59e0b' : '#0ea5e9'} roughness={0.6} />
              </Box>
           ))}
@@ -622,11 +622,11 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
       </ARButton>
 
       <Canvas shadows camera={{ position: [0, 150, 150], fov: 45, near: 0.1, far: 2000 }}>
-        {/* Post-Processing for High-End Cinematic Look */}
-        <EffectComposer>
+        {/* Post-Processing disabled to massively improve framerates on lower-end machines */}
+        {/* <EffectComposer>
           <Bloom luminanceThreshold={0.2} mipmapBlur intensity={1.5} />
           <Vignette eskil={false} offset={0.1} darkness={1.1} />
-        </EffectComposer>
+        </EffectComposer> */}
 
         <CameraController viewMode={viewMode} />
 
