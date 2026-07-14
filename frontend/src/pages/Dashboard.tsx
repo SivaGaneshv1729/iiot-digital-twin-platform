@@ -48,6 +48,7 @@ export const Dashboard = () => {
   const [selectedMachineId, setSelectedMachineId] = useState<number | null>(null);
   const [isEmergencyMode, setIsEmergencyMode] = useState(false);
   const [thermalMode, setThermalMode] = useState(false);
+  const [aiHeatmapMode, setAiHeatmapMode] = useState(false);
   
   const [chartData, setChartData] = useState(INITIAL_CHART_DATA);
   const [actions, setActions] = useState(INITIAL_ACTIONS);
@@ -315,6 +316,16 @@ export const Dashboard = () => {
           </button>
           
           <button 
+            onClick={() => setAiHeatmapMode(!aiHeatmapMode)}
+            className={`glass-panel ${aiHeatmapMode ? 'listening-pulse' : ''}`}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', background: aiHeatmapMode ? 'rgba(249, 115, 22, 0.3)' : 'rgba(249, 115, 22, 0.1)', color: '#f97316', border: '1px solid #f97316', fontWeight: 'bold' }}
+            title="Toggle AI Anomaly Detection Heatmap Overlay"
+          >
+            <Activity size={16} />
+            <span>AI Heatmap</span>
+          </button>
+          
+          <button 
             onClick={subscribeToPush} 
             className="glass-panel"
             style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', border: '1px solid #8b5cf6' }}
@@ -341,7 +352,7 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      <DigitalTwin machines={liveMachines} onSelectMachine={setSelectedMachineId} thermalMode={thermalMode} isEmergencyMode={isEmergencyMode} />
+      <DigitalTwin machines={liveMachines} onSelectMachine={setSelectedMachineId} thermalMode={thermalMode} isEmergencyMode={isEmergencyMode} aiHeatmapMode={aiHeatmapMode} />
       <MachineHistoryModal machineId={selectedMachineId} onClose={() => setSelectedMachineId(null)} />
 
       {/* Expanded Executive KPI Grid */}

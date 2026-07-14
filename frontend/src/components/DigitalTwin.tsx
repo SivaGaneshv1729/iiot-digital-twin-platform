@@ -19,6 +19,7 @@ interface DigitalTwinProps {
   onSelectMachine?: (id: number) => void;
   thermalMode?: boolean;
   isEmergencyMode?: boolean;
+  aiHeatmapMode?: boolean;
 }
 
 // --------------------------------------------------------------------------
@@ -386,10 +387,12 @@ const CameraController = ({ viewMode }: { viewMode: string }) => {
 // --------------------------------------------------------------------------
 // Live Factory Machinery (Unit 1 Interior)
 // --------------------------------------------------------------------------
-const CNCMachine = ({ position, machine, theme, onClick }: { position: [number, number, number], machine: any, theme: string, onClick?: () => void }) => {
+const CNCMachine = ({ position, machine, theme, aiHeatmapMode, onClick }: { position: [number, number, number], machine: any, theme: string, aiHeatmapMode?: boolean, onClick?: () => void }) => {
   const spindleRef = useRef<THREE.Group>(null);
+  const anomalyPulseRef = useRef<THREE.Mesh>(null);
   const isRunning = machine?.status === 'Running';
   const isWarning = machine?.status === 'Maintenance' || machine?.status === 'Offline';
+  const hasAnomaly = isWarning || machine?.temperature > 85;
   
   const statusColor = isRunning ? '#10b981' : isWarning ? '#ef4444' : '#f59e0b';
 
@@ -398,10 +401,25 @@ const CNCMachine = ({ position, machine, theme, onClick }: { position: [number, 
       spindleRef.current.rotation.y += 15 * delta; // Spin fast when running
       spindleRef.current.position.y = Math.sin(state.clock.elapsedTime * 5) * 0.5 + 12; // Move up and down
     }
+    if (anomalyPulseRef.current && hasAnomaly && aiHeatmapMode) {
+      const scale = 1 + Math.sin(state.clock.elapsedTime * 3) * 0.2;
+      anomalyPulseRef.current.scale.set(scale, scale, scale);
+      (anomalyPulseRef.current.material as THREE.MeshBasicMaterial).opacity = 0.5 + Math.sin(state.clock.elapsedTime * 6) * 0.3;
+    }
   });
 
   return (
     <group position={position} onClick={(e) => { e.stopPropagation(); onClick && onClick(); }}>
+      {/* AI Anomaly Heatmap Overlay (Only visible in heatmap mode for at-risk machines) */}
+      {aiHeatmapMode && hasAnomaly && (
+        <group position={[0, 0.5, 0]}>
+           <pointLight color="#ef4444" intensity={5} distance={30} decay={2} />
+           <mesh rotation={[-Math.PI / 2, 0, 0]} ref={anomalyPulseRef}>
+             <circleGeometry args={[12, 32]} />
+             <meshBasicMaterial color="#ef4444" transparent opacity={0.6} blending={THREE.AdditiveBlending} depthWrite={false} />
+           </mesh>
+        </group>
+      )}
       {/* Machine Base */}
       <Box args={[12, 6, 8]} position={[0, 3, 0]}>
         <meshStandardMaterial color={theme === 'light' ? "#cbd5e1" : "#1e293b"} metalness={0.7} roughness={0.3} />
@@ -524,7 +542,7 @@ const LogisticsTruck = ({ startPosition, delay, isEmergencyMode }: { startPositi
 // --------------------------------------------------------------------------
 // Main Composition
 // --------------------------------------------------------------------------
-export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergencyMode }: DigitalTwinProps) => {
+export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergencyMode, aiHeatmapMode }: DigitalTwinProps) => {
   const [store] = useState(() => createXRStore());
   const [theme, setTheme] = useState(document.documentElement.getAttribute('data-theme') || 'dark');
   const [viewMode, setViewMode] = useState('Global');
@@ -628,15 +646,15 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
           <color attach="background" args={[theme === 'light' ? '#f1f5f9' : '#020617']} />
           <fog attach="fog" args={[theme === 'light' ? '#f1f5f9' : '#020617', 200, 800]} />
           
-          {/* HDR Environment Lighting */}
+          {/* HDR Environment Lighting (Dim in Heatmap mode) */}
           <Environment preset={theme === 'light' ? "city" : "night"} background={false} />
 
-          {/* Cinematic Lighting: Sun & Ambient */}
-          <ambientLight intensity={isEmergencyMode ? 0.2 : theme === 'light' ? 1.0 : 0.6} />
+          {/* Cinematic Lighting: Sun & Ambient. Dim drastically during AI Heatmap to highlight glowing zones */}
+          <ambientLight intensity={isEmergencyMode ? 0.2 : aiHeatmapMode ? 0.1 : theme === 'light' ? 1.0 : 0.6} />
           
           <directionalLight 
             position={[100, 150, 50]} 
-            intensity={isEmergencyMode ? 2 : theme === 'light' ? 2 : 1.5}
+            intensity={isEmergencyMode ? 2 : aiHeatmapMode ? 0.2 : theme === 'light' ? 2 : 1.5}
             color={isEmergencyMode ? "#ef4444" : theme === 'light' ? "#ffffff" : "#60a5fa"}
             castShadow 
             shadow-mapSize={[2048, 2048]}
@@ -680,6 +698,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
                     position={[x, 0, z]} 
                     machine={machine} 
                     theme={theme} 
+                    aiHeatmapMode={aiHeatmapMode}
                     onClick={() => onSelectMachine && onSelectMachine(machine.id)} 
                   />
                )
