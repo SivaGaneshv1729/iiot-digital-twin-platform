@@ -196,6 +196,37 @@ const Architecture = () => {
         <Cylinder args={[2.2, 2.2, 0.2]} position={[0, 0, 0]}><meshBasicMaterial color="#10b981" /></Cylinder>
         <Cylinder args={[2.2, 2.2, 0.2]} position={[0, 5, 0]}><meshBasicMaterial color="#3b82f6" /></Cylinder>
       </group>
+
+      {/* Exterior Environment: Loading Dock & Road */}
+      <group position={[0, 0, 20]}>
+        {/* Factory Exterior Wall with Bay Doors */}
+        <Box args={[24, 15, 0.5]} position={[0, 7.5, -8]} castShadow receiveShadow>
+          <meshStandardMaterial color="#0f172a" metalness={0.8} />
+        </Box>
+        {/* Bay Door 1 */}
+        <Box args={[4, 5, 0.6]} position={[-5, 2.5, -8]}>
+          <meshStandardMaterial color="#f59e0b" metalness={0.6} roughness={0.7} />
+        </Box>
+        {/* Bay Door 2 */}
+        <Box args={[4, 5, 0.6]} position={[5, 2.5, -8]}>
+          <meshStandardMaterial color="#f59e0b" metalness={0.6} roughness={0.7} />
+        </Box>
+
+        {/* Loading Dock Platform */}
+        <Box args={[24, 0.5, 4]} position={[0, 0.25, -6]} receiveShadow>
+          <meshStandardMaterial color="#1e293b" />
+        </Box>
+
+        {/* Asphalt Road */}
+        <Box args={[40, 0.1, 12]} position={[0, 0, 2]} receiveShadow>
+          <meshStandardMaterial color="#020617" roughness={0.9} />
+        </Box>
+        
+        {/* Glowing Road Markings */}
+        <Box args={[40, 0.15, 0.2]} position={[0, 0, 2]}>
+          <meshBasicMaterial color="#eab308" />
+        </Box>
+      </group>
     </group>
   );
 };
