@@ -3,7 +3,7 @@ import {
   ComposedChart, Line, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
 import { 
-  Activity, Zap, Wifi, TrendingUp, DollarSign, Leaf, CheckCircle, Clock, Download, AlertOctagon, Bell, Mic, MicOff
+  Activity, Zap, Wifi, TrendingUp, DollarSign, Leaf, CheckCircle, Clock, Download, AlertOctagon, Bell, Mic, MicOff, Power
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,7 @@ import { ModelMetrics } from '../components/ModelMetrics';
 import { DigitalTwin } from '../components/DigitalTwin';
 import { MachineHistoryModal } from '../components/MachineHistoryModal';
 import { CCTVPanel } from '../components/CCTVPanel';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import './Dashboard.css';
 
 // Initial Base Data for the Chart
@@ -92,7 +93,7 @@ export const Dashboard = () => {
     };
 
     if (command.includes('emergency stop')) {
-      triggerEmergencyStop(true); // true to skip window.confirm for voice
+      triggerEmergencyStop(true);
       speak('Emergency stop activated. All machines halted.');
     } else if (command.includes('thermal scan') || command.includes('thermal mode')) {
       setThermalMode(true);
@@ -122,7 +123,6 @@ export const Dashboard = () => {
     if (!dashboardElement) return;
 
     try {
-      // Temporarily add a class or style to ensure perfect rendering if needed
       const canvas = await html2canvas(dashboardElement, { scale: 2, backgroundColor: '#0a0a0f' });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
@@ -136,7 +136,6 @@ export const Dashboard = () => {
     }
   };
 
-  // Live Chart Simulation (for presentations)
   useEffect(() => {
     const interval = setInterval(() => {
       setChartData(prev => {
@@ -153,7 +152,6 @@ export const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Command Palette Event Listeners
   useEffect(() => {
     const handleToggleThermal = () => setThermalMode(prev => !prev);
     const handleEStopEvent = () => triggerEmergencyStop();
@@ -168,7 +166,6 @@ export const Dashboard = () => {
     };
   }, []);
 
-  // Backend Initialization
   useEffect(() => {
     const token = localStorage.getItem('token');
     
@@ -199,9 +196,13 @@ export const Dashboard = () => {
     
     socket.on('emergency_stop', () => {
       setIsEmergencyMode(true);
-      // Immediately reflect local state
       setLiveMachines(prev => prev.map(m => ({ ...m, status: 'Maintenance' })));
       setSummary(prev => ({ ...prev, active_machines: 0 }));
+    });
+
+    socket.on('emergency_revoke', () => {
+      setIsEmergencyMode(false);
+      setLiveMachines(prev => prev.map(m => ({ ...m, status: 'Running' })));
     });
 
     return () => { socket.disconnect(); };
@@ -229,21 +230,36 @@ export const Dashboard = () => {
     }
   };
 
+  const revokeEmergencyStop = async () => {
+    if (!window.confirm("WARNING: This will restart all halted machines. Ensure the floor is clear. Proceed?")) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      await fetch('http://localhost:4000/api/machines/emergency-revoke', {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' 
+        }
+      });
+      setIsEmergencyMode(false);
+    } catch (err) {
+      console.error("Failed to revoke E-Stop", err);
+    }
+  };
+
   const subscribeToPush = async () => {
     try {
       const registration = await navigator.serviceWorker.ready;
-      
       const existingSubscription = await registration.pushManager.getSubscription();
       if (existingSubscription) {
           alert("Already subscribed to Global Push Notifications.");
           return;
       }
-
       const response = await fetch('http://localhost:4000/api/push/vapidPublicKey', {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       const vapidPublicKey = await response.text();
-      
       const urlBase64ToUint8Array = (base64String: string) => {
           const padding = '='.repeat((4 - base64String.length % 4) % 4);
           const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
@@ -254,14 +270,11 @@ export const Dashboard = () => {
           }
           return outputArray;
       };
-
       const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
-
       const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: convertedVapidKey
       });
-
       await fetch('http://localhost:4000/api/push/subscribe', {
           method: 'POST',
           body: JSON.stringify(subscription),
@@ -270,7 +283,6 @@ export const Dashboard = () => {
               'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
       });
-
       alert("Successfully subscribed to PWA Web Push Alerts!");
     } catch (err) {
       console.error("Push subscription failed:", err);
@@ -278,7 +290,6 @@ export const Dashboard = () => {
     }
   };
 
-  // Mock Financials based on system state
   const revenueAtRisk = liveMachines.filter(m => m.status === 'Error' || m.status === 'Maintenance').length * 4500;
 
   return (
@@ -305,15 +316,23 @@ export const Dashboard = () => {
             <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>AI Voice</span>
           </button>
           
-          <button 
-            onClick={() => triggerEmergencyStop()}
-            className="btn-danger glass-panel"
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', background: 'rgba(220, 38, 38, 0.2)', color: '#ef4444', border: '2px solid #dc2626', fontWeight: 'bold' }}
-            title="Halt all production immediately"
-          >
-            <AlertOctagon size={16} />
-            <span>E-STOP</span>
-          </button>
+          {isEmergencyMode ? (
+              <button 
+                onClick={revokeEmergencyStop}
+                className="flex items-center space-x-2 px-4 py-2 bg-green-500/20 hover:bg-green-500/40 text-green-400 border border-green-500/50 rounded-lg transition-all shadow-[0_0_15px_rgba(34,197,94,0.3)] animate-pulse"
+              >
+                <Power className="w-5 h-5" />
+                <span className="font-bold tracking-wider">REVOKE E-STOP</span>
+              </button>
+            ) : (
+              <button 
+                onClick={() => triggerEmergencyStop()}
+                className="flex items-center space-x-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/50 rounded-lg transition-all"
+              >
+                <Power className="w-5 h-5" />
+                <span className="font-bold tracking-wider">E-STOP</span>
+              </button>
+            )}
           
           <button 
             onClick={() => setAiHeatmapMode(!aiHeatmapMode)}
@@ -352,10 +371,11 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      <DigitalTwin machines={liveMachines} onSelectMachine={setSelectedMachineId} thermalMode={thermalMode} isEmergencyMode={isEmergencyMode} aiHeatmapMode={aiHeatmapMode} />
+      <ErrorBoundary>
+        <DigitalTwin machines={liveMachines} onSelectMachine={setSelectedMachineId} thermalMode={thermalMode} isEmergencyMode={isEmergencyMode} aiHeatmapMode={aiHeatmapMode} />
+      </ErrorBoundary>
       <MachineHistoryModal machineId={selectedMachineId} onClose={() => setSelectedMachineId(null)} />
 
-      {/* Expanded Executive KPI Grid */}
       <div className="kpi-grid">
         <div className="kpi-card glass-panel">
           <div className="kpi-icon-wrapper blue"><Zap size={22} /></div>
@@ -404,10 +424,8 @@ export const Dashboard = () => {
 
       <ModelMetrics />
 
-      {/* Advanced Lower Section: Chart + Action Center */}
       <div className="dashboard-lower-grid">
         
-        {/* Dynamic Live Chart */}
         <div className="charts-section glass-panel">
           <div className="chart-header">
             <h2>{t('Production Output vs Energy Draw (Live)')}</h2>

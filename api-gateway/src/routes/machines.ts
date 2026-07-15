@@ -53,6 +53,27 @@ router.post('/emergency-stop', requireAdmin, async (req, res) => {
     }
 });
 
+router.post('/emergency-revoke', requireAdmin, async (req, res) => {
+    try {
+        const user = (req as any).user;
+        
+        await query("UPDATE machines SET status = 'Running' WHERE status = 'Maintenance'");
+        
+        const actionText = `REVOKED GLOBAL EMERGENCY STOP`;
+        await query('INSERT INTO audit_logs (user_id, action) VALUES ($1, $2)', [user.id, actionText]);
+
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('emergency_revoke', { timestamp: new Date(), user: user.username });
+        }
+        
+        res.json({ message: 'Emergency stop revoked. Machines resuming operation.' });
+    } catch (err) {
+        console.error('Error in emergency revoke:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
