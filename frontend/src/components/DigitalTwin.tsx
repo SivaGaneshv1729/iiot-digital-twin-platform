@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Grid, Box, Cylinder, Text, FlyControls, Environment, Html } from '@react-three/drei';
+import { OrbitControls, Grid, Box, Cylinder, Cone, Text, FlyControls, Environment, Html } from '@react-three/drei';
 import { XR, ARButton, createXRStore } from '@react-three/xr';
 // import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
@@ -1284,6 +1284,80 @@ const PowerFlowLine = ({ start, end, active }: { start: [number, number, number]
 };
 
 // --------------------------------------------------------------------------
+// Detailing Components (Greenery, Emergency, Data Center)
+// --------------------------------------------------------------------------
+const PineTree = ({ position, scale = 1 }: { position: [number, number, number], scale?: number }) => (
+  <group position={position} scale={scale}>
+    <Cylinder args={[0.5, 0.8, 4]} position={[0, 2, 0]} castShadow><meshStandardMaterial color="#5d4037" roughness={0.9} /></Cylinder>
+    <Cone args={[3, 5]} position={[0, 6, 0]} castShadow><meshStandardMaterial color="#2e7d32" roughness={0.8} /></Cone>
+    <Cone args={[2.5, 4]} position={[0, 8.5, 0]} castShadow><meshStandardMaterial color="#388e3c" roughness={0.8} /></Cone>
+    <Cone args={[1.5, 3]} position={[0, 11, 0]} castShadow><meshStandardMaterial color="#4caf50" roughness={0.8} /></Cone>
+  </group>
+);
+
+const ForestPatch = ({ position, count, radius }: { position: [number, number, number], count: number, radius: number }) => {
+  const trees = useMemo(() => {
+    const t = [];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const r = Math.sqrt(Math.random()) * radius;
+      t.push({ x: Math.cos(angle) * r, z: Math.sin(angle) * r, scale: 0.8 + Math.random() * 0.6 });
+    }
+    return t;
+  }, [count, radius]);
+  return (
+    <group position={position}>
+      {trees.map((t, i) => <PineTree key={i} position={[t.x, 0, t.z]} scale={t.scale} />)}
+    </group>
+  );
+};
+
+const FireStation = ({ position, rotation = [0,0,0] }: { position: [number, number, number], rotation?: [number, number, number] }) => (
+  <group position={position} rotation={new THREE.Euler(...rotation)}>
+    <Box args={[60, 25, 40]} position={[0, 12.5, 0]} castShadow receiveShadow><meshStandardMaterial color="#b91c1c" roughness={0.8} /></Box>
+    {[-15, 0, 15].map(x => <Box key={x} args={[10, 15, 1]} position={[x, 7.5, 20]}><meshStandardMaterial color="#94a3b8" metalness={0.5} roughness={0.4} /></Box>)}
+    <Cylinder args={[10, 10, 1]} position={[0, 25.5, 0]}><meshStandardMaterial color="#1e293b" /></Cylinder>
+    <Box args={[8, 1, 2]} position={[0, 25.6, 0]}><meshBasicMaterial color="#facc15" /></Box>
+    <Box args={[2, 1, 8]} position={[0, 25.6, 0]}><meshBasicMaterial color="#facc15" /></Box>
+  </group>
+);
+
+const FireTruck = ({ position, rotation = [0,0,0] }: { position: [number, number, number], rotation?: [number, number, number] }) => (
+  <group position={position} rotation={new THREE.Euler(...rotation)}>
+    <Box args={[12, 4, 4]} position={[0, 3, 0]} castShadow><meshStandardMaterial color="#ef4444" roughness={0.3} metalness={0.2} /></Box>
+    <Box args={[4, 3, 3.8]} position={[4, 6.5, 0]}><meshStandardMaterial color="#ef4444" /></Box>
+    <Box args={[3.8, 2, 3.9]} position={[4, 6.5, 0]}><meshStandardMaterial color="#0f172a" metalness={0.8} /></Box>
+    <Cylinder args={[1.5, 1.5, 10]} rotation={[0, 0, Math.PI/2]} position={[-2, 6, 0]}><meshStandardMaterial color="#94a3b8" metalness={0.8} /></Cylinder>
+    <Box args={[0.5, 0.5, 0.5]} position={[5, 8.2, 1]}><meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={2} /></Box>
+    <Box args={[0.5, 0.5, 0.5]} position={[5, 8.2, -1]}><meshStandardMaterial color="#3b82f6" emissive="#3b82f6" emissiveIntensity={2} /></Box>
+    {[-4, 4].map(x => [-2, 2].map(z => <Cylinder key={`${x}-${z}`} args={[1.2, 1.2, 0.6]} rotation={[Math.PI/2, 0, 0]} position={[x, 1.2, z]}><meshStandardMaterial color="#1e293b" roughness={0.9} /></Cylinder>))}
+  </group>
+);
+
+const DataCenter = ({ position, rotation = [0,0,0] }: { position: [number, number, number], rotation?: [number, number, number] }) => (
+  <group position={position} rotation={new THREE.Euler(...rotation)}>
+    <Box args={[140, 40, 100]} position={[0, 20, 0]} castShadow receiveShadow><meshStandardMaterial color="#0f172a" roughness={0.2} metalness={0.8} /></Box>
+    {[-40, 0, 40].map(x => [-20, 20].map(z => (
+      <group key={`${x}-${z}`} position={[x, 40.5, z]}>
+        <Box args={[15, 4, 15]}><meshStandardMaterial color="#334155" /></Box>
+        <Cylinder args={[6, 6, 4.1]}><meshStandardMaterial color="#1e293b" /></Cylinder>
+      </group>
+    )))}
+    <Box args={[141, 1, 101]} position={[0, 38, 0]}><meshStandardMaterial color="#38bdf8" emissive="#0ea5e9" emissiveIntensity={1.5} /></Box>
+    <Box args={[141, 1, 101]} position={[0, 2, 0]}><meshStandardMaterial color="#38bdf8" emissive="#0ea5e9" emissiveIntensity={1.5} /></Box>
+  </group>
+);
+
+const EntryArchway = ({ position, rotation = [0,0,0] }: { position: [number, number, number], rotation?: [number, number, number] }) => (
+  <group position={position} rotation={new THREE.Euler(...rotation)}>
+    <Box args={[4, 30, 4]} position={[-25, 15, 0]} castShadow><meshStandardMaterial color="#475569" /></Box>
+    <Box args={[4, 30, 4]} position={[25, 15, 0]} castShadow><meshStandardMaterial color="#475569" /></Box>
+    <Box args={[54, 8, 4]} position={[0, 34, 0]} castShadow><meshStandardMaterial color="#1e293b" /></Box>
+    <Box args={[45, 6, 4.2]} position={[0, 34, 0]}><meshStandardMaterial color="#38bdf8" emissive="#0ea5e9" emissiveIntensity={1.2} /></Box>
+  </group>
+);
+
+// --------------------------------------------------------------------------
 // Campus Environment (Dense 4x Scale with Layers)
 // --------------------------------------------------------------------------
 const CampusEnvironment = ({ theme, showLabels, activeLayer }: { theme: string, showLabels: boolean, activeLayer: string }) => {
@@ -1307,6 +1381,24 @@ const CampusEnvironment = ({ theme, showLabels, activeLayer }: { theme: string, 
       <SecurityGate position={[0, 0, -700]} rotation={[0, Math.PI, 0]} />
       <SecurityGate position={[700, 0, 0]} rotation={[0, -Math.PI/2, 0]} />
       <SecurityGate position={[-700, 0, 0]} rotation={[0, Math.PI/2, 0]} />
+
+      {/* Main Entry Archways at North and South Gates */}
+      <EntryArchway position={[0, 0, 750]} />
+      <EntryArchway position={[0, 0, -750]} rotation={[0, Math.PI, 0]} />
+
+      {/* Lush Outer Greenery (Procedural Forests filling empty 2400x2400 terrain) */}
+      <ForestPatch position={[-900, 0, -900]} count={150} radius={250} />
+      <ForestPatch position={[900, 0, -900]} count={150} radius={250} />
+      <ForestPatch position={[-900, 0, 900]} count={150} radius={250} />
+      <ForestPatch position={[900, 0, 900]} count={150} radius={250} />
+      <ForestPatch position={[0, 0, -1000]} count={80} radius={150} />
+      <ForestPatch position={[0, 0, 1000]} count={80} radius={150} />
+      <ForestPatch position={[-1000, 0, 0]} count={80} radius={150} />
+      <ForestPatch position={[1000, 0, 0]} count={80} radius={150} />
+      
+      {/* Manicured inner parks */}
+      <ForestPatch position={[-150, 0, 150]} count={12} radius={30} />
+      <ForestPatch position={[150, 0, 150]} count={12} radius={30} />
 
       {/* Main Arterial Road Network (Condensed) */}
       <RoadSegment position={[0, 0, 0]} args={[20, 1, 1400]} />
@@ -1346,6 +1438,11 @@ const CampusEnvironment = ({ theme, showLabels, activeLayer }: { theme: string, 
       {/* === BLOCK F: AUTOMOTIVE BODY ASSEMBLY (NEW) === */}
       <FactoryBlock position={[350, 0, -100]} theme={theme} label="Block F: Auto Body Assembly" colorScheme={activeLayer === 'manufacturing' ? 'orange' : 'orange'} args={[180, 60, 130]} showLabels={showLabels} />
       
+      {/* EMERGENCY SERVICES: Fire Station (East Wing) */}
+      <FireStation position={[550, 0, -100]} rotation={[0, -Math.PI/2, 0]} />
+      <FireTruck position={[520, 0, -120]} rotation={[0, Math.PI/2, 0]} />
+      <FireTruck position={[520, 0, -80]} rotation={[0, Math.PI/2, 0]} />
+      
       {/* === BLOCK G: CHEMICAL PROCESSING (NEW) === */}
       <FactoryBlock position={[-350, 0, -300]} theme={theme} label="Block G: Chemical Processing" colorScheme={activeLayer === 'manufacturing' ? 'orange' : 'orange'} args={[120, 40, 120]} showLabels={showLabels} />
       <DrumStorage position={[-380, 0, -230]} />
@@ -1361,6 +1458,9 @@ const CampusEnvironment = ({ theme, showLabels, activeLayer }: { theme: string, 
       <ElectricSubstation position={[-30, 0, -400]} />
       <ElectricSubstation position={[40, 0, -400]} />
       <ElectricSubstation position={[110, 0, -400]} />
+
+      {/* MAIN EQUIPMENT DATA CENTER */}
+      <DataCenter position={[-450, 0, -450]} />
       
       {/* Power Flow Lines */}
       <PowerFlowLine start={[0, 2, -400]} end={[-150, 2, -100]} active={activeLayer === 'power'} />
