@@ -1875,7 +1875,7 @@ const MachineHUD = ({ machine, hasAnomaly }: { machine: any, hasAnomaly: boolean
   </Html>
 );
 
-const HydraulicPress = ({ position, machine, onClick }: any) => {
+const DynamicHydraulicPress = ({ position, machine, onClick }: any) => {
   const [hovered, setHovered] = useState(false);
   const isRunning = machine?.status === 'Running';
   const hasAnomaly = machine?.temperature > 85 || machine?.status === 'Maintenance';
@@ -1906,7 +1906,7 @@ const AutoWeldingArm = ({ position, machine, onClick }: any) => {
   const armRef = useRef<THREE.Group>(null);
   const sparkRef = useRef<THREE.Mesh>(null);
 
-  useFrame((state, delta) => {
+  useFrame((state) => {
     const t = state.clock.elapsedTime;
     if (isRunning && armRef.current) {
       armRef.current.rotation.y = Math.sin(t * 3) * Math.PI / 4;
@@ -1943,7 +1943,9 @@ const ChemicalVat = ({ position, machine, onClick }: any) => {
 
   return (
     <group position={position} onClick={(e) => { e.stopPropagation(); onClick?.(); }} onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer'; }} onPointerOut={(e) => { e.stopPropagation(); setHovered(false); document.body.style.cursor = 'auto'; }}>
-      <Cylinder args={[5, 5, 12]} position={[0, 6, 0]} transparent opacity={0.6}><meshPhysicalMaterial color="#94a3b8" transmission={0.9} roughness={0.1} /></Cylinder>
+      <Cylinder args={[5, 5, 12]} position={[0, 6, 0]}>
+        <meshPhysicalMaterial color="#94a3b8" transmission={0.9} roughness={0.1} transparent opacity={0.6} />
+      </Cylinder>
       <Cylinder ref={liquidRef as any} args={[4.8, 4.8, 10]} position={[0, 5, 0]}><meshStandardMaterial color={hasAnomaly ? "#ef4444" : "#10b981"} /></Cylinder>
       <Box args={[12, 1, 12]} position={[0, 0.5, 0]}><meshStandardMaterial color="#475569" /></Box>
       {hovered && machine && <MachineHUD machine={machine} hasAnomaly={hasAnomaly} />}
@@ -2113,6 +2115,50 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
           {/* Core Terrain and Campus Buildings */}
           <CampusEnvironment theme={theme} showLabels={showLabels} activeLayer={activeLayer} />
 
+          {/* Dynamic Machinery Seeding from Database */}
+          {machines && machines.map((machine: any, index: number) => {
+             const name = machine.name || '';
+             
+             if (name.includes('Block A') || (!name.includes('Block') && index < 5)) {
+               const bayX = -150 + ((index % 5) * 25);
+               const bayZ = -100 + (Math.floor(index / 5) * 20);
+               return (
+                 <group key={machine.id || index} position={[bayX, 2, bayZ]}>
+                   <CNCMachine position={[0, 0, 0]} machine={machine} theme={theme} aiHeatmapMode={aiHeatmapMode} onClick={() => { setViewMode('BlockA'); onSelectMachine(machine); }} />
+                   <RoboticArm position={[8, 0, 15]} speedOffset={index*0.5} isEmergencyMode={isEmergencyMode} />
+                 </group>
+               );
+             }
+             
+             if (name.includes('Block B') || (!name.includes('Block') && index >= 5 && index < 10)) {
+               const bayX = 150 + ((index % 5) * 25);
+               const bayZ = -100 + (Math.floor(index / 5) * 20);
+               return (
+                 <CNCMachine key={machine.id || index} position={[bayX, 2, bayZ]} machine={machine} theme={theme} aiHeatmapMode={aiHeatmapMode} onClick={() => { setViewMode('BlockB'); onSelectMachine(machine); }} />
+               );
+             }
+
+             if (name.includes('Block E')) {
+               const bayX = -350 + ((index % 4) * 30);
+               const bayZ = -100 + (Math.floor(index / 4) * 25);
+               return <DynamicHydraulicPress key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} onClick={() => onSelectMachine(machine)} />;
+             }
+
+             if (name.includes('Block F')) {
+               const bayX = 350 + ((index % 5) * 25);
+               const bayZ = -100 + (Math.floor(index / 5) * 25);
+               return <AutoWeldingArm key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} onClick={() => onSelectMachine(machine)} />;
+             }
+
+             if (name.includes('Block G')) {
+               const bayX = -350 + ((index % 4) * 25);
+               const bayZ = -300 + (Math.floor(index / 4) * 25);
+               return <ChemicalVat key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} onClick={() => onSelectMachine(machine)} />;
+             }
+             
+             return null;
+          })}
+
           {/* AI & Heatmap Context Overlays */}
 
           {/* ================================================================
@@ -2151,23 +2197,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
             <PalletStack position={[20, 0, 25]} />
             <PalletStack position={[40, 0, 25]} />
 
-            {/* CNC Machining bays: 5 live machines with their robotic loaders */}
-            {machines && machines.map((machine: any, index: number) => {
-               if (index >= 5) return null;
-               const bayX = -50 + (index * 25);
-               return (
-                  <group key={machine.id || index}>
-                    <CNCMachine 
-                      position={[bayX, 2, 0]} 
-                      machine={machine} 
-                      theme={theme} 
-                      aiHeatmapMode={aiHeatmapMode}
-                      onClick={() => onSelectMachine && onSelectMachine(machine.id)} 
-                    />
-                    <RoboticArm position={[bayX + 8, 2, 15]} speedOffset={index*0.5} isEmergencyMode={isEmergencyMode} />
-                  </group>
-               )
-            })}
+            {/* Dynamic machines are now handled globally above CampusEnvironment */}
 
             {/* Hydraulic Press bay — heavy forming station */}
             <HydraulicPress position={[55, 0, -40]} />
