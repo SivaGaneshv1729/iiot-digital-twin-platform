@@ -1388,12 +1388,12 @@ const CampusEnvironment = ({ theme, showLabels, activeLayer }: { theme: string, 
     <group>
       {/* Massive Terrain Plane with procedural concrete texture - Dense 4x (2400x2400) */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, -0.1, 0]}>
-        <planeGeometry args={[2400, 2400, 16, 16]} />
+        <planeGeometry args={[1400, 1400, 16, 16]} />
         <meshStandardMaterial map={concreteTex} color={theme === 'light' ? "#b0b8c4" : "#5a6270"} roughness={0.95} />
       </mesh>
       
       {/* Grid Helper - Expanded fadeDistance */}
-      <Grid infiniteGrid fadeDistance={2000} cellColor={theme === 'light' ? "#cbd5e1" : "#334155"} sectionColor={theme === 'light' ? "#94a3b8" : "#475569"} />
+      <Grid infiniteGrid fadeDistance={1000} cellColor={theme === 'light' ? "#cbd5e1" : "#334155"} sectionColor={theme === 'light' ? "#94a3b8" : "#475569"} />
 
       {/* Perimeter Compound Wall - Shrunk to encircle the dense core */}
       <PerimeterWall width={1400} depth={1400} />
