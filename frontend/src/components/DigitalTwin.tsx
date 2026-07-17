@@ -1,6 +1,6 @@
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Grid, Box, Cylinder, Text, FlyControls, Environment, Html, Instances, Instance } from '@react-three/drei';
+import { OrbitControls, Grid, Box, Cylinder, Text, FlyControls, Environment, Html } from '@react-three/drei';
 import { XR, ARButton, createXRStore } from '@react-three/xr';
 // import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
@@ -47,44 +47,46 @@ const RoboticArm = ({ position, speedOffset = 0, isEmergencyMode }: { position: 
 
   return (
     <group position={position}>
-      {/* Base Pedestal */}
-      <Cylinder args={[0.4, 0.5, 0.4]} position={[0, 0.2, 0]} castShadow>
-        <meshStandardMaterial color="#334155" metalness={0.8} />
-      </Cylinder>
-      
-      {/* Swivel Base */}
-      <group ref={baseRef} position={[0, 0.4, 0]}>
-        <Box args={[0.3, 0.6, 0.3]} position={[0, 0.3, 0]} castShadow>
-          <meshStandardMaterial color="#f59e0b" metalness={0.5} roughness={0.2} /> {/* Orange Industrial */}
-        </Box>
+      <group scale={4}>
+        {/* Base Pedestal */}
+        <Cylinder args={[0.4, 0.5, 0.4]} position={[0, 0.2, 0]} castShadow>
+          <meshStandardMaterial color="#334155" metalness={0.8} />
+        </Cylinder>
         
-        {/* Arm Segment 1 */}
-        <group ref={joint1Ref} position={[0, 0.6, 0]}>
-          <Cylinder args={[0.15, 0.15, 0.3]} rotation={[Math.PI/2, 0, 0]}>
-            <meshStandardMaterial color="#1e293b" />
-          </Cylinder>
-          <Box args={[0.2, 1.2, 0.2]} position={[0, 0.6, 0]} castShadow>
-             <meshStandardMaterial color="#f59e0b" metalness={0.5} />
+        {/* Swivel Base */}
+        <group ref={baseRef} position={[0, 0.4, 0]}>
+          <Box args={[0.3, 0.6, 0.3]} position={[0, 0.3, 0]} castShadow>
+            <meshStandardMaterial color="#f59e0b" metalness={0.5} roughness={0.2} /> {/* Orange Industrial */}
           </Box>
           
-          {/* Arm Segment 2 */}
-          <group ref={joint2Ref} position={[0, 1.2, 0]}>
-            <Cylinder args={[0.12, 0.12, 0.25]} rotation={[Math.PI/2, 0, 0]}>
+          {/* Arm Segment 1 */}
+          <group ref={joint1Ref} position={[0, 0.6, 0]}>
+            <Cylinder args={[0.15, 0.15, 0.3]} rotation={[Math.PI/2, 0, 0]}>
               <meshStandardMaterial color="#1e293b" />
             </Cylinder>
-            <Box args={[0.15, 1, 0.15]} position={[0, 0.5, 0]} castShadow>
-              <meshStandardMaterial color="#f59e0b" metalness={0.5} />
+            <Box args={[0.2, 1.2, 0.2]} position={[0, 0.6, 0]} castShadow>
+               <meshStandardMaterial color="#f59e0b" metalness={0.5} />
             </Box>
             
-            {/* Toolhead / Laser Welder */}
-            <group position={[0, 1, 0]}>
-              <Box args={[0.2, 0.3, 0.2]}>
-                 <meshStandardMaterial color="#0f172a" />
+            {/* Arm Segment 2 */}
+            <group ref={joint2Ref} position={[0, 1.2, 0]}>
+              <Cylinder args={[0.12, 0.12, 0.25]} rotation={[Math.PI/2, 0, 0]}>
+                <meshStandardMaterial color="#1e293b" />
+              </Cylinder>
+              <Box args={[0.15, 1, 0.15]} position={[0, 0.5, 0]} castShadow>
+                <meshStandardMaterial color="#f59e0b" metalness={0.5} />
               </Box>
-              <mesh position={[0, 0.2, 0]} ref={headRef}>
-                <sphereGeometry args={[0.1, 16, 16]} />
-                <meshBasicMaterial color="#3b82f6" transparent opacity={0.8} />
-              </mesh>
+              
+              {/* Toolhead / Laser Welder */}
+              <group position={[0, 1, 0]}>
+                <Box args={[0.2, 0.3, 0.2]}>
+                   <meshStandardMaterial color="#0f172a" />
+                </Box>
+                <mesh position={[0, 0.2, 0]} ref={headRef}>
+                  <sphereGeometry args={[0.1, 16, 16]} />
+                  <meshBasicMaterial color="#3b82f6" transparent opacity={0.8} />
+                </mesh>
+              </group>
             </group>
           </group>
         </group>
@@ -97,7 +99,7 @@ const RoboticArm = ({ position, speedOffset = 0, isEmergencyMode }: { position: 
 // --------------------------------------------------------------------------
 // Campus Structures (High-Fidelity Buildings, Roads, Silos)
 // --------------------------------------------------------------------------
-const Building = ({ position, args, theme, isGlass = false, label = "" }: any) => {
+const Building = ({ position, args, theme, isGlass = false, label = "", showLabels = false }: any) => {
   const [w, h, d] = args;
   return (
     <group position={position}>
@@ -137,14 +139,14 @@ const Building = ({ position, args, theme, isGlass = false, label = "" }: any) =
       </Box>
 
       {/* Floating Hologram Label */}
-      {label && (
+      {showLabels && label && (
         <Text 
           position={[0, h/2 + 10, 0]} 
-          fontSize={8} 
+          fontSize={5} 
           color={theme === 'light' ? "#2563eb" : "#38bdf8"} 
           anchorX="center" 
           anchorY="middle"
-          outlineWidth={0.2}
+          outlineWidth={0.1}
           outlineColor={theme === 'light' ? "#ffffff" : "#000000"}
         >
           {label}
@@ -155,133 +157,602 @@ const Building = ({ position, args, theme, isGlass = false, label = "" }: any) =
 };
 
 // --------------------------------------------------------------------------
-// Campus Environment (Optimized)
 // --------------------------------------------------------------------------
-const CampusEnvironment = ({ theme, oee, throughput }: { theme: string, oee: number, throughput: number }) => {
+// Heavy Factory Block (Meidensha Corporate Aesthetic)
+// --------------------------------------------------------------------------
+const FactoryBlock = ({ position, theme, label, args = [120, 60, 100], colorScheme = "blue", showLabels = false }: any) => {
+  const isLight = theme === 'light';
+  // Meidensha clean white/grey
+  const mainColor = isLight ? "#f8fafc" : "#e2e8f0";
+  const roofColor = isLight ? "#cbd5e1" : "#94a3b8";
+  // Corporate blue or Ohta green
+  const accentColor = colorScheme === "blue" ? "#2563eb" : "#059669";
+
   return (
-    <group>
-      {/* Massive Terrain Plane */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, -0.1, 0]}>
-        <planeGeometry args={[400, 400]} />
-        <meshStandardMaterial color={theme === 'light' ? "#e2e8f0" : "#020617"} roughness={0.8} />
-      </mesh>
-      
-      {/* Grid Helper (Cyber map feel) */}
-      <Grid infiniteGrid fadeDistance={200} cellColor={theme === 'light' ? "#94a3b8" : "#334155"} sectionColor={theme === 'light' ? "#64748b" : "#475569"} />
-
-      {/* Buildings */}
-      {/* Unit 1: Assembly (Glass Roof to see inside) */}
-      <group position={[-50, 15, -50]}>
-        <Building position={[0, 0, 0]} args={[80, 30, 80]} theme={theme} isGlass={true} label="UNIT 1: ASSEMBLY" />
-        <Html position={[0, 35, 0]} center zIndexRange={[100, 0]}>
-          <div style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(56, 189, 248, 0.5)', padding: '10px 15px', borderRadius: '8px', color: 'white', backdropFilter: 'blur(5px)', display: 'flex', flexDirection: 'column', gap: '5px', pointerEvents: 'none', minWidth: '150px' }}>
-            <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Live Metrics</div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontWeight: 'bold' }}>OEE:</span>
-              <span style={{ color: oee > 80 ? '#4ade80' : '#f59e0b' }}>{oee}%</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontWeight: 'bold' }}>Output:</span>
-              <span style={{ color: '#38bdf8' }}>{throughput} UPH</span>
-            </div>
-          </div>
+    <group position={position}>
+      {/* Foundation */}
+      <Box args={[args[0] + 10, 2, args[2] + 10]} position={[0, 1, 0]}>
+        <meshStandardMaterial color={isLight ? "#94a3b8" : "#64748b"} />
+      </Box>
+      {/* Main Structure (Hollow for interior view) */}
+      <Box args={[args[0], args[1], 2]} position={[0, args[1]/2 + 2, -args[2]/2 + 1]}>
+        <meshStandardMaterial color={mainColor} />
+      </Box>
+      <Box args={[2, args[1], args[2]]} position={[-args[0]/2 + 1, args[1]/2 + 2, 0]}>
+        <meshStandardMaterial color={mainColor} />
+      </Box>
+      <Box args={[2, args[1], args[2]]} position={[args[0]/2 - 1, args[1]/2 + 2, 0]}>
+        <meshStandardMaterial color={mainColor} />
+      </Box>
+      {/* Roof */}
+      <Box args={[args[0] + 2, 2, args[2] + 2]} position={[0, args[1] + 3, 0]}>
+        <meshStandardMaterial color={roofColor} />
+      </Box>
+      {/* Accent Band */}
+      <Box args={[args[0] + 2.2, 4, args[2] + 2.2]} position={[0, args[1] - 5, 0]}>
+        <meshStandardMaterial color={accentColor} />
+      </Box>
+      {showLabels && (
+        <Html position={[0, args[1] + 15, args[2]/2]} center>
+           <div style={{ color: '#0f172a', background: 'rgba(255,255,255,0.95)', padding: '4px 10px', fontSize: '1.0rem', border: `2px solid ${accentColor}`, borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '1px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>{label}</div>
         </Html>
-      </group>
-      
-      {/* Unit 2: Logistics (Opaque with glass accents) */}
-      <group position={[60, 20, -50]}>
-        <Building position={[0, 0, 0]} args={[70, 40, 70]} theme={theme} isGlass={true} label="UNIT 2: LOGISTICS" />
-        <Html position={[0, 40, 0]} center zIndexRange={[100, 0]}>
-          <div style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(245, 158, 11, 0.5)', padding: '10px 15px', borderRadius: '8px', color: 'white', backdropFilter: 'blur(5px)', display: 'flex', flexDirection: 'column', gap: '5px', pointerEvents: 'none', minWidth: '150px' }}>
-            <div style={{ fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Inventory Status</div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontWeight: 'bold' }}>Capacity:</span>
-              <span style={{ color: '#f59e0b' }}>87%</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontWeight: 'bold' }}>Active AGVs:</span>
-              <span style={{ color: '#38bdf8' }}>24</span>
-            </div>
-          </div>
-        </Html>
-      </group>
-
-      {/* R&D / Admin Tower */}
-      <Building position={[0, 50, 60]} args={[40, 100, 40]} theme={theme} isGlass={true} label="R&D HQ" />
-      <Building position={[0, 5, 80]} args={[60, 10, 20]} theme={theme} isGlass={false} />
-
-      {/* Landscaping Trees (Optimized rendering manually or via instances) */}
-      <Instances range={16}>
-        <cylinderGeometry args={[0.5, 0.5, 4]} />
-        <meshStandardMaterial color={theme === 'light' ? "#78350f" : "#451a03"} roughness={1} />
-        {[-80, -60, -40, -20, 20, 40, 60, 80].map((x, i) => <Instance key={`trunk-t-${i}`} position={[x, 2, -100]} />)}
-        {[-80, -60, -40, -20, 20, 40, 60, 80].map((x, i) => <Instance key={`trunk-m-${i}`} position={[x, 2, -20]} />)}
-      </Instances>
-      <Instances range={16}>
-        <cylinderGeometry args={[0, 3, 8]} />
-        <meshStandardMaterial color={theme === 'light' ? "#22c55e" : "#064e3b"} roughness={0.9} />
-        {[-80, -60, -40, -20, 20, 40, 60, 80].map((x, i) => <Instance key={`leaf1-t-${i}`} position={[x, 7, -100]} />)}
-        {[-80, -60, -40, -20, 20, 40, 60, 80].map((x, i) => <Instance key={`leaf1-m-${i}`} position={[x, 7, -20]} />)}
-      </Instances>
-      <Instances range={16}>
-        <cylinderGeometry args={[0, 2.5, 6]} />
-        <meshStandardMaterial color={theme === 'light' ? "#4ade80" : "#065f46"} roughness={0.9} />
-        {[-80, -60, -40, -20, 20, 40, 60, 80].map((x, i) => <Instance key={`leaf2-t-${i}`} position={[x, 10, -100]} />)}
-        {[-80, -60, -40, -20, 20, 40, 60, 80].map((x, i) => <Instance key={`leaf2-m-${i}`} position={[x, 10, -20]} />)}
-      </Instances>
-
-      {/* Industrial Silos / Cooling Towers */}
-      {[-80, -65, -50].map((z) => (
-        <group key={`silo-${z}`} position={[-110, 20, z]}>
-          <Cylinder args={[8, 8, 40]} castShadow receiveShadow>
-             <meshStandardMaterial color={theme === 'light' ? "#e2e8f0" : "#1e293b"} metalness={0.6} />
-          </Cylinder>
-          <Cylinder args={[8.2, 8.2, 0.5]} position={[0, 15, 0]}>
-             <meshBasicMaterial color="#3b82f6" />
-          </Cylinder>
-        </group>
-      ))}
-
-      {/* Solar Panel Arrays (Unit 2 Roof) */}
-      <OptimizedSolarGrid position={[40, 40, -70]} theme={theme} />
-      <OptimizedSolarGrid position={[80, 40, -70]} theme={theme} />
-      <OptimizedSolarGrid position={[60, 40, -30]} theme={theme} />
+      )}
     </group>
   );
 };
 
-const SolarPanel = ({ position, rotation, theme }: any) => {
-  const groupRef = useRef<THREE.Group>(null);
-  const time = useMemo(() => Math.random() * 100, []);
-  useFrame((state) => {
-    if (groupRef.current) groupRef.current.position.y = Math.sin(state.clock.elapsedTime + time) * 0.1;
-  });
-  const yOffset = Math.sin(time * 2) * 0.1;
-  const panelColor = Math.random() > 0.5 ? (theme === 'light' ? "#3b82f6" : "#0ea5e9") : (theme === 'light' ? "#8b5cf6" : "#6366f1");
-
+// --------------------------------------------------------------------------
+// Utility Bridge / Pipelines
+// --------------------------------------------------------------------------
+const UtilityBridge = ({ start, end, theme }: any) => {
+  const dx = end[0] - start[0];
+  const dy = end[1] - start[1];
+  const dz = end[2] - start[2];
+  const length = Math.sqrt(dx*dx + dy*dy + dz*dz);
+  
+  const position = [
+    start[0] + dx / 2,
+    start[1] + dy / 2,
+    start[2] + dz / 2
+  ] as [number, number, number];
+  
+  const angleY = Math.atan2(dx, dz);
+  
   return (
-    <group position={position} rotation={rotation} ref={groupRef}>
-      <Box args={[1.8, 0.1, 1.2]} position={[0, yOffset + 0.5, 0]}>
-        <meshStandardMaterial color={panelColor} metalness={0.8} roughness={0.2} />
+    <group position={position} rotation={[0, angleY, 0]}>
+      {/* Bridge structure */}
+      <Box args={[4, 4, length]} position={[0, 0, 0]}>
+        <meshStandardMaterial color={theme === 'light' ? "#94a3b8" : "#334155"} wireframe />
       </Box>
-      <Cylinder args={[0.05, 0.05, 0.5]} position={[0, yOffset + 0.25, 0]}>
-        <meshStandardMaterial color="#64748b" />
+      {/* Thick Pipelines inside */}
+      <Cylinder args={[0.8, 0.8, length]} position={[-1, 0, 0]} rotation={[Math.PI/2, 0, 0]}>
+        <meshStandardMaterial color="#3b82f6" metalness={0.8} />
+      </Cylinder>
+      <Cylinder args={[0.5, 0.5, length]} position={[1, -1, 0]} rotation={[Math.PI/2, 0, 0]}>
+        <meshStandardMaterial color="#ef4444" metalness={0.8} />
       </Cylinder>
     </group>
   );
 };
 
-const OptimizedSolarGrid = ({ position, theme }: any) => {
+// --------------------------------------------------------------------------
+// Industrial Silo / Cooling Tower
+// --------------------------------------------------------------------------
+const IndustrialSilo = ({ position, theme }: any) => {
   return (
     <group position={position}>
-      {[-20, 0, 20].map((x) => 
-        [-20, 0, 20].map((z) => (
-          <SolarPanel key={`sp-${x}-${z}`} position={[x, 0, z]} rotation={[0.2, 0, 0]} theme={theme} />
-        ))
-      )}
+      <Cylinder args={[15, 18, 60]} position={[0, 30, 0]} castShadow>
+        <meshStandardMaterial color={theme === 'light' ? "#cbd5e1" : "#1e293b"} roughness={0.6} metalness={0.3} />
+      </Cylinder>
+      {/* Top cap */}
+      <Cylinder args={[15.5, 15, 2]} position={[0, 61, 0]}>
+        <meshStandardMaterial color="#0ea5e9" />
+      </Cylinder>
+      {/* Vapor / Steam light emitting from top */}
+      <Cylinder args={[10, 15, 10]} position={[0, 66, 0]}>
+        <meshBasicMaterial color="#ffffff" transparent opacity={0.2} />
+      </Cylinder>
     </group>
   );
 };
+
+// --------------------------------------------------------------------------
+// Purpose-Built 3D Structures (visually communicate function)
+// --------------------------------------------------------------------------
+
+// Welding Station: sparking yellow booth with electrode arms
+const WeldingBooth = ({ position }: { position: [number, number, number] }) => {
+  const sparkRef = useRef<THREE.Mesh>(null);
+  useFrame((state) => {
+    if (sparkRef.current) {
+      const flicker = 0.8 + Math.abs(Math.sin(state.clock.elapsedTime * 20)) * 0.6;
+      (sparkRef.current.material as THREE.MeshBasicMaterial).opacity = flicker;
+    }
+  });
+  return (
+    <group position={position}>
+      {/* Booth frame (4 corner pillars + roof) */}
+      {[[-5,-5],[5,-5],[-5,5],[5,5]].map(([x,z],i) => (
+        <Box key={i} args={[1, 10, 1]} position={[x, 5, z]} castShadow>
+          <meshStandardMaterial color="#334155" metalness={0.8} />
+        </Box>
+      ))}
+      <Box args={[12, 0.5, 12]} position={[0, 10, 0]}>
+        <meshStandardMaterial color="#1e293b" />
+      </Box>
+      {/* Yellow safety curtain rods */}
+      <Box args={[12, 0.3, 0.3]} position={[0, 8, -5]}>
+        <meshStandardMaterial color="#facc15" />
+      </Box>
+      <Box args={[12, 0.3, 0.3]} position={[0, 8, 5]}>
+        <meshStandardMaterial color="#facc15" />
+      </Box>
+      {/* Welding electrode arm */}
+      <Box args={[0.5, 6, 0.5]} position={[0, 7, 0]} castShadow>
+        <meshStandardMaterial color="#94a3b8" metalness={0.9} />
+      </Box>
+      {/* Welding tip - glowing yellow-white */}
+      <Cylinder args={[0.5, 0.5, 1]} position={[0, 4, 0]}>
+        <meshBasicMaterial color="#fde68a" />
+      </Cylinder>
+      {/* Arc flash - flickering */}
+      <mesh ref={sparkRef} position={[0, 3.5, 0]}>
+        <sphereGeometry args={[1.5, 8, 8]} />
+        <meshBasicMaterial color="#fbbf24" transparent opacity={0.9} />
+      </mesh>
+      {/* Sparks scattered */}
+      {[[-1,1],[1,-1],[1.5,0.5],[-1.5,-0.5]].map(([sx,sz],i) => (
+        <mesh key={i} position={[sx, 3 + Math.random(), sz]}>
+          <sphereGeometry args={[0.2, 4, 4]} />
+          <meshBasicMaterial color="#f97316" />
+        </mesh>
+      ))}
+    </group>
+  );
+};
+
+// QC Inspection Frame: gantry-style frame with overhead scanner arm
+const QCInspectionFrame = ({ position }: { position: [number, number, number] }) => {
+  const scanRef = useRef<THREE.Mesh>(null);
+  useFrame((state) => {
+    if (scanRef.current) {
+      scanRef.current.position.x = Math.sin(state.clock.elapsedTime * 0.8) * 6;
+    }
+  });
+  return (
+    <group position={position}>
+      {/* Gantry pillars */}
+      <Box args={[1, 18, 1]} position={[-10, 9, 0]} castShadow>
+        <meshStandardMaterial color="#f8fafc" metalness={0.5} />
+      </Box>
+      <Box args={[1, 18, 1]} position={[10, 9, 0]} castShadow>
+        <meshStandardMaterial color="#f8fafc" metalness={0.5} />
+      </Box>
+      {/* Cross beam */}
+      <Box args={[20, 1.5, 2]} position={[0, 18, 0]}>
+        <meshStandardMaterial color="#f8fafc" metalness={0.6} />
+      </Box>
+      {/* Scanning head - moves left/right */}
+      <mesh ref={scanRef} position={[0, 16, 0]}>
+        <boxGeometry args={[4, 2, 3]} />
+        <meshStandardMaterial color="#1e40af" metalness={0.8} />
+      </mesh>
+      {/* Scan beam (green laser line) */}
+      <Box args={[0.2, 14, 0.2]} position={[0, 8, 0]}>
+        <meshBasicMaterial color="#22c55e" transparent opacity={0.7} />
+      </Box>
+      {/* Base platform with green outline */}
+      <Box args={[22, 0.5, 16]} position={[0, 0.25, 0]}>
+        <meshStandardMaterial color="#065f46" />
+      </Box>
+    </group>
+  );
+};
+
+// Loading Dock: raised concrete platform with access ramp
+const LoadingDock = ({ position }: { position: [number, number, number] }) => {
+  return (
+    <group position={position}>
+      {/* Raised concrete platform */}
+      <Box args={[40, 5, 20]} position={[0, 2.5, 0]} castShadow receiveShadow>
+        <meshStandardMaterial color="#94a3b8" roughness={0.9} />
+      </Box>
+      {/* Dock ramp */}
+      <Box args={[10, 0.5, 12]} position={[15, 0.5, 0]} rotation={[0.35, 0, 0]}>
+        <meshStandardMaterial color="#64748b" roughness={0.9} />
+      </Box>
+      {/* Yellow dock edge stripe */}
+      <Box args={[42, 0.3, 1]} position={[0, 5.2, -9]}>
+        <meshStandardMaterial color="#facc15" />
+      </Box>
+      {/* Dock bumpers */}
+      {[-15, -5, 5, 15].map((x, i) => (
+        <Box key={i} args={[3, 4, 2]} position={[x, 5, -8]} castShadow>
+          <meshStandardMaterial color="#1e293b" roughness={0.9} />
+        </Box>
+      ))}
+    </group>
+  );
+};
+
+// Paint Booth: enclosed yellow-edged box with exhaust fans on top
+const PaintBooth = ({ position }: { position: [number, number, number] }) => {
+  const fanRef = useRef<THREE.Group>(null);
+  useFrame((_, delta) => {
+    if (fanRef.current) fanRef.current.rotation.y += delta * 6;
+  });
+  return (
+    <group position={position}>
+      {/* Main enclosure */}
+      <Box args={[18, 14, 12]} position={[0, 7, 0]} castShadow>
+        <meshStandardMaterial color="#e2e8f0" transparent opacity={0.4} roughness={0.1} />
+      </Box>
+      {/* Frame wireframe */}
+      <Box args={[18.2, 14.2, 12.2]} position={[0, 7, 0]}>
+        <meshBasicMaterial color="#f59e0b" wireframe />
+      </Box>
+      {/* Exhaust fan housing */}
+      <Cylinder args={[2, 2, 3]} position={[-4, 15, 0]}>
+        <meshStandardMaterial color="#334155" />
+      </Cylinder>
+      <Cylinder args={[2, 2, 3]} position={[4, 15, 0]}>
+        <meshStandardMaterial color="#334155" />
+      </Cylinder>
+      {/* Spinning fan blades */}
+      <group ref={fanRef} position={[-4, 14, 0]}>
+        {[0, 1, 2, 3].map((i) => (
+          <Box key={i} args={[3.5, 0.3, 0.5]} position={[0, 0, 0]} rotation={[0, (Math.PI / 2) * i, 0]}>
+            <meshStandardMaterial color="#94a3b8" />
+          </Box>
+        ))}
+      </group>
+      {/* Purple paint mist glow */}
+      <Box args={[16, 12, 10]} position={[0, 7, 0]}>
+        <meshBasicMaterial color="#7c3aed" transparent opacity={0.06} />
+      </Box>
+    </group>
+  );
+};
+
+// Testing Rig: hydraulic press frame with piston arm
+const TestingRig = ({ position }: { position: [number, number, number] }) => {
+  const pistonRef = useRef<THREE.Mesh>(null);
+  useFrame((state) => {
+    if (pistonRef.current) {
+      pistonRef.current.position.y = 8 - Math.abs(Math.sin(state.clock.elapsedTime * 1.2)) * 6;
+    }
+  });
+  return (
+    <group position={position}>
+      {/* Heavy base plate */}
+      <Box args={[16, 2, 12]} position={[0, 1, 0]} castShadow>
+        <meshStandardMaterial color="#1e293b" metalness={0.9} />
+      </Box>
+      {/* Two vertical uprights */}
+      <Box args={[2, 22, 2]} position={[-6, 12, 0]} castShadow>
+        <meshStandardMaterial color="#334155" metalness={0.8} />
+      </Box>
+      <Box args={[2, 22, 2]} position={[6, 12, 0]} castShadow>
+        <meshStandardMaterial color="#334155" metalness={0.8} />
+      </Box>
+      {/* Top crosshead */}
+      <Box args={[14, 3, 6]} position={[0, 23, 0]}>
+        <meshStandardMaterial color="#0f172a" metalness={0.9} />
+      </Box>
+      {/* Hydraulic piston - moves up-down */}
+      <mesh ref={pistonRef} position={[0, 8, 0]}>
+        <cylinderGeometry args={[2.5, 2.5, 6]} />
+        <meshStandardMaterial color="#94a3b8" metalness={0.95} roughness={0.05} />
+      </mesh>
+      {/* Red warning indicator on crosshead */}
+      <Box args={[3, 0.5, 3]} position={[0, 25, 0]}>
+        <meshBasicMaterial color="#ef4444" />
+      </Box>
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
+const IndustrialFurnace = ({ position }: { position: [number, number, number] }) => {
+  return (
+    <group position={position}>
+      <Cylinder args={[10, 12, 20]} position={[0, 10, 0]} castShadow>
+        <meshStandardMaterial color="#1e293b" metalness={0.8} />
+      </Cylinder>
+      <Cylinder args={[8, 8, 4]} position={[0, 5, 11]}>
+        <meshStandardMaterial color="#ef4444" emissive="#dc2626" emissiveIntensity={2} />
+      </Cylinder>
+      <Box args={[14, 2, 14]} position={[0, 21, 0]}>
+        <meshStandardMaterial color="#334155" />
+      </Box>
+      <Cylinder args={[3, 3, 15]} position={[0, 28, 0]}>
+        <meshStandardMaterial color="#0f172a" />
+      </Cylinder>
+    </group>
+  );
+};
+
+const ElectricSubstation = ({ position }: { position: [number, number, number] }) => {
+  return (
+    <group position={position}>
+      <Box args={[15, 8, 10]} position={[0, 4, 0]} castShadow>
+        <meshStandardMaterial color="#475569" metalness={0.6} />
+      </Box>
+      {[-5, 0, 5].map((x) => (
+        <group key={`insulator-${x}`} position={[x, 10, 0]}>
+          <Cylinder args={[0.5, 1, 4]}><meshStandardMaterial color="#94a3b8" /></Cylinder>
+          <Cylinder args={[1.5, 1.5, 0.2]} position={[0, 1, 0]}><meshStandardMaterial color="#e2e8f0" /></Cylinder>
+          <Cylinder args={[1.5, 1.5, 0.2]} position={[0, 0, 0]}><meshStandardMaterial color="#e2e8f0" /></Cylinder>
+          <Cylinder args={[1.5, 1.5, 0.2]} position={[0, -1, 0]}><meshStandardMaterial color="#e2e8f0" /></Cylinder>
+        </group>
+      ))}
+      <Box args={[18, 0.5, 12]} position={[0, 0.25, 0]}>
+        <meshStandardMaterial color="#cbd5e1" />
+      </Box>
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
+// Ambient Density & Clutter Objects
+// --------------------------------------------------------------------------
+const ShippingContainer = ({ position, color = "#1e40af", rotation = [0, 0, 0] }: any) => {
+  return (
+    <group position={position} rotation={rotation}>
+      <Box args={[12, 5, 5]} position={[0, 2.5, 0]} castShadow>
+        <meshStandardMaterial color={color} roughness={0.7} />
+      </Box>
+      <Box args={[12.1, 4.8, 5.1]} position={[0, 2.5, 0]}>
+        <meshBasicMaterial color="#0f172a" wireframe />
+      </Box>
+    </group>
+  );
+};
+
+const PalletStack = ({ position }: any) => {
+  return (
+    <group position={position}>
+      {/* Pallet 1 */}
+      <Box args={[4, 0.5, 4]} position={[0, 0.25, 0]} castShadow>
+        <meshStandardMaterial color="#b45309" roughness={0.9} />
+      </Box>
+      <Box args={[3.8, 3, 3.8]} position={[0, 2, 0]} castShadow>
+        <meshStandardMaterial color="#e2e8f0" roughness={0.4} /> {/* Cargo */}
+      </Box>
+    </group>
+  );
+};
+
+const SafetyBarrier = ({ position, length = 20, rotation = [0,0,0] }: any) => {
+  return (
+    <group position={position} rotation={rotation}>
+      <Box args={[length, 1.5, 0.5]} position={[0, 0.75, 0]} castShadow>
+        <meshStandardMaterial color="#facc15" />
+      </Box>
+      <Box args={[length + 0.1, 0.5, 0.6]} position={[0, 0.75, 0]}>
+        <meshStandardMaterial color="#0f172a" />
+      </Box>
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
+const WarehouseRacks = ({ position }: { position: [number, number, number] }) => {
+  return (
+    <group position={position}>
+      <Box args={[30, 20, 4]} position={[0, 10, 0]} castShadow>
+        <meshStandardMaterial color="#334155" metalness={0.8} wireframe />
+      </Box>
+      {[3, 8, 13, 18].map((y) => (
+        <group key={`shelf-${y}`} position={[0, y, 0]}>
+          <Box args={[30, 0.2, 4]}><meshStandardMaterial color="#1e293b" /></Box>
+          {[-12, -6, 0, 6, 12].map((x) => (
+             <Box key={`crate-${x}`} args={[3, 4, 3]} position={[x, 2, 0]}>
+               <meshStandardMaterial color={Math.random() > 0.5 ? '#f59e0b' : '#3b82f6'} roughness={0.6} />
+             </Box>
+          ))}
+        </group>
+      ))}
+    </group>
+  );
+};
+
+const ConveyorLine = ({ position, length }: { position: [number, number, number], length: number }) => {
+  return (
+    <group position={position}>
+      <Box args={[length, 2, 3]} position={[0, 1, 0]} castShadow receiveShadow>
+        <meshStandardMaterial color="#1e293b" metalness={0.5} />
+      </Box>
+      <Box args={[length, 0.2, 2.5]} position={[0, 2.1, 0]}>
+        <meshStandardMaterial color="#0f172a" roughness={0.8} />
+      </Box>
+      <Box args={[length, 0.2, 0.2]} position={[0, 2.2, 1.3]}><meshBasicMaterial color="#f59e0b" /></Box>
+      <Box args={[length, 0.2, 0.2]} position={[0, 2.2, -1.3]}><meshBasicMaterial color="#f59e0b" /></Box>
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
+// Massive Transformer
+// --------------------------------------------------------------------------
+const MassiveTransformer = ({ position }: { position: [number, number, number] }) => {
+  return (
+    <group position={position}>
+      <Box args={[30, 25, 20]} position={[0, 12.5, 0]} castShadow>
+        <meshStandardMaterial color="#1e293b" metalness={0.8} />
+      </Box>
+      {/* Cooling fins */}
+      {[-12, -6, 0, 6, 12].map(x => (
+        <Box key={`fin-${x}`} args={[2, 20, 22]} position={[x, 12.5, 0]}>
+          <meshStandardMaterial color="#334155" metalness={0.5} />
+        </Box>
+      ))}
+      {/* Top cylinders */}
+      {[-10, 0, 10].map(x => (
+        <Cylinder key={`top-${x}`} args={[2, 2, 8]} position={[x, 29, 0]}>
+          <meshStandardMaterial color="#94a3b8" />
+        </Cylinder>
+      ))}
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
+// Communication Tower
+// --------------------------------------------------------------------------
+const CommunicationTower = ({ position }: { position: [number, number, number] }) => {
+  const [t] = useState(() => Math.random() * 100);
+  const lightRef = useRef<THREE.Mesh>(null);
+  useFrame((state) => {
+    if (lightRef.current) {
+      (lightRef.current.material as THREE.MeshBasicMaterial).opacity = Math.sin(state.clock.elapsedTime * 4 + t) > 0 ? 1 : 0.2;
+    }
+  });
+
+  return (
+    <group position={position}>
+      {/* Tower base structure */}
+      <Cylinder args={[5, 10, 100]} position={[0, 50, 0]} castShadow>
+        <meshStandardMaterial color="#334155" wireframe />
+      </Cylinder>
+      <Cylinder args={[2, 5, 80]} position={[0, 140, 0]}>
+        <meshStandardMaterial color="#475569" wireframe />
+      </Cylinder>
+      {/* Antennas */}
+      <Cylinder args={[0.5, 0.5, 40]} position={[0, 200, 0]}>
+        <meshStandardMaterial color="#94a3b8" />
+      </Cylinder>
+      {/* Blinking Red Light */}
+      <mesh ref={lightRef} position={[0, 222, 0]}>
+        <sphereGeometry args={[2, 16, 16]} />
+        <meshBasicMaterial color="#ef4444" transparent opacity={1} />
+      </mesh>
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
+// Environmental Infrastructure (Solar & Water)
+// --------------------------------------------------------------------------
+const SolarArray = ({ position }: { position: [number, number, number] }) => {
+  return (
+    <group position={position}>
+      {[-30, -10, 10, 30].map((x) => (
+         <group key={`solar-${x}`} position={[x, 5, 0]}>
+           <Box args={[18, 0.5, 40]} rotation={[0.2, 0, 0]}>
+             <meshStandardMaterial color="#0f172a" metalness={0.9} roughness={0.1} />
+           </Box>
+           <Cylinder args={[0.5, 0.5, 5]} position={[0, -2.5, 0]}>
+             <meshStandardMaterial color="#94a3b8" />
+           </Cylinder>
+         </group>
+      ))}
+    </group>
+  );
+};
+
+const WaterTreatmentPlant = ({ position }: { position: [number, number, number] }) => {
+  return (
+    <group position={position}>
+      {/* Massive cylindrical clarifiers */}
+      <Cylinder args={[30, 30, 10]} position={[-40, 5, 0]} castShadow>
+        <meshStandardMaterial color="#e2e8f0" metalness={0.2} />
+      </Cylinder>
+      <Cylinder args={[28, 28, 9]} position={[-40, 9.5, 0]}>
+        <meshStandardMaterial color="#3b82f6" transparent opacity={0.6} /> {/* Water */}
+      </Cylinder>
+      
+      <Cylinder args={[30, 30, 10]} position={[40, 5, 0]} castShadow>
+        <meshStandardMaterial color="#e2e8f0" metalness={0.2} />
+      </Cylinder>
+      <Cylinder args={[28, 28, 9]} position={[40, 9.5, 0]}>
+        <meshStandardMaterial color="#3b82f6" transparent opacity={0.6} /> {/* Water */}
+      </Cylinder>
+      
+      {/* Connecting pipes */}
+      <Cylinder args={[2, 2, 80]} position={[0, 8, 0]} rotation={[0, 0, Math.PI/2]}>
+        <meshStandardMaterial color="#94a3b8" />
+      </Cylinder>
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
+// Campus Environment (Optimized)
+// --------------------------------------------------------------------------
+const CampusEnvironment = ({ theme, showLabels }: { theme: string, showLabels: boolean }) => {
+  return (
+    <group>
+      {/* Massive Terrain Plane */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, -0.1, 0]}>
+        <planeGeometry args={[1200, 1200]} />
+        <meshStandardMaterial color={theme === 'light' ? "#94a3b8" : "#1e293b"} roughness={0.9} />
+      </mesh>
+      
+      {/* Grid Helper */}
+      <Grid infiniteGrid fadeDistance={400} cellColor={theme === 'light' ? "#cbd5e1" : "#334155"} sectionColor={theme === 'light' ? "#94a3b8" : "#475569"} />
+
+      {/* Ambient Density - Shipping Containers around Loading Docks */}
+      <ShippingContainer position={[-180, 0, 80]} color="#b91c1c" />
+      <ShippingContainer position={[-180, 5, 80]} color="#1e40af" />
+      <ShippingContainer position={[-165, 0, 80]} color="#047857" />
+      <ShippingContainer position={[-180, 0, 65]} color="#1e40af" />
+      
+      <ShippingContainer position={[180, 0, 80]} color="#047857" />
+      <ShippingContainer position={[180, 5, 80]} color="#b91c1c" />
+      <ShippingContainer position={[165, 0, 80]} color="#b91c1c" />
+
+      {/* === BLOCK A: RAW MATERIAL PROCESSING & HEAVY MACHINING === */}
+      <FactoryBlock position={[-200, 0, 0]} theme={theme} label="Block A: Raw Processing & Machining" colorScheme="blue" args={[160, 70, 140]} showLabels={showLabels} />
+      <SolarArray position={[-200, 75, 0]} />
+
+      {/* === BLOCK B: PRECISION ASSEMBLY & ROBOTICS === */}
+      <FactoryBlock position={[200, 0, 0]} theme={theme} label="Block B: Precision Assembly & Testing" colorScheme="orange" args={[160, 60, 140]} showLabels={showLabels} />
+      <SolarArray position={[200, 65, 0]} />
+      
+      {/* === BLOCK C: HIGH-VOLTAGE POWER DISTRIBUTION & TESTING === */}
+      <FactoryBlock position={[0, 0, -250]} theme={theme} label="Block C: Power Distribution & Testing" colorScheme="blue" args={[220, 80, 150]} showLabels={showLabels} />
+      {/* Substation Grid */}
+      <ElectricSubstation position={[-50, 0, -250]} />
+      <ElectricSubstation position={[50, 0, -250]} />
+      
+      {/* Safety Barriers for High Voltage Zone */}
+      <SafetyBarrier position={[0, 0, -170]} length={150} />
+      <SafetyBarrier position={[-110, 0, -250]} length={150} rotation={[0, Math.PI/2, 0]} />
+      <SafetyBarrier position={[110, 0, -250]} length={150} rotation={[0, Math.PI/2, 0]} />
+
+      {/* Infrastructure Connectivity */}
+      <UtilityBridge start={[-120, 40, 0]} end={[120, 40, 0]} theme={theme} />
+      <UtilityBridge start={[0, 40, -175]} end={[0, 40, -60]} theme={theme} />
+      <UtilityBridge start={[-200, 40, -60]} end={[0, 40, -60]} theme={theme} />
+
+      {/* Heavy Industrial Silos */}
+      <IndustrialSilo position={[-150, 0, -150]} theme={theme} />
+      <IndustrialSilo position={[-110, 0, -150]} theme={theme} />
+      <IndustrialSilo position={[150, 0, -150]} theme={theme} />
+      
+      {/* Water Treatment Plant (Environmental Goal) */}
+      <WaterTreatmentPlant position={[200, 0, -150]} />
+
+
+
+      {/* Massive Transformers */}
+      <MassiveTransformer position={[-100, 0, -200]} />
+      <MassiveTransformer position={[100, 0, -200]} />
+
+      {/* Main Comm Tower */}
+      <CommunicationTower position={[-250, 0, -250]} />
+      
+      {/* === BLOCK D: ENGINEERING HQ & CONTROL CENTER === */}
+      <Building position={[0, 50, 200]} args={[60, 120, 60]} theme={theme} isGlass={true} label="Block D: Engineering HQ & Control" showLabels={showLabels} />
+
+      {/* Loading Docks flanking the blocks */}
+      <LoadingDock position={[-200, 0, 100]} />
+      <LoadingDock position={[200, 0, 100]} />
+    </group>
+  );
+};
+
 
 // --------------------------------------------------------------------------
 // AGV Drone
@@ -345,20 +816,20 @@ const CameraController = ({ viewMode }: { viewMode: string }) => {
     
     switch (viewMode) {
       case 'Unit1':
-        targetPos.current.set(-50, 40, 10);
-        targetLookAt.current.set(-50, 10, -50);
+        targetPos.current.set(-200, 80, 200);
+        targetLookAt.current.set(-200, 10, 0); // Block A
         break;
       case 'Unit2':
-        targetPos.current.set(60, 60, 20);
-        targetLookAt.current.set(60, 10, -50);
+        targetPos.current.set(200, 80, 200);
+        targetLookAt.current.set(200, 10, 0); // Block B
         break;
       case 'Tower':
-        targetPos.current.set(-60, 20, 120);
-        targetLookAt.current.set(0, 50, 60);
+        targetPos.current.set(0, 100, -50);
+        targetLookAt.current.set(0, 40, -250); // Block C
         break;
       case 'Global':
       default:
-        targetPos.current.set(0, 150, 180);
+        targetPos.current.set(0, 350, 400);
         targetLookAt.current.set(0, 0, 0);
         break;
     }
@@ -557,50 +1028,7 @@ const CNCMachine = ({ position, machine, theme, aiHeatmapMode, onClick }: { posi
   );
 };
 
-// --------------------------------------------------------------------------
-// Warehouse Racks (Logistics Zone)
-// --------------------------------------------------------------------------
-const WarehouseRacks = ({ position }: { position: [number, number, number] }) => {
-  return (
-    <group position={position}>
-      {/* Rack Framework */}
-      <Box args={[30, 15, 4]} position={[0, 7.5, 0]} castShadow>
-        <meshStandardMaterial color="#334155" metalness={0.8} wireframe />
-      </Box>
-      {/* Shelves & Crates */}
-      {[2, 6, 10, 14].map((y) => (
-        <group key={`shelf-${y}`} position={[0, y, 0]}>
-          <Box args={[30, 0.2, 4]}><meshStandardMaterial color="#1e293b" /></Box>
-          {/* Crates - Shadows disabled for performance */}
-          {[-12, -6, 0, 6, 12].map((x) => (
-             <Box key={`crate-${x}`} args={[3, 2.5, 3]} position={[x, 1.35, 0]}>
-               <meshStandardMaterial color={Math.random() > 0.8 ? '#f59e0b' : '#0ea5e9'} roughness={0.6} />
-             </Box>
-          ))}
-        </group>
-      ))}
-    </group>
-  );
-};
 
-// --------------------------------------------------------------------------
-// Conveyor Belts
-// --------------------------------------------------------------------------
-const ConveyorLine = ({ position, length }: { position: [number, number, number], length: number }) => {
-  return (
-    <group position={position}>
-      <Box args={[length, 0.4, 1.2]} position={[0, 0.2, 0]} castShadow receiveShadow>
-        <meshStandardMaterial color="#1e293b" metalness={0.5} roughness={0.5} />
-      </Box>
-      {/* Conveyor Belt Surface */}
-      <Box args={[length, 0.05, 1]} position={[0, 0.42, 0]}>
-        <meshStandardMaterial color="#0f172a" roughness={0.8} />
-      </Box>
-      <Box args={[length, 0.05, 0.05]} position={[0, 0.2, 0.65]}><meshBasicMaterial color="#f59e0b" /></Box>
-      <Box args={[length, 0.05, 0.05]} position={[0, 0.2, -0.65]}><meshBasicMaterial color="#f59e0b" /></Box>
-    </group>
-  );
-};
 
 // --------------------------------------------------------------------------
 // Supply Chain & Logistics Truck
@@ -652,19 +1080,8 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
   const [store] = useState(() => createXRStore());
   const [theme, setTheme] = useState(document.documentElement.getAttribute('data-theme') || 'dark');
   const [viewMode, setViewMode] = useState('Global');
+  const [showLabels, setShowLabels] = useState(false);
 
-  // Calculate live metrics from props
-  const oee = useMemo(() => {
-    if (!machines || machines.length === 0) return 92;
-    const running = machines.filter(m => m.status === 'Running').length;
-    return Math.round((running / machines.length) * 100);
-  }, [machines]);
-
-  const throughput = useMemo(() => {
-    if (!machines || machines.length === 0) return 450;
-    const running = machines.filter(m => m.status === 'Running').length;
-    return running * 45;
-  }, [machines]);
 
   useEffect(() => {
     const observer = new MutationObserver((mutations) => {
@@ -692,21 +1109,25 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
       {/* Cinematic View Control Panel */}
       <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10, display: 'flex', gap: '12px', background: 'var(--bg-glass)', padding: '8px 16px', borderRadius: '30px', backdropFilter: 'blur(10px)', border: '1px solid var(--border-color)', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>
         <button 
+          onClick={() => setShowLabels(!showLabels)}
+          style={{ padding: '6px 12px', borderRadius: '20px', border: '1px solid var(--accent-primary)', background: showLabels ? 'var(--accent-primary)' : 'transparent', color: showLabels ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
+        >🏷️ Labels</button>
+        <button 
           onClick={() => setViewMode('Global')}
           style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Global' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Global' ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
         >Global Map</button>
         <button 
           onClick={() => setViewMode('Unit1')}
           style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Unit1' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Unit1' ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
-        >Unit 1: Assembly</button>
+        >Block A: Machining</button>
         <button 
           onClick={() => setViewMode('Unit2')}
           style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Unit2' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Unit2' ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
-        >Unit 2: Logistics</button>
+        >Block B: Assembly</button>
         <button 
           onClick={() => setViewMode('Tower')}
           style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Tower' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Tower' ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
-        >R&D Tower</button>
+        >Block C: Testing</button>
         <button 
           onClick={() => setViewMode('Drone')}
           style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Drone' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Drone' ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '4px' }}
@@ -725,7 +1146,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
       )}
 
       <div style={{ position: 'absolute', bottom: 20, right: 20, zIndex: 10 }}>
-        <h3>Gigafactory Digital Twin 3D (2-Acre Scale)</h3>
+        <h3>Industrial Digital Twin — IIoT Platform</h3>
         <span className="badge" style={{ background: thermalMode || isEmergencyMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.1)', color: thermalMode || isEmergencyMode ? '#ef4444' : 'white', transition: 'all 0.3s' }}>
           {isEmergencyMode ? 'EMERGENCY LOCKDOWN' : thermalMode ? 'Thermal Scan Active' : 'Live Operations'}
         </span>
@@ -750,7 +1171,6 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
 
         <XR store={store}>
           <color attach="background" args={[theme === 'light' ? '#f1f5f9' : '#020617']} />
-          <fog attach="fog" args={[theme === 'light' ? '#f1f5f9' : '#020617', 200, 800]} />
           
           {/* HDR Environment Lighting (Dim in Heatmap mode) */}
           <Environment preset={theme === 'light' ? "city" : "night"} background={false} />
@@ -788,47 +1208,104 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
           )}
 
           {/* Core Terrain and Campus Buildings */}
-          <CampusEnvironment theme={theme} oee={oee} throughput={throughput} />
+          <CampusEnvironment theme={theme} showLabels={showLabels} />
 
-          {/* Unit 1: Manufacturing Assembly Interior (Live Machines) */}
-          <group position={[-50, 0, -50]}>
-            <Grid infiniteGrid={false} args={[75, 75]} sectionColor="#3b82f6" cellColor="#0ea5e9" position={[0, 0.1, 0]} />
+          {/* ================================================================
+              BLOCK A: RAW MATERIAL PROCESSING & HEAVY MACHINING
+              Electric Arc Furnaces → CNC Machining Bays → Conveyor output
+          ================================================================ */}
+          <group position={[-200, 0, 0]}>
+            <Grid infiniteGrid={false} args={[155, 115]} sectionColor="#3b82f6" cellColor="#0ea5e9" position={[0, 2.1, 0]} />
             
+            {/* Smelting zone: two furnaces */}
+            <IndustrialFurnace position={[-40, 0, -30]} />
+            <IndustrialFurnace position={[40, 0, -30]} />
+            
+            {/* Welding stations between furnaces and conveyors */}
+            <WeldingBooth position={[-20, 0, -10]} />
+            <WeldingBooth position={[20, 0, -10]} />
+
+            {/* Main conveyor lines transporting parts through machining bays */}
+            <ConveyorLine position={[0, 0, 0]} length={140} />
+            <ConveyorLine position={[0, 0, 10]} length={140} />
+            
+            {/* Raw material storage at back of plant */}
+            <WarehouseRacks position={[-60, 0, 45]} />
+            <WarehouseRacks position={[0, 0, 45]} />
+            <WarehouseRacks position={[60, 0, 45]} />
+            
+            {/* Incoming raw material pallets */}
+            <PalletStack position={[-40, 0, 35]} />
+            <PalletStack position={[-20, 0, 35]} />
+            <PalletStack position={[20, 0, 25]} />
+            <PalletStack position={[40, 0, 25]} />
+
+            {/* CNC Machining bays: 5 live machines with their robotic loaders */}
             {machines && machines.map((machine: any, index: number) => {
-               // Render 2 columns, 3 rows of machines inside Unit 1
-               const x = (index % 2) * 25 - 12.5;
-               const z = Math.floor(index / 2) * 20 - 20;
+               if (index >= 5) return null;
+               const bayX = -50 + (index * 25);
                return (
-                  <CNCMachine 
-                    key={machine.id || index} 
-                    position={[x, 0, z]} 
-                    machine={machine} 
-                    theme={theme} 
-                    aiHeatmapMode={aiHeatmapMode}
-                    onClick={() => onSelectMachine && onSelectMachine(machine.id)} 
-                  />
+                  <group key={machine.id || index}>
+                    <CNCMachine 
+                      position={[bayX, 2, 0]} 
+                      machine={machine} 
+                      theme={theme} 
+                      aiHeatmapMode={aiHeatmapMode}
+                      onClick={() => onSelectMachine && onSelectMachine(machine.id)} 
+                    />
+                    <RoboticArm position={[bayX + 8, 2, 15]} speedOffset={index*0.5} isEmergencyMode={isEmergencyMode} />
+                  </group>
                )
             })}
-
-            {/* Conveyor Systems & Arms */}
-            {[-20, 0, 20].map((z, i) => (
-               <group key={`conv-${z}`}>
-                 <ConveyorLine position={[-10, 0, z]} length={40} />
-                 <RoboticArm position={[-15, 0, z - 3]} speedOffset={i*0.5} isEmergencyMode={isEmergencyMode} />
-                 <RoboticArm position={[-5, 0, z + 3]} speedOffset={i*0.5+1} isEmergencyMode={isEmergencyMode} />
-               </group>
-            ))}
           </group>
 
-          {/* Unit 2: Warehouse & Logistics Interior */}
-          <group position={[60, 0, -50]}>
-            <Grid infiniteGrid={false} args={[65, 65]} sectionColor="#10b981" cellColor="#34d399" position={[0, 0.1, 0]} />
-            <WarehouseRacks position={[-15, 0, -20]} />
-            <WarehouseRacks position={[15, 0, -20]} />
-            <WarehouseRacks position={[-15, 0, 0]} />
-            <WarehouseRacks position={[15, 0, 0]} />
-            <WarehouseRacks position={[-15, 0, 20]} />
-            <WarehouseRacks position={[15, 0, 20]} />
+          {/* ================================================================
+              BLOCK B: PRECISION ASSEMBLY, ROBOTICS & QUALITY TESTING
+              Robotic Welding → Component Assembly → QC Gantry → Paint Booth → Testing Rig → Dispatch
+          ================================================================ */}
+          <group position={[200, 0, 0]}>
+            <Grid infiniteGrid={false} args={[155, 115]} sectionColor="#10b981" cellColor="#34d399" position={[0, 2.1, 0]} />
+            
+            {/* Incoming conveyor from Block A bridge */}
+            <ConveyorLine position={[0, 0, -30]} length={140} />
+            
+            {/* QC Inspection gantry frame scanning finished assemblies */}
+            <QCInspectionFrame position={[-50, 0, -45]} />
+            
+            {/* Paint Booth: enclosed spraying chamber */}
+            <PaintBooth position={[40, 0, -45]} />
+            
+            {/* Testing Rig: hydraulic press for load/stress testing */}
+            <TestingRig position={[60, 0, 20]} />
+            
+            {/* Finished goods storage behind assembly line */}
+            <WarehouseRacks position={[-60, 0, -45]} />
+            <WarehouseRacks position={[0, 0, -45]} />
+            
+            <PalletStack position={[-30, 0, -35]} />
+            <PalletStack position={[30, 0, -35]} />
+
+            {/* 5 precision assembly robots + machines */}
+            {machines && machines.map((machine: any, index: number) => {
+               if (index < 5 || index >= 10) return null;
+               const bayX = -50 + ((index - 5) * 25);
+               return (
+                  <group key={machine.id || index}>
+                    <CNCMachine 
+                      position={[bayX, 2, 0]} 
+                      machine={machine} 
+                      theme={theme} 
+                      aiHeatmapMode={aiHeatmapMode}
+                      onClick={() => onSelectMachine && onSelectMachine(machine.id)} 
+                    />
+                    {/* Dense Robotic Cluster */}
+                    <RoboticArm position={[bayX - 8, 2, 15]} speedOffset={index*0.1} isEmergencyMode={isEmergencyMode} />
+                    <RoboticArm position={[bayX - 4, 2, 15]} speedOffset={index*0.2} isEmergencyMode={isEmergencyMode} />
+                    <RoboticArm position={[bayX + 4, 2, 15]} speedOffset={index*0.3} isEmergencyMode={isEmergencyMode} />
+                    <RoboticArm position={[bayX + 8, 2, 15]} speedOffset={index*0.4} isEmergencyMode={isEmergencyMode} />
+                  </group>
+               )
+            })}
           </group>
 
           {/* Massive AGV Swarm traveling between buildings */}
