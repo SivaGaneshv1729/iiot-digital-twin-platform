@@ -288,29 +288,11 @@ const FactoryBlock = ({ position, theme, label, args = [120, 60, 100], colorSche
         const floorY = fl * floorH + floorH / 2 + 3;
         return (
           <group key={fl}>
-            {/* Main concrete walls (back + two sides) */}
-            <Box args={[w, floorH - 1, 2]} position={[0, floorY, -d/2 + 1]} castShadow>
-              <meshStandardMaterial color={mainColor} roughness={0.8} />
-            </Box>
-            <Box args={[2, floorH - 1, d]} position={[-w/2 + 1, floorY, 0]} castShadow>
-              <meshStandardMaterial color={mainColor} roughness={0.8} />
-            </Box>
-            <Box args={[2, floorH - 1, d]} position={[w/2 - 1, floorY, 0]} castShadow>
-              <meshStandardMaterial color={mainColor} roughness={0.8} />
-            </Box>
+            {/* Main concrete walls (REMOVED to keep machinery visible) */}
             
-            {/* Glass window panels on front face (3 columns) */}
-            {[-w/3 + 5, 0, w/3 - 5].map((wx, wi) => (
-              <Box key={wi} args={[w/4, floorH * 0.55, 1]} position={[wx, floorY + 1, d/2 - 0.5]}>
-                <meshStandardMaterial color={glassColor} transparent opacity={0.45} roughness={0.05} metalness={0.3} />
-              </Box>
-            ))}
-            {/* Window frame strips between panels */}
-            {[-w/2 + w/6, w/6, w/2 - w/6 + 2].map((fx, fi) => (
-              <Box key={`frame-${fi}`} args={[1.5, floorH - 1, 1.2]} position={[fx, floorY, d/2 - 0.4]}>
-                <meshStandardMaterial color={concreteColor} roughness={0.7} />
-              </Box>
-            ))}
+            {/* Glass window panels on front face (REMOVED) */}
+
+            {/* Window frame strips between panels (REMOVED) */}
             
             {/* Floor slab band — concrete line between floors */}
             <Box args={[w + 2, 1, d + 2]} position={[0, floorY + floorH/2, 0]}>
@@ -1419,6 +1401,33 @@ const CampusEnvironment = ({ theme, showLabels, activeLayer }: { theme: string, 
       <ShippingContainer position={[150, 0, 450]} color="#047857" />
       <ShippingContainer position={[150, 5, 450]} color="#b91c1c" />
       <ShippingContainer position={[135, 0, 450]} color="#b91c1c" />
+
+      {/* Massive Automated Warehouse Complex */}
+      <group position={[-250, 0, 400]}>
+        {Array.from({ length: 8 }).map((_, i) => (
+          <WarehouseRacks key={`wh1-${i}`} position={[0, 0, i * 20 - 70]} />
+        ))}
+        {Array.from({ length: 8 }).map((_, i) => (
+          <WarehouseRacks key={`wh2-${i}`} position={[50, 0, i * 20 - 70]} />
+        ))}
+      </group>
+      
+      <group position={[250, 0, 400]}>
+        {Array.from({ length: 8 }).map((_, i) => (
+          <WarehouseRacks key={`wh3-${i}`} position={[0, 0, i * 20 - 70]} />
+        ))}
+        {Array.from({ length: 8 }).map((_, i) => (
+          <WarehouseRacks key={`wh4-${i}`} position={[-50, 0, i * 20 - 70]} />
+        ))}
+      </group>
+
+      {/* Inter-Block Transfer Conveyors */}
+      {/* Block A to Block B */}
+      <ConveyorLine position={[50, 0, -150]} length={150} />
+      {/* Block E to Block A */}
+      <ConveyorLine position={[-225, 0, -200]} length={150} rotation={[0, Math.PI / 2, 0]} />
+      {/* Block G to Block F */}
+      <ConveyorLine position={[0, 0, -250]} length={700} />
 
       {/* Dedicated Fuel Stations */}
       <FuelStation position={[-100, 0, 600]} />
