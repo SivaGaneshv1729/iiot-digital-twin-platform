@@ -444,7 +444,7 @@ const WeldingBooth = ({ position }: { position: [number, number, number] }) => {
       </mesh>
       {/* Sparks scattered */}
       {[[-1,1],[1,-1],[1.5,0.5],[-1.5,-0.5]].map(([sx,sz],i) => (
-        <mesh key={i} position={[sx, 3 + Math.random(), sz]}>
+        <mesh key={i} position={[sx, 3 + (i * 0.2), sz]}>
           <sphereGeometry args={[0.2, 4, 4]} />
           <meshBasicMaterial color="#f97316" />
         </mesh>
@@ -757,22 +757,64 @@ const ControlPanelRack = ({ position }: { position: [number, number, number] }) 
 };
 
 // --------------------------------------------------------------------------
-const WarehouseRacks = ({ position }: { position: [number, number, number] }) => {
+const WarehouseRacks = ({ position, rackIndex = 0 }: { position: [number, number, number], rackIndex?: number }) => {
   return (
     <group position={position}>
       <Box args={[30, 20, 4]} position={[0, 10, 0]} castShadow>
         <meshStandardMaterial color="#334155" metalness={0.8} wireframe />
       </Box>
-      {[3, 8, 13, 18].map((y) => (
+      {[3, 8, 13, 18].map((y, i) => (
         <group key={`shelf-${y}`} position={[0, y, 0]}>
           <Box args={[30, 0.2, 4]}><meshStandardMaterial color="#1e293b" /></Box>
-          {[-12, -6, 0, 6, 12].map((x) => (
-             <Box key={`crate-${x}`} args={[3, 4, 3]} position={[x, 2, 0]}>
-               <meshStandardMaterial color={Math.random() > 0.5 ? '#f59e0b' : '#3b82f6'} roughness={0.6} />
-             </Box>
-          ))}
+          {/* Consolidated crate block for performance, deterministic color based on index */}
+          <Box args={[28, 3.8, 3]} position={[0, 2, 0]}>
+             <meshStandardMaterial color={(y + rackIndex) % 2 === 0 ? '#f59e0b' : '#3b82f6'} roughness={0.6} />
+          </Box>
         </group>
       ))}
+    </group>
+  );
+};
+
+const WarehouseBuilding = ({ position, args = [100, 30, 200], children }: any) => {
+  const [w, h, d] = args;
+  return (
+    <group position={position}>
+      {/* Concrete foundation slab */}
+      <Box args={[w + 10, 2, d + 10]} position={[0, 1, 0]} receiveShadow>
+        <meshStandardMaterial color="#64748b" roughness={0.9} />
+      </Box>
+      
+      {/* Structural Steel Columns (perimeter) */}
+      {[[-w/2, -d/2], [w/2, -d/2], [-w/2, d/2], [w/2, d/2]].map(([cx, cz], i) => (
+        <Box key={i} args={[2, h, 2]} position={[cx, h/2 + 2, cz]} castShadow>
+          <meshStandardMaterial color="#1e293b" metalness={0.5} roughness={0.5} />
+        </Box>
+      ))}
+      
+      {/* Mid-span columns along depth */}
+      {[-d/4, 0, d/4].map((cz, i) => (
+        <group key={`mid-${i}`}>
+          <Box args={[2, h, 2]} position={[-w/2, h/2 + 2, cz]} castShadow><meshStandardMaterial color="#1e293b" metalness={0.5} roughness={0.5} /></Box>
+          <Box args={[2, h, 2]} position={[w/2, h/2 + 2, cz]} castShadow><meshStandardMaterial color="#1e293b" metalness={0.5} roughness={0.5} /></Box>
+        </group>
+      ))}
+
+      {/* Roof structure */}
+      <Box args={[w + 4, 3, d + 4]} position={[0, h + 3.5, 0]} castShadow>
+        <meshStandardMaterial color="#94a3b8" roughness={0.8} />
+      </Box>
+      <Box args={[w - 10, 4, d - 10]} position={[0, h + 5, 0]}>
+        <meshPhysicalMaterial color="#93c5fd" transmission={0.9} roughness={0.1} />
+      </Box>
+      
+      {/* Transparent Walls (Glass/Polycarbonate shell) */}
+      <Box args={[w, h, d]} position={[0, h/2 + 2, 0]}>
+        <meshPhysicalMaterial color="#cbd5e1" transmission={0.8} roughness={0.2} transparent opacity={0.3} />
+      </Box>
+
+      {/* The racks inside */}
+      {children}
     </group>
   );
 };
@@ -1401,23 +1443,23 @@ const CampusEnvironment = ({ theme, showLabels, activeLayer }: { theme: string, 
       <ShippingContainer position={[135, 0, 450]} color="#b91c1c" />
 
       {/* Massive Automated Warehouse Complex */}
-      <group position={[-250, 0, 400]}>
+      <WarehouseBuilding position={[-250, 0, 400]} args={[100, 30, 200]}>
         {Array.from({ length: 8 }).map((_, i) => (
-          <WarehouseRacks key={`wh1-${i}`} position={[0, 0, i * 20 - 70]} />
+          <WarehouseRacks key={`wh1-${i}`} position={[-25, 0, i * 20 - 70]} />
         ))}
         {Array.from({ length: 8 }).map((_, i) => (
-          <WarehouseRacks key={`wh2-${i}`} position={[50, 0, i * 20 - 70]} />
+          <WarehouseRacks key={`wh2-${i}`} position={[25, 0, i * 20 - 70]} />
         ))}
-      </group>
+      </WarehouseBuilding>
       
-      <group position={[250, 0, 400]}>
+      <WarehouseBuilding position={[250, 0, 400]} args={[100, 30, 200]}>
         {Array.from({ length: 8 }).map((_, i) => (
-          <WarehouseRacks key={`wh3-${i}`} position={[0, 0, i * 20 - 70]} />
+          <WarehouseRacks key={`wh3-${i}`} position={[-25, 0, i * 20 - 70]} />
         ))}
         {Array.from({ length: 8 }).map((_, i) => (
-          <WarehouseRacks key={`wh4-${i}`} position={[-50, 0, i * 20 - 70]} />
+          <WarehouseRacks key={`wh4-${i}`} position={[25, 0, i * 20 - 70]} />
         ))}
-      </group>
+      </WarehouseBuilding>
 
       {/* Inter-Block Transfer Conveyors */}
       {/* Block A to Block B */}
