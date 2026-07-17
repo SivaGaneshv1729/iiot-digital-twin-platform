@@ -388,63 +388,169 @@ const CameraController = ({ viewMode }: { viewMode: string }) => {
 // Live Factory Machinery (Unit 1 Interior)
 // --------------------------------------------------------------------------
 const CNCMachine = ({ position, machine, theme, aiHeatmapMode, onClick }: { position: [number, number, number], machine: any, theme: string, aiHeatmapMode?: boolean, onClick?: () => void }) => {
+  const gantryRef = useRef<THREE.Group>(null);
   const spindleRef = useRef<THREE.Group>(null);
+  const drillRef = useRef<THREE.Mesh>(null);
+  const workpieceRef = useRef<THREE.Mesh>(null);
   const anomalyPulseRef = useRef<THREE.Mesh>(null);
+  
   const isRunning = machine?.status === 'Running';
   const isWarning = machine?.status === 'Maintenance' || machine?.status === 'Offline';
   const hasAnomaly = isWarning || machine?.temperature > 85;
   
   const statusColor = isRunning ? '#10b981' : isWarning ? '#ef4444' : '#f59e0b';
+  
+  // Andon Lights logic
+  const redOn = isWarning || machine?.temperature > 90;
+  const yellowOn = machine?.status === 'Idle' || (machine?.temperature > 75 && machine?.temperature <= 90);
+  const greenOn = isRunning && !redOn;
 
   useFrame((state, delta) => {
-    if (spindleRef.current && isRunning) {
-      spindleRef.current.rotation.y += 15 * delta; // Spin fast when running
-      spindleRef.current.position.y = Math.sin(state.clock.elapsedTime * 5) * 0.5 + 12; // Move up and down
+    const t = state.clock.elapsedTime;
+    if (isRunning) {
+      // Complex multi-axis movement for the CNC gantry and spindle
+      if (gantryRef.current) gantryRef.current.position.x = Math.sin(t * 2) * 3;
+      if (spindleRef.current) spindleRef.current.position.z = Math.cos(t * 1.5) * 2;
+      
+      // Drill spinning and plunging
+      if (drillRef.current) {
+        drillRef.current.rotation.y += 20 * delta;
+        drillRef.current.position.y = Math.sin(t * 4) * 1.5; 
+      }
+      // Workpiece glowing/processing
+      if (workpieceRef.current) {
+        (workpieceRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.5 + Math.sin(t * 8) * 0.5;
+      }
     }
+    
     if (anomalyPulseRef.current && hasAnomaly && aiHeatmapMode) {
-      const scale = 1 + Math.sin(state.clock.elapsedTime * 3) * 0.2;
+      const scale = 1 + Math.sin(t * 3) * 0.2;
       anomalyPulseRef.current.scale.set(scale, scale, scale);
-      (anomalyPulseRef.current.material as THREE.MeshBasicMaterial).opacity = 0.5 + Math.sin(state.clock.elapsedTime * 6) * 0.3;
+      (anomalyPulseRef.current.material as THREE.MeshBasicMaterial).opacity = 0.5 + Math.sin(t * 6) * 0.3;
     }
   });
 
   return (
     <group position={position} onClick={(e) => { e.stopPropagation(); onClick && onClick(); }}>
-      {/* AI Anomaly Heatmap Overlay (Only visible in heatmap mode for at-risk machines) */}
+      {/* AI Anomaly Heatmap Overlay */}
       {aiHeatmapMode && hasAnomaly && (
         <group position={[0, 0.5, 0]}>
            <pointLight color="#ef4444" intensity={5} distance={30} decay={2} />
            <mesh rotation={[-Math.PI / 2, 0, 0]} ref={anomalyPulseRef}>
-             <circleGeometry args={[12, 32]} />
+             <circleGeometry args={[14, 32]} />
              <meshBasicMaterial color="#ef4444" transparent opacity={0.6} blending={THREE.AdditiveBlending} depthWrite={false} />
            </mesh>
         </group>
       )}
-      {/* Machine Base */}
-      <Box args={[12, 6, 8]} position={[0, 3, 0]}>
-        <meshStandardMaterial color={theme === 'light' ? "#cbd5e1" : "#1e293b"} metalness={0.7} roughness={0.3} />
-      </Box>
-      {/* Enclosure / Glass viewing area */}
-      <Box args={[10, 8, 6]} position={[0, 10, 0]}>
-        <meshStandardMaterial color={theme === 'light' ? "#94a3b8" : "#0f172a"} transparent opacity={0.4} />
+
+      {/* Main Heavy Base */}
+      <Box args={[12, 4, 8]} position={[0, 2, 0]}>
+        <meshStandardMaterial color={theme === 'light' ? "#cbd5e1" : "#1e293b"} metalness={0.8} roughness={0.2} />
       </Box>
       
-      {/* Active Spindle / Drill */}
-      <group position={[0, 12, 0]} ref={spindleRef}>
-        <Cylinder args={[0.5, 0.1, 4]} position={[0, -2, 0]}>
-          <meshStandardMaterial color="#94a3b8" metalness={0.9} />
+      {/* Control Panel Console */}
+      <group position={[4, 5, 4.2]} rotation={[-0.3, 0, 0]}>
+        <Box args={[3, 2, 0.5]}>
+          <meshStandardMaterial color="#0f172a" />
+        </Box>
+        {/* Screen */}
+        <Box args={[2.5, 1.2, 0.1]} position={[0, 0.2, 0.26]}>
+          <meshStandardMaterial color={isRunning ? "#0369a1" : "#7f1d1d"} emissive={isRunning ? "#0284c7" : "#b91c1c"} emissiveIntensity={0.5} />
+        </Box>
+        {/* Buttons */}
+        <Box args={[0.3, 0.3, 0.1]} position={[-1, -0.6, 0.26]}>
+           <meshStandardMaterial color="#10b981" emissive="#10b981" emissiveIntensity={greenOn ? 1 : 0} />
+        </Box>
+        <Box args={[0.3, 0.3, 0.1]} position={[1, -0.6, 0.26]}>
+           <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={redOn ? 1 : 0} />
+        </Box>
+      </group>
+
+      {/* Milling Bed */}
+      <Box args={[10, 0.5, 6]} position={[0, 4.25, 0]}>
+        <meshStandardMaterial color="#334155" metalness={0.9} roughness={0.5} />
+      </Box>
+      
+      {/* Workpiece */}
+      <mesh ref={workpieceRef} position={[0, 5, 0]}>
+        <boxGeometry args={[2, 1, 2]} />
+        <meshStandardMaterial color="#38bdf8" metalness={1} roughness={0.1} emissive="#0ea5e9" emissiveIntensity={0.2} />
+      </mesh>
+
+      {/* Glass Enclosure */}
+      <mesh position={[0, 9, 0]}>
+        <boxGeometry args={[11, 9, 7]} />
+        <meshPhysicalMaterial 
+          color={theme === 'light' ? "#f1f5f9" : "#0f172a"} 
+          transmission={0.9} 
+          opacity={1} 
+          metalness={0.1} 
+          roughness={0.1} 
+          ior={1.5} 
+          thickness={0.5} 
+          transparent 
+        />
+      </mesh>
+      
+      {/* Structural Pillars for Enclosure */}
+      {[-5.2, 5.2].map(x => 
+        [-3.2, 3.2].map(z => (
+          <Box key={`pillar-${x}-${z}`} args={[0.6, 9, 0.6]} position={[x, 9, z]}>
+            <meshStandardMaterial color="#475569" metalness={0.7} />
+          </Box>
+        ))
+      )}
+      
+      {/* Multi-Axis Gantry & Spindle */}
+      <group position={[0, 12.5, 0]} ref={gantryRef}>
+        {/* X-Axis Bridge */}
+        <Box args={[11, 0.8, 1.5]} position={[0, 0, 0]}>
+           <meshStandardMaterial color="#ef4444" metalness={0.6} roughness={0.4} />
+        </Box>
+        
+        {/* Z-Axis Carriage */}
+        <group ref={spindleRef} position={[0, -1, 0]}>
+          <Box args={[2, 1.5, 2]}>
+             <meshStandardMaterial color="#64748b" metalness={0.8} />
+          </Box>
+          
+          {/* Y-Axis Drill */}
+          <group ref={drillRef} position={[0, -1, 0]}>
+            {/* Spindle Housing */}
+            <Cylinder args={[0.6, 0.4, 2]} position={[0, 0, 0]}>
+              <meshStandardMaterial color="#94a3b8" metalness={0.9} />
+            </Cylinder>
+            {/* Drill Bit */}
+            <Cylinder args={[0.1, 0.05, 1.5]} position={[0, -1.5, 0]}>
+              <meshStandardMaterial color="#f8fafc" metalness={1} roughness={0} />
+            </Cylinder>
+          </group>
+        </group>
+      </group>
+
+      {/* Andon Indicator Lights (Factory Tower) */}
+      <group position={[-5, 16, -3]}>
+        <Cylinder args={[0.1, 0.1, 4]} position={[0, -2, 0]}>
+           <meshStandardMaterial color="#475569" metalness={0.8} />
+        </Cylinder>
+        {/* Green */}
+        <Cylinder args={[0.3, 0.3, 0.6]} position={[0, 0.8, 0]}>
+          <meshStandardMaterial color="#10b981" emissive="#10b981" emissiveIntensity={greenOn ? 2 : 0} opacity={greenOn ? 1 : 0.3} transparent />
+        </Cylinder>
+        {/* Yellow */}
+        <Cylinder args={[0.3, 0.3, 0.6]} position={[0, 1.5, 0]}>
+          <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={yellowOn ? 2 : 0} opacity={yellowOn ? 1 : 0.3} transparent />
+        </Cylinder>
+        {/* Red */}
+        <Cylinder args={[0.3, 0.3, 0.6]} position={[0, 2.2, 0]}>
+          <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={redOn ? 2 : 0} opacity={redOn ? 1 : 0.3} transparent />
         </Cylinder>
       </group>
 
-      {/* Status Light Indicator */}
-      <Cylinder args={[0.3, 0.3, 1]} position={[4, 14.5, 2]}>
-        <meshStandardMaterial color={statusColor} emissive={statusColor} emissiveIntensity={2} />
-      </Cylinder>
-
       {/* Floating UI */}
-      <Html position={[0, 16, 0]} center zIndexRange={[100, 0]}>
-        <div style={{ background: 'rgba(0,0,0,0.8)', border: `1px solid ${statusColor}`, color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', whiteSpace: 'nowrap', pointerEvents: 'none' }}>
-          {machine?.id || 'CNC-XX'} <span style={{ color: statusColor }}>●</span>
+      <Html position={[0, 19, 0]} center zIndexRange={[100, 0]}>
+        <div style={{ background: 'rgba(15,23,42,0.9)', border: `1px solid ${statusColor}`, color: 'white', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 'bold', whiteSpace: 'nowrap', pointerEvents: 'none', boxShadow: `0 0 10px ${statusColor}40` }}>
+          {machine?.name || 'CNC-XX'} <span style={{ color: statusColor, marginLeft: '6px', textShadow: `0 0 5px ${statusColor}` }}>●</span>
         </div>
       </Html>
     </group>
