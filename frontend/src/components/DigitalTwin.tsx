@@ -2156,8 +2156,8 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
               maxDistance={10000} // Unrestricted zoom out
               panSpeed={2.0}
               zoomSpeed={1.5}
-              autoRotate={!isEmergencyMode && viewMode === 'Global'}
-              autoRotateSpeed={0.3}
+              enableDamping={true}
+              dampingFactor={0.05}
             />
           )}
 
