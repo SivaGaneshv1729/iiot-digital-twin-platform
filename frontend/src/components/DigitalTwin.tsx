@@ -158,43 +158,102 @@ const Building = ({ position, args, theme, isGlass = false, label = "", showLabe
 
 // --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
-// Heavy Factory Block (Meidensha Corporate Aesthetic)
+// Heavy Factory Block — Multi-Floor Industrial Building
 // --------------------------------------------------------------------------
 const FactoryBlock = ({ position, theme, label, args = [120, 60, 100], colorScheme = "blue", showLabels = false }: any) => {
+  const [w, , d] = args;
   const isLight = theme === 'light';
-  // Meidensha clean white/grey
-  const mainColor = isLight ? "#f8fafc" : "#e2e8f0";
-  const roofColor = isLight ? "#cbd5e1" : "#94a3b8";
-  // Corporate blue or Ohta green
-  const accentColor = colorScheme === "blue" ? "#2563eb" : "#059669";
-
+  const mainColor = isLight ? "#e8ecef" : "#d0d7de";
+  const concreteColor = isLight ? "#c8cfd8" : "#9ea8b3";
+  const accentColor = colorScheme === "blue" ? "#1d4ed8" : "#047857";
+  const glassColor = "#93c5fd";
+  
+  // Floor heights: 3 floors, each 20 units tall
+  const floorH = 20;
+  const floors = 3;
+  const totalH = floorH * floors;
+  
   return (
     <group position={position}>
-      {/* Foundation */}
-      <Box args={[args[0] + 10, 2, args[2] + 10]} position={[0, 1, 0]}>
-        <meshStandardMaterial color={isLight ? "#94a3b8" : "#64748b"} />
+      {/* === FOUNDATION === */}
+      <Box args={[w + 12, 3, d + 12]} position={[0, 1.5, 0]} castShadow receiveShadow>
+        <meshStandardMaterial color="#6b7280" roughness={0.95} />
       </Box>
-      {/* Main Structure (Hollow for interior view) */}
-      <Box args={[args[0], args[1], 2]} position={[0, args[1]/2 + 2, -args[2]/2 + 1]}>
-        <meshStandardMaterial color={mainColor} />
+      
+      {/* === 3 STACKED FLOORS === */}
+      {[0, 1, 2].map((fl) => {
+        const floorY = fl * floorH + floorH / 2 + 3;
+        return (
+          <group key={fl}>
+            {/* Main concrete walls (back + two sides) */}
+            <Box args={[w, floorH - 1, 2]} position={[0, floorY, -d/2 + 1]} castShadow>
+              <meshStandardMaterial color={mainColor} roughness={0.8} />
+            </Box>
+            <Box args={[2, floorH - 1, d]} position={[-w/2 + 1, floorY, 0]} castShadow>
+              <meshStandardMaterial color={mainColor} roughness={0.8} />
+            </Box>
+            <Box args={[2, floorH - 1, d]} position={[w/2 - 1, floorY, 0]} castShadow>
+              <meshStandardMaterial color={mainColor} roughness={0.8} />
+            </Box>
+            
+            {/* Glass window panels on front face (3 columns) */}
+            {[-w/3 + 5, 0, w/3 - 5].map((wx, wi) => (
+              <Box key={wi} args={[w/4, floorH * 0.55, 1]} position={[wx, floorY + 1, d/2 - 0.5]}>
+                <meshStandardMaterial color={glassColor} transparent opacity={0.45} roughness={0.05} metalness={0.3} />
+              </Box>
+            ))}
+            {/* Window frame strips between panels */}
+            {[-w/2 + w/6, w/6, w/2 - w/6 + 2].map((fx, fi) => (
+              <Box key={`frame-${fi}`} args={[1.5, floorH - 1, 1.2]} position={[fx, floorY, d/2 - 0.4]}>
+                <meshStandardMaterial color={concreteColor} roughness={0.7} />
+              </Box>
+            ))}
+            
+            {/* Floor slab band — concrete line between floors */}
+            <Box args={[w + 2, 1, d + 2]} position={[0, floorY + floorH/2, 0]}>
+              <meshStandardMaterial color={concreteColor} roughness={0.9} />
+            </Box>
+            
+            {/* Vertical columns at corners and mid-span */}
+            {[-w/2 + 4, 0, w/2 - 4].map((cx, ci) => (
+              <Box key={`col-${ci}`} args={[4, floorH, 4]} position={[cx, floorY, -d/2 + 4]} castShadow>
+                <meshStandardMaterial color={concreteColor} roughness={0.85} />
+              </Box>
+            ))}
+          </group>
+        );
+      })}
+      
+      {/* === ROOF / PENTHOUSE === */}
+      <Box args={[w + 4, 3, d + 4]} position={[0, totalH + 4.5, 0]} castShadow>
+        <meshStandardMaterial color={concreteColor} roughness={0.9} />
       </Box>
-      <Box args={[2, args[1], args[2]]} position={[-args[0]/2 + 1, args[1]/2 + 2, 0]}>
-        <meshStandardMaterial color={mainColor} />
-      </Box>
-      <Box args={[2, args[1], args[2]]} position={[args[0]/2 - 1, args[1]/2 + 2, 0]}>
-        <meshStandardMaterial color={mainColor} />
-      </Box>
-      {/* Roof */}
-      <Box args={[args[0] + 2, 2, args[2] + 2]} position={[0, args[1] + 3, 0]}>
-        <meshStandardMaterial color={roofColor} />
-      </Box>
-      {/* Accent Band */}
-      <Box args={[args[0] + 2.2, 4, args[2] + 2.2]} position={[0, args[1] - 5, 0]}>
+      {/* Roof parapet edge detail */}
+      <Box args={[w + 5, 1.5, 1]} position={[0, totalH + 7, d/2 + 2]}>
         <meshStandardMaterial color={accentColor} />
       </Box>
+      <Box args={[w + 5, 1.5, 1]} position={[0, totalH + 7, -d/2 - 2]}>
+        <meshStandardMaterial color={accentColor} />
+      </Box>
+      <Box args={[1, 1.5, d + 5]} position={[-w/2 - 2, totalH + 7, 0]}>
+        <meshStandardMaterial color={accentColor} />
+      </Box>
+      <Box args={[1, 1.5, d + 5]} position={[w/2 + 2, totalH + 7, 0]}>
+        <meshStandardMaterial color={accentColor} />
+      </Box>
+      
+      {/* === ACCENT STRIPE across building === */}
+      <Box args={[w + 3, 3, d + 3]} position={[0, totalH * 0.33 + 3, 0]}>
+        <meshStandardMaterial color={accentColor} />
+      </Box>
+      <Box args={[w + 3, 3, d + 3]} position={[0, totalH * 0.66 + 3, 0]}>
+        <meshStandardMaterial color={accentColor} />
+      </Box>
+      
+      {/* Label */}
       {showLabels && (
-        <Html position={[0, args[1] + 15, args[2]/2]} center>
-           <div style={{ color: '#0f172a', background: 'rgba(255,255,255,0.95)', padding: '4px 10px', fontSize: '1.0rem', border: `2px solid ${accentColor}`, borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '1px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>{label}</div>
+        <Html position={[0, totalH + 20, d/2]} center>
+           <div style={{ color: '#0f172a', background: 'rgba(255,255,255,0.95)', padding: '4px 10px', fontSize: '0.9rem', border: `2px solid ${accentColor}`, borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '1px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', whiteSpace: 'nowrap' }}>{label}</div>
         </Html>
       )}
     </group>
@@ -531,6 +590,83 @@ const SafetyBarrier = ({ position, length = 20, rotation = [0,0,0] }: any) => {
       </Box>
       <Box args={[length + 0.1, 0.5, 0.6]} position={[0, 0.75, 0]}>
         <meshStandardMaterial color="#0f172a" />
+      </Box>
+    </group>
+  );
+};
+
+// Overhead Crane: gantry beam that traverses the factory ceiling
+const OverheadCrane = ({ position, span = 130 }: { position: [number, number, number], span?: number }) => {
+  const trolleyRef = useRef<THREE.Group>(null);
+  useFrame((state) => {
+    if (trolleyRef.current) {
+      trolleyRef.current.position.x = Math.sin(state.clock.elapsedTime * 0.4) * (span / 2 - 10);
+    }
+  });
+  return (
+    <group position={position}>
+      {/* Two end trucks on rails */}
+      <Box args={[4, 4, 6]} position={[-span/2, 0, 0]} castShadow>
+        <meshStandardMaterial color="#374151" metalness={0.9} />
+      </Box>
+      <Box args={[4, 4, 6]} position={[span/2, 0, 0]} castShadow>
+        <meshStandardMaterial color="#374151" metalness={0.9} />
+      </Box>
+      {/* Main girder beam */}
+      <Box args={[span, 3, 3]} position={[0, -2, 0]} castShadow>
+        <meshStandardMaterial color="#f59e0b" metalness={0.7} roughness={0.3} />
+      </Box>
+      {/* Trolley + hoist that slides along */}
+      <group ref={trolleyRef} position={[0, -2, 0]}>
+        <Box args={[8, 5, 6]}>
+          <meshStandardMaterial color="#1f2937" metalness={0.8} />
+        </Box>
+        {/* Hoist cable */}
+        <Cylinder args={[0.3, 0.3, 18]} position={[0, -12, 0]}>
+          <meshStandardMaterial color="#94a3b8" />
+        </Cylinder>
+        {/* Hook block */}
+        <Box args={[4, 3, 4]} position={[0, -21, 0]}>
+          <meshStandardMaterial color="#ef4444" metalness={0.8} />
+        </Box>
+      </group>
+    </group>
+  );
+};
+
+// Control Panel Rack: tall electrical cabinet array
+const ControlPanelRack = ({ position }: { position: [number, number, number] }) => {
+  return (
+    <group position={position}>
+      {[0, 5, 10, 15].map((x) => (
+        <group key={x} position={[x, 0, 0]}>
+          {/* Cabinet body */}
+          <Box args={[4, 12, 3]} position={[0, 6, 0]} castShadow>
+            <meshStandardMaterial color="#1e293b" metalness={0.6} roughness={0.4} />
+          </Box>
+          {/* Door panel */}
+          <Box args={[3.5, 11, 0.3]} position={[0, 6, 1.7]}>
+            <meshStandardMaterial color="#334155" metalness={0.5} />
+          </Box>
+          {/* Status indicator lights */}
+          <Box args={[0.5, 0.5, 0.4]} position={[1.2, 10, 1.9]}>
+            <meshBasicMaterial color="#22c55e" />
+          </Box>
+          <Box args={[0.5, 0.5, 0.4]} position={[1.2, 9, 1.9]}>
+            <meshBasicMaterial color="#f59e0b" />
+          </Box>
+          {/* Display screen */}
+          <Box args={[2.5, 3, 0.2]} position={[0, 7, 1.8]}>
+            <meshBasicMaterial color="#0f172a" />
+          </Box>
+          <Box args={[2.2, 2.6, 0.15]} position={[0, 7, 1.85]}>
+            <meshBasicMaterial color="#064e3b" />
+          </Box>
+        </group>
+      ))}
+      {/* Cable tray above */}
+      <Box args={[22, 1, 3]} position={[7.5, 13.5, 0]}>
+        <meshStandardMaterial color="#475569" metalness={0.7} />
       </Box>
     </group>
   );
@@ -1160,7 +1296,11 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
         Enter AR
       </ARButton>
 
-      <Canvas shadows camera={{ position: [0, 150, 150], fov: 45, near: 0.1, far: 2000 }}>
+      <Canvas
+        shadows={{ type: THREE.PCFShadowMap }}
+        camera={{ position: [0, 180, 220], fov: 40, near: 0.5, far: 3000 }}
+        gl={{ antialias: true, logarithmicDepthBuffer: true }}
+      >
         {/* Post-Processing disabled to massively improve framerates on lower-end machines */}
         {/* <EffectComposer>
           <Bloom luminanceThreshold={0.2} mipmapBlur intensity={1.5} />
@@ -1229,6 +1369,12 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
             <ConveyorLine position={[0, 0, 0]} length={140} />
             <ConveyorLine position={[0, 0, 10]} length={140} />
             
+            {/* Overhead Crane spanning the width of Block A at ceiling height */}
+            <OverheadCrane position={[0, 62, -10]} span={130} />
+            
+            {/* Electrical Control Panels along back wall */}
+            <ControlPanelRack position={[-55, 0, -45]} />
+            
             {/* Raw material storage at back of plant */}
             <WarehouseRacks position={[-60, 0, 45]} />
             <WarehouseRacks position={[0, 0, 45]} />
@@ -1268,6 +1414,12 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
             
             {/* Incoming conveyor from Block A bridge */}
             <ConveyorLine position={[0, 0, -30]} length={140} />
+            
+            {/* Overhead Crane for Block B — carries assembled units to dispatch */}
+            <OverheadCrane position={[0, 55, -15]} span={130} />
+            
+            {/* Control Panels & Electrical Racks on side wall */}
+            <ControlPanelRack position={[55, 0, 30]} />
             
             {/* QC Inspection gantry frame scanning finished assemblies */}
             <QCInspectionFrame position={[-50, 0, -45]} />
