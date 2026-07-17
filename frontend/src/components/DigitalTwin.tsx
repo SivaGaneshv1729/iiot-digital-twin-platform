@@ -1,10 +1,113 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Grid, Box, Cylinder, Text, FlyControls, Environment, Html } from '@react-three/drei';
 import { XR, ARButton, createXRStore } from '@react-three/xr';
 // import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import './DigitalTwin.css';
+
+// --------------------------------------------------------------------------
+// Procedural Canvas Texture Generators
+// --------------------------------------------------------------------------
+function makeConcreteTexture(): THREE.CanvasTexture {
+  const size = 512;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = '#8a9099';
+  ctx.fillRect(0, 0, size, size);
+  // Noise overlay
+  for (let i = 0; i < 6000; i++) {
+    const x = Math.random() * size, y = Math.random() * size;
+    const g = Math.floor(Math.random() * 40 - 20);
+    const c = 138 + g;
+    ctx.fillStyle = `rgb(${c},${c+2},${c+4})`;
+    ctx.fillRect(x, y, Math.random() * 4 + 1, Math.random() * 4 + 1);
+  }
+  // Crack lines
+  ctx.strokeStyle = 'rgba(50,55,65,0.35)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 8; i++) {
+    ctx.beginPath();
+    ctx.moveTo(Math.random() * size, Math.random() * size);
+    for (let j = 0; j < 6; j++) {
+      ctx.lineTo(Math.random() * size, Math.random() * size);
+    }
+    ctx.stroke();
+  }
+  // Expansion joints (grid)
+  ctx.strokeStyle = 'rgba(60,65,75,0.5)';
+  ctx.lineWidth = 2;
+  for (let i = 128; i < size; i += 128) {
+    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, size); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(size, i); ctx.stroke();
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(8, 8);
+  return tex;
+}
+
+function makeBrushedMetalTexture(): THREE.CanvasTexture {
+  const size = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = '#6b7280';
+  ctx.fillRect(0, 0, size, size);
+  // Horizontal brushed lines
+  for (let y = 0; y < size; y += 2) {
+    const brightness = 90 + Math.floor(Math.random() * 30);
+    ctx.strokeStyle = `rgb(${brightness},${brightness},${brightness+5})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(size, y); ctx.stroke();
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(2, 4);
+  return tex;
+}
+
+function makeHazardStripeTexture(): THREE.CanvasTexture {
+  const size = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = '#facc15';
+  ctx.fillRect(0, 0, size, size);
+  ctx.fillStyle = '#1e293b';
+  const stripe = 40;
+  for (let i = -size; i < size * 2; i += stripe * 2) {
+    ctx.save();
+    ctx.translate(i, 0);
+    ctx.rotate(Math.PI / 4);
+    ctx.fillRect(0, -size * 2, stripe, size * 4);
+    ctx.restore();
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(6, 1);
+  return tex;
+}
+
+function makeGratingTexture(): THREE.CanvasTexture {
+  const size = 128;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(0, 0, size, size);
+  ctx.strokeStyle = '#475569';
+  ctx.lineWidth = 3;
+  for (let i = 16; i < size; i += 16) {
+    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, size); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(size, i); ctx.stroke();
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(4, 4);
+  return tex;
+}
 
 interface Machine {
   id: number;
@@ -410,15 +513,16 @@ const QCInspectionFrame = ({ position }: { position: [number, number, number] })
 
 // Loading Dock: raised concrete platform with access ramp
 const LoadingDock = ({ position }: { position: [number, number, number] }) => {
+  const gratingTex = useMemo(() => makeGratingTexture(), []);
   return (
     <group position={position}>
-      {/* Raised concrete platform */}
+      {/* Raised concrete platform with metal grating top */}
       <Box args={[40, 5, 20]} position={[0, 2.5, 0]} castShadow receiveShadow>
-        <meshStandardMaterial color="#94a3b8" roughness={0.9} />
+        <meshStandardMaterial map={gratingTex} color="#64748b" roughness={0.7} metalness={0.5} />
       </Box>
-      {/* Dock ramp */}
+      {/* Dock ramp with grating */}
       <Box args={[10, 0.5, 12]} position={[15, 0.5, 0]} rotation={[0.35, 0, 0]}>
-        <meshStandardMaterial color="#64748b" roughness={0.9} />
+        <meshStandardMaterial map={gratingTex} color="#475569" roughness={0.7} metalness={0.5} />
       </Box>
       {/* Yellow dock edge stripe */}
       <Box args={[42, 0.3, 1]} position={[0, 5.2, -9]}>
@@ -712,10 +816,11 @@ const ConveyorLine = ({ position, length }: { position: [number, number, number]
 // Massive Transformer
 // --------------------------------------------------------------------------
 const MassiveTransformer = ({ position }: { position: [number, number, number] }) => {
+  const metalTex = useMemo(() => makeBrushedMetalTexture(), []);
   return (
     <group position={position}>
       <Box args={[30, 25, 20]} position={[0, 12.5, 0]} castShadow>
-        <meshStandardMaterial color="#1e293b" metalness={0.8} />
+        <meshStandardMaterial map={metalTex} color="#475569" metalness={0.85} roughness={0.2} />
       </Box>
       {/* Cooling fins */}
       {[-12, -6, 0, 6, 12].map(x => (
@@ -814,15 +919,238 @@ const WaterTreatmentPlant = ({ position }: { position: [number, number, number] 
 };
 
 // --------------------------------------------------------------------------
+// New Heavy Machinery
+// --------------------------------------------------------------------------
+
+// Hydraulic Press: massive frame with animated ram and textured base
+const HydraulicPress = ({ position }: { position: [number, number, number] }) => {
+  const ramRef = useRef<THREE.Mesh>(null);
+  const metalTex = useMemo(() => makeBrushedMetalTexture(), []);
+  useFrame((state) => {
+    if (ramRef.current) {
+      ramRef.current.position.y = 6 - Math.abs(Math.sin(state.clock.elapsedTime * 0.8)) * 8;
+    }
+  });
+  return (
+    <group position={position}>
+      {/* Base bed plate */}
+      <Box args={[20, 4, 18]} position={[0, 2, 0]} castShadow>
+        <meshStandardMaterial map={metalTex} color="#374151" metalness={0.9} roughness={0.2} />
+      </Box>
+      {/* C-frame uprights */}
+      <Box args={[3, 36, 8]} position={[-8, 20, 0]} castShadow>
+        <meshStandardMaterial color="#1e293b" metalness={0.85} />
+      </Box>
+      <Box args={[3, 36, 8]} position={[8, 20, 0]} castShadow>
+        <meshStandardMaterial color="#1e293b" metalness={0.85} />
+      </Box>
+      {/* Top crown */}
+      <Box args={[22, 5, 10]} position={[0, 38, 0]} castShadow>
+        <meshStandardMaterial color="#0f172a" metalness={0.9} />
+      </Box>
+      {/* Hydraulic cylinder */}
+      <Cylinder args={[3, 3, 18]} position={[0, 28, 0]} castShadow>
+        <meshStandardMaterial color="#6b7280" metalness={0.95} roughness={0.05} />
+      </Cylinder>
+      {/* Animated ram/platen */}
+      <mesh ref={ramRef} position={[0, 6, 0]}>
+        <boxGeometry args={[16, 5, 14]} />
+        <meshStandardMaterial map={metalTex} color="#d97706" metalness={0.8} roughness={0.25} />
+      </mesh>
+      {/* Red warning stripe on base */}
+      <Box args={[21, 0.4, 19]} position={[0, 4.2, 0]}>
+        <meshStandardMaterial map={useMemo(() => makeHazardStripeTexture(), [])} />
+      </Box>
+    </group>
+  );
+};
+
+// Air Compressor: cylindrical tank + motor housing
+const AirCompressor = ({ position }: { position: [number, number, number] }) => {
+  const metalTex = useMemo(() => makeBrushedMetalTexture(), []);
+  return (
+    <group position={position}>
+      {/* Pressure tank - horizontal */}
+      <Cylinder args={[5, 5, 22]} rotation={[0, 0, Math.PI/2]} position={[0, 6, 0]} castShadow>
+        <meshStandardMaterial map={metalTex} color="#dc2626" metalness={0.7} roughness={0.3} />
+      </Cylinder>
+      {/* End caps */}
+      <Cylinder args={[5, 5, 1]} rotation={[0, 0, Math.PI/2]} position={[-11, 6, 0]}>
+        <meshStandardMaterial color="#991b1b" metalness={0.8} />
+      </Cylinder>
+      <Cylinder args={[5, 5, 1]} rotation={[0, 0, Math.PI/2]} position={[11, 6, 0]}>
+        <meshStandardMaterial color="#991b1b" metalness={0.8} />
+      </Cylinder>
+      {/* Motor housing */}
+      <Box args={[8, 8, 8]} position={[0, 10, -8]} castShadow>
+        <meshStandardMaterial color="#1e293b" metalness={0.8} />
+      </Box>
+      {/* Outlet pipe */}
+      <Cylinder args={[0.8, 0.8, 10]} position={[6, 11, 0]} rotation={[0, 0, Math.PI/2]}>
+        <meshStandardMaterial color="#94a3b8" metalness={0.9} />
+      </Cylinder>
+      {/* Support legs */}
+      {[-8, 8].map((x, i) => (
+        <Box key={i} args={[2, 5, 2]} position={[x, 2, 0]}>
+          <meshStandardMaterial color="#334155" />
+        </Box>
+      ))}
+    </group>
+  );
+};
+
+// Overhead Pipe Rack: a network of large industrial pipes at height
+const PipeRack = ({ position, length = 140 }: { position: [number, number, number], length?: number }) => {
+  return (
+    <group position={position}>
+      {/* Support stanchions */}
+      {[-length/2 + 20, 0, length/2 - 20].map((x, i) => (
+        <group key={i} position={[x, 0, 0]}>
+          <Box args={[2, 22, 2]} position={[0, 11, -5]}>
+            <meshStandardMaterial color="#374151" metalness={0.8} />
+          </Box>
+          <Box args={[2, 22, 2]} position={[0, 11, 5]}>
+            <meshStandardMaterial color="#374151" metalness={0.8} />
+          </Box>
+          {/* Cross-bracing */}
+          <Box args={[1, 1, 12]} position={[0, 20, 0]}>
+            <meshStandardMaterial color="#475569" />
+          </Box>
+          <Box args={[1, 1, 12]} position={[0, 10, 0]}>
+            <meshStandardMaterial color="#475569" />
+          </Box>
+        </group>
+      ))}
+      {/* Three large pipes running along length */}
+      <Cylinder args={[2, 2, length]} rotation={[0, 0, Math.PI/2]} position={[0, 20, -4]}>
+        <meshStandardMaterial color="#3b82f6" metalness={0.8} roughness={0.2} />
+      </Cylinder>
+      <Cylinder args={[1.5, 1.5, length]} rotation={[0, 0, Math.PI/2]} position={[0, 20, 0]}>
+        <meshStandardMaterial color="#94a3b8" metalness={0.85} roughness={0.15} />
+      </Cylinder>
+      <Cylinder args={[1.2, 1.2, length]} rotation={[0, 0, Math.PI/2]} position={[0, 20, 4]}>
+        <meshStandardMaterial color="#ef4444" metalness={0.8} roughness={0.2} />
+      </Cylinder>
+    </group>
+  );
+};
+
+// Drum Storage: rows of industrial chemical/fuel drums
+const DrumStorage = ({ position }: { position: [number, number, number] }) => {
+  const colors = ['#dc2626', '#2563eb', '#d97706', '#059669', '#7c3aed'];
+  return (
+    <group position={position}>
+      {[0, 1, 2, 3].map((row) => (
+        [0, 1, 2, 3, 4].map((col) => (
+          <Cylinder
+            key={`drum-${row}-${col}`}
+            args={[2, 2, 6]}
+            position={[col * 5 - 10, 3, row * 5 - 8]}
+            castShadow
+          >
+            <meshStandardMaterial color={colors[(row + col) % colors.length]} roughness={0.5} metalness={0.4} />
+          </Cylinder>
+        ))
+      ))}
+      {/* Drum tops (lighter cap) */}
+      {[0, 1, 2, 3].map((row) => (
+        [0, 1, 2, 3, 4].map((col) => (
+          <Cylinder
+            key={`cap-${row}-${col}`}
+            args={[2, 2, 0.5]}
+            position={[col * 5 - 10, 6.3, row * 5 - 8]}
+          >
+            <meshStandardMaterial color="#e2e8f0" metalness={0.6} />
+          </Cylinder>
+        ))
+      ))}
+      {/* Containment berm around drums */}
+      <Box args={[30, 0.5, 26]} position={[2, 0.25, 2]}>
+        <meshStandardMaterial color="#475569" roughness={0.9} />
+      </Box>
+    </group>
+  );
+};
+
+// Large Storage Tank with piping connections
+const LargeStorageTank = ({ position, color = "#475569" }: { position: [number, number, number], color?: string }) => {
+  return (
+    <group position={position}>
+      {/* Main vertical tank */}
+      <Cylinder args={[12, 12, 35]} position={[0, 17.5, 0]} castShadow>
+        <meshStandardMaterial color={color} metalness={0.7} roughness={0.3} />
+      </Cylinder>
+      {/* Conical roof */}
+      <Cylinder args={[0, 12, 8]} position={[0, 39, 0]} castShadow>
+        <meshStandardMaterial color={color} metalness={0.7} roughness={0.3} />
+      </Cylinder>
+      {/* Horizontal banding rings */}
+      {[8, 16, 24, 32].map((y, i) => (
+        <Cylinder key={i} args={[12.4, 12.4, 1.5]} position={[0, y, 0]}>
+          <meshStandardMaterial color="#1e293b" metalness={0.9} />
+        </Cylinder>
+      ))}
+      {/* Access ladder */}
+      <Box args={[0.5, 35, 0.5]} position={[12.5, 17.5, 0]}>
+        <meshStandardMaterial color="#94a3b8" />
+      </Box>
+      {[-5, 0, 5, 10, 15, 20, 25, 30].map((y, i) => (
+        <Box key={`rung-${i}`} args={[3, 0.4, 0.4]} position={[13.5, y + 2, 0]}>
+          <meshStandardMaterial color="#94a3b8" />
+        </Box>
+      ))}
+      {/* Outlet pipes */}
+      <Cylinder args={[1, 1, 20]} rotation={[0, 0, Math.PI/2]} position={[-22, 5, 0]}>
+        <meshStandardMaterial color="#475569" metalness={0.9} />
+      </Cylinder>
+      {/* Support skirt */}
+      <Cylinder args={[10, 13, 4]} position={[0, 2, 0]}>
+        <meshStandardMaterial color="#374151" metalness={0.8} />
+      </Cylinder>
+    </group>
+  );
+};
+
+// Steel Roof Truss: exposed structural roof visible inside the factory
+const RoofTruss = ({ position, span = 130 }: { position: [number, number, number], span?: number }) => {
+  return (
+    <group position={position}>
+      {/* Top chord */}
+      <Box args={[span, 1.5, 1.5]} position={[0, 0, 0]}>
+        <meshStandardMaterial color="#374151" metalness={0.85} />
+      </Box>
+      {/* Bottom chord */}
+      <Box args={[span, 1.5, 1.5]} position={[0, -8, 0]}>
+        <meshStandardMaterial color="#374151" metalness={0.85} />
+      </Box>
+      {/* Vertical members + diagonals */}
+      {[-50, -25, 0, 25, 50].map((x, i) => (
+        <group key={i}>
+          <Box args={[1, 8, 1]} position={[x, -4, 0]}>
+            <meshStandardMaterial color="#4b5563" metalness={0.8} />
+          </Box>
+          {i < 4 && (
+            <Box args={[1, 10, 1]} position={[x + 12, -4, 0]} rotation={[0, 0, -0.5]}>
+              <meshStandardMaterial color="#4b5563" metalness={0.8} />
+            </Box>
+          )}
+        </group>
+      ))}
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
 // Campus Environment (Optimized)
 // --------------------------------------------------------------------------
 const CampusEnvironment = ({ theme, showLabels }: { theme: string, showLabels: boolean }) => {
+  const concreteTex = useMemo(() => makeConcreteTexture(), []);
   return (
     <group>
-      {/* Massive Terrain Plane */}
+      {/* Massive Terrain Plane with procedural concrete texture */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, -0.1, 0]}>
-        <planeGeometry args={[1200, 1200]} />
-        <meshStandardMaterial color={theme === 'light' ? "#94a3b8" : "#1e293b"} roughness={0.9} />
+        <planeGeometry args={[1200, 1200, 8, 8]} />
+        <meshStandardMaterial map={concreteTex} color={theme === 'light' ? "#b0b8c4" : "#5a6270"} roughness={0.95} />
       </mesh>
       
       {/* Grid Helper */}
@@ -881,6 +1209,11 @@ const CampusEnvironment = ({ theme, showLabels }: { theme: string, showLabels: b
       
       {/* === BLOCK D: ENGINEERING HQ & CONTROL CENTER === */}
       <Building position={[0, 50, 200]} args={[60, 120, 60]} theme={theme} isGlass={true} label="Block D: Engineering HQ & Control" showLabels={showLabels} />
+
+      {/* Large Storage Tanks near Block C */}
+      <LargeStorageTank position={[-130, 0, -170]} color="#475569" />
+      <LargeStorageTank position={[-100, 0, -170]} color="#dc2626" />
+      <LargeStorageTank position={[130, 0, -170]} color="#475569" />
 
       {/* Loading Docks flanking the blocks */}
       <LoadingDock position={[-200, 0, 100]} />
@@ -1403,6 +1736,23 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
                   </group>
                )
             })}
+
+            {/* Hydraulic Press bay — heavy forming station */}
+            <HydraulicPress position={[55, 0, -40]} />
+
+            {/* Air Compressor cluster — supplies pneumatic tools */}
+            <AirCompressor position={[60, 0, 35]} />
+            <AirCompressor position={[45, 0, 35]} />
+
+            {/* Overhead Pipe Rack — supplies coolant, hydraulic fluid, compressed air */}
+            <PipeRack position={[0, 0, -50]} length={130} />
+
+            {/* Drum Storage — lubricants, cutting fluids, chemicals */}
+            <DrumStorage position={[-60, 0, 20]} />
+
+            {/* Roof trusses visible at ceiling level */}
+            <RoofTruss position={[0, 60, -20]} span={130} />
+            <RoofTruss position={[0, 60, 10]} span={130} />
           </group>
 
           {/* ================================================================
@@ -1458,6 +1808,17 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
                   </group>
                )
             })}
+
+            {/* Additional Block B machinery */}
+            {/* Pipe rack delivering coolant and air to all assembly stations */}
+            <PipeRack position={[0, 0, 50]} length={130} />
+
+            {/* Drum storage for paint, solvents, and coatings */}
+            <DrumStorage position={[55, 0, -20]} />
+
+            {/* Roof trusses at ceiling of assembly hall */}
+            <RoofTruss position={[0, 55, -30]} span={130} />
+            <RoofTruss position={[0, 55, 5]} span={130} />
           </group>
 
           {/* Massive AGV Swarm traveling between buildings */}
