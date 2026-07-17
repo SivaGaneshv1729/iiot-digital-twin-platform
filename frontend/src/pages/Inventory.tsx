@@ -7,6 +7,7 @@ import { io } from 'socket.io-client';
 import { 
   Treemap, ResponsiveContainer, Tooltip 
 } from 'recharts';
+import { DataTable, Column } from '../components/DataTable';
 import './Inventory.css';
 
 interface InventoryItem {
@@ -99,11 +100,48 @@ export const Inventory = () => {
         setInventory(data);
       }
     });
-
+    // Subscription cleanup
     return () => {
+      socket.off('inventory_update');
       socket.disconnect();
     };
   }, []);
+
+  const ledgerColumns: Column<InventoryItem>[] = [
+    { key: 'item_name', label: 'Item Name', render: (row) => <span className="item-name">{row.item_name}</span> },
+    { key: 'category', label: 'Category', render: (row) => <span className="badge category-badge">{row.category}</span> },
+    { key: 'location', label: 'Location' },
+    { key: 'quantity', label: 'Quantity', render: (row) => <span className="quantity-cell">{row.quantity} <span className="unit">{row.unit}</span></span> },
+    { key: 'status', label: 'Status', render: (row) => {
+        const isLow = row.quantity <= row.min_threshold;
+        return isLow 
+          ? <span className="badge status-low"><AlertTriangle size={12}/> Critical</span>
+          : <span className="badge status-ok">Stable</span>;
+    }},
+    { key: 'actions', label: 'Actions', sortable: false, render: () => (
+      <button className="action-btn"><ArrowDownToLine size={16} /></button>
+    )}
+  ];
+
+  const orderColumns: Column<any>[] = [
+    { key: 'id', label: 'Order ID', render: (row) => <span className="item-name" style={{ color: '#3b82f6' }}>{row.id}</span> },
+    { key: 'client', label: 'Client', render: (row) => <span style={{ fontWeight: 600 }}>{row.client}</span> },
+    { key: 'product', label: 'Product Target', render: (row) => <span>{row.quantity.toLocaleString()} x {row.product}</span> },
+    { key: 'machine', label: 'Assigned Machine', render: (row) => <span className="badge category-badge">{row.machine}</span> },
+    { key: 'progress', label: 'Progress', render: (row) => (
+      <div style={{ width: '200px' }}>
+        <div className="progress-bar-bg" style={{ width: '100%', height: '8px', background: '#1e293b', borderRadius: '4px', overflow: 'hidden' }}>
+          <div className="progress-bar-fill" style={{ width: `${row.progress}%`, height: '100%', background: row.progress === 100 ? '#10b981' : '#3b82f6' }}></div>
+        </div>
+        <span style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px', display: 'block' }}>{row.progress}% Completed</span>
+      </div>
+    )},
+    { key: 'status', label: 'Status', render: (row) => (
+      <span className={`badge ${row.status === 'Active' ? 'status-ok' : row.status === 'Pending' ? 'status-low' : 'status-completed'}`}>
+        {row.status}
+      </span>
+    )}
+  ];
 
   // Calculate Total Financial Valuation
   const totalValuation = inventory.reduce((acc, item) => {
@@ -238,83 +276,23 @@ export const Inventory = () => {
               {loading ? (
                 <div className="loading-state">Loading inventory data...</div>
               ) : (
-                <table className="inventory-table">
-                  <thead>
-                    <tr>
-                      <th>Item Name</th>
-                      <th>Category</th>
-                      <th>Location</th>
-                      <th>Quantity</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {inventory.map(item => {
-                      const isLow = item.quantity <= item.min_threshold;
-                      return (
-                        <tr key={item.id} className={isLow ? 'row-warning' : ''}>
-                          <td className="item-name">{item.item_name}</td>
-                          <td><span className="badge category-badge">{item.category}</span></td>
-                          <td>{item.location}</td>
-                          <td className="quantity-cell">
-                            {item.quantity} <span className="unit">{item.unit}</span>
-                          </td>
-                          <td>
-                            {isLow ? (
-                              <span className="badge status-low"><AlertTriangle size={12}/> Critical</span>
-                            ) : (
-                              <span className="badge status-ok">Stable</span>
-                            )}
-                          </td>
-                          <td>
-                            <button className="action-btn">
-                              <ArrowDownToLine size={16} />
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                <DataTable 
+                  data={inventory} 
+                  columns={ledgerColumns} 
+                  searchPlaceholder="Search materials..." 
+                  itemsPerPage={8} 
+                />
               )}
             </>
           )}
 
           {activeTab === 'orders' && (
-            <table className="inventory-table">
-              <thead>
-                <tr>
-                  <th>Order ID</th>
-                  <th>Client</th>
-                  <th>Product Target</th>
-                  <th>Assigned Machine</th>
-                  <th>Progress</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {MOCK_ORDERS.map(order => (
-                  <tr key={order.id}>
-                    <td className="item-name" style={{ color: '#3b82f6' }}>{order.id}</td>
-                    <td style={{ fontWeight: 600 }}>{order.client}</td>
-                    <td>{order.quantity.toLocaleString()} x {order.product}</td>
-                    <td><span className="badge category-badge">{order.machine}</span></td>
-                    <td style={{ width: '200px' }}>
-                      <div className="progress-bar-bg" style={{ width: '100%', height: '8px', background: '#1e293b', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div className="progress-bar-fill" style={{ width: `${order.progress}%`, height: '100%', background: order.progress === 100 ? '#10b981' : '#3b82f6' }}></div>
-                      </div>
-                      <span style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px', display: 'block' }}>{order.progress}% Completed</span>
-                    </td>
-                    <td>
-                      <span className={`badge ${order.status === 'Active' ? 'status-ok' : order.status === 'Pending' ? 'status-low' : 'status-completed'}`}>
-                        {order.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <DataTable 
+              data={MOCK_ORDERS} 
+              columns={orderColumns} 
+              searchPlaceholder="Search orders..." 
+              itemsPerPage={5} 
+            />
           )}
 
           {activeTab === 'bom' && (

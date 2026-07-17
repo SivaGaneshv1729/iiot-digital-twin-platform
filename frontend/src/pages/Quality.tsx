@@ -27,24 +27,8 @@ interface QualityInspection {
 
 const PIE_COLORS = ['#10b981', '#ef4444'];
 
-// Mock Analytics Data for Enterprise Expansion
-const defectTypeData = [
-  { name: 'Micro-fracture', count: 45 },
-  { name: 'Alignment', count: 30 },
-  { name: 'Scratch', count: 25 },
-  { name: 'Dimensional', count: 15 },
-  { name: 'Paint Flaw', count: 10 },
-];
+// Quality Trend Data is now fetched dynamically from backend
 
-const qualityTrendData = [
-  { day: 'Mon', defects: 12, fpy: 94 },
-  { day: 'Tue', defects: 15, fpy: 92 },
-  { day: 'Wed', defects: 8, fpy: 96 },
-  { day: 'Thu', defects: 5, fpy: 98 },
-  { day: 'Fri', defects: 18, fpy: 89 },
-  { day: 'Sat', defects: 10, fpy: 95 },
-  { day: 'Sun', defects: 7, fpy: 97 },
-];
 
 /**
  * @component Quality
@@ -53,31 +37,37 @@ const qualityTrendData = [
 export const Quality = () => {
   const [inspections, setInspections] = useState<QualityInspection[]>([]);
   const [stats, setStats] = useState({ passed: 0, failed: 0, defect_rate: 0 });
+  const [defectTypeData, setDefectTypeData] = useState([]);
+  const [qualityTrendData, setQualityTrendData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchQualityData = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const headers = { 'Authorization': `Bearer ${token}` };
+  const fetchQualityData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { 'Authorization': `Bearer ${token}` };
 
-        const [inspectionsRes, statsRes] = await Promise.all([
-          fetch('http://localhost:4000/api/quality', { headers }),
-          fetch('http://localhost:4000/api/quality/stats', { headers })
-        ]);
+      const [inspectionsRes, statsRes, typesRes, trendsRes] = await Promise.all([
+        fetch('http://localhost:4000/api/quality', { headers }),
+        fetch('http://localhost:4000/api/quality/stats', { headers }),
+        fetch('http://localhost:4000/api/quality/defect-types', { headers }),
+        fetch('http://localhost:4000/api/quality/trends', { headers })
+      ]);
 
-        if (inspectionsRes.ok && statsRes.ok) {
-          const inspData = await inspectionsRes.json();
-          setInspections(Array.isArray(inspData) ? inspData : []);
-          setStats(await statsRes.json());
-        }
-      } catch (err) {
-        console.error('Failed to fetch quality data', err);
-      } finally {
-        setLoading(false);
+      if (inspectionsRes.ok && statsRes.ok) {
+        const inspData = await inspectionsRes.json();
+        setInspections(Array.isArray(inspData) ? inspData : []);
+        setStats(await statsRes.json());
       }
-    };
-    
+      if (typesRes.ok) setDefectTypeData(await typesRes.json());
+      if (trendsRes.ok) setQualityTrendData(await trendsRes.json());
+    } catch (err) {
+      console.error('Failed to fetch quality data', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchQualityData();
   }, []);
 
@@ -130,6 +120,24 @@ export const Quality = () => {
   // Derive First Pass Yield (FPY) from defect rate
   const fpy = stats.defect_rate ? (100 - stats.defect_rate).toFixed(1) : '100.0';
 
+  const handleSimulateDefect = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await fetch('http://localhost:4000/api/quality/inject-defect', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      // Dispatch E-Stop to halt Digital Twin and Dashboard
+      window.dispatchEvent(new Event('cmd_emergency_stop'));
+      
+      // Refresh the Quality page analytics
+      fetchQualityData();
+    } catch (err) {
+      console.error('Failed to inject defect:', err);
+    }
+  };
+
   return (
     <div className="quality-container">
       <div className="quality-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -151,9 +159,16 @@ export const Quality = () => {
         
         {/* CV Mockup Panel (Left Column) */}
         <div className="cv-mockup-panel glass-panel">
-          <div className="panel-header">
-            <h3><ScanEye size={18} className="text-accent" /> Live Assembly Vision</h3>
-            <span className="live-indicator">LIVE</span>
+          <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h3><ScanEye size={18} className="text-accent" /> Live Assembly Vision</h3>
+              <span className="live-indicator">LIVE</span>
+            </div>
+            <button 
+              onClick={handleSimulateDefect}
+              style={{ padding: '4px 12px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}>
+              <ShieldAlert size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'text-bottom' }}/> Simulate Defect & Halt
+            </button>
           </div>
           <div className="camera-feed cv-active-feed" style={{ backgroundImage: 'url(/cctv/cv_engine_block.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
             <div className="cv-overlay">

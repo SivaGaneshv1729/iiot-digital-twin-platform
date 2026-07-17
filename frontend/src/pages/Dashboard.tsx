@@ -12,7 +12,7 @@ import html2canvas from 'html2canvas';
 import { ModelMetrics } from '../components/ModelMetrics';
 import { DigitalTwin } from '../components/DigitalTwin';
 import { MachineHistoryModal } from '../components/MachineHistoryModal';
-import { CCTVPanel } from '../components/CCTVPanel';
+
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import './Dashboard.css';
 
@@ -24,6 +24,16 @@ const INITIAL_CHART_DATA = [
   { time: '14:00', output: 180, target: 175, energy: 590 },
   { time: '16:00', output: 160, target: 165, energy: 520 },
   { time: '18:00', output: 210, target: 205, energy: 680 },
+];
+
+const INITIAL_RISK_DATA = [
+  { time: 'Mon', risk: 12, threshold: 30 },
+  { time: 'Tue', risk: 15, threshold: 30 },
+  { time: 'Wed', risk: 10, threshold: 30 },
+  { time: 'Thu', risk: 28, threshold: 30 },
+  { time: 'Fri', risk: 14, threshold: 30 },
+  { time: 'Sat', risk: 9, threshold: 30 },
+  { time: 'Sun', risk: 8, threshold: 30 },
 ];
 
 interface PrescriptiveAction {
@@ -53,6 +63,7 @@ export const Dashboard = () => {
   const [aiHeatmapMode, setAiHeatmapMode] = useState(false);
   
   const [chartData, setChartData] = useState(INITIAL_CHART_DATA);
+  const [riskData, setRiskData] = useState(INITIAL_RISK_DATA);
   const [actions, setActions] = useState(INITIAL_ACTIONS);
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -413,7 +424,10 @@ export const Dashboard = () => {
           <div className="kpi-icon-wrapper blue"><Zap size={22} /></div>
           <div className="kpi-content">
             <h3>{t('Fleet OEE Score')}</h3>
-            <div className="kpi-value">{summary.active_machines > 0 ? '94.2%' : '0%'}</div>
+            <div className="kpi-value">
+              {summary.active_machines > 0 ? '94.2%' : '0%'}
+              {summary.active_machines > 0 && <span style={{ color: '#10b981', fontSize: '0.9rem', marginLeft: '8px' }}>↑ 1.2%</span>}
+            </div>
           </div>
         </div>
         
@@ -423,6 +437,7 @@ export const Dashboard = () => {
             <h3>{t('Revenue at Risk')}</h3>
             <div className="kpi-value">
               ${revenueAtRisk.toLocaleString()}
+              <span style={{ color: '#f43f5e', fontSize: '0.9rem', marginLeft: '8px' }}>+${Math.floor(revenueAtRisk * 0.05).toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -431,7 +446,10 @@ export const Dashboard = () => {
           <div className="kpi-icon-wrapper green"><Leaf size={22} /></div>
           <div className="kpi-content">
             <h3>{t('AI Energy Savings')}</h3>
-            <div className="kpi-value">$12,450 <small>/mo</small></div>
+            <div className="kpi-value">
+              $12,450 <small>/mo</small>
+              <span style={{ color: '#10b981', fontSize: '0.9rem', marginLeft: '8px' }}>↑ 8%</span>
+            </div>
           </div>
         </div>
 
@@ -439,7 +457,10 @@ export const Dashboard = () => {
           <div className="kpi-icon-wrapper purple"><TrendingUp size={22} /></div>
           <div className="kpi-content">
             <h3>{t('Global Yield Rate')}</h3>
-            <div className="kpi-value">{summary.efficiency}%</div>
+            <div className="kpi-value">
+              {summary.efficiency}%
+              <span style={{ color: '#10b981', fontSize: '0.9rem', marginLeft: '8px' }}>↑ 2.1%</span>
+            </div>
           </div>
         </div>
 
@@ -449,6 +470,7 @@ export const Dashboard = () => {
             <h3>{t('Throughput (UPH)')}</h3>
             <div className="kpi-value">
               {summary.active_machines > 0 ? '4,820' : '0'}
+              {summary.active_machines > 0 && <span style={{ color: '#f59e0b', fontSize: '0.9rem', marginLeft: '8px' }}>↓ 15</span>}
             </div>
           </div>
         </div>
@@ -533,8 +555,38 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        {/* Live CCTV Panel */}
-        <CCTVPanel isEmergencyMode={isEmergencyMode} />
+        {/* Predictive Maintenance Risk Chart */}
+        <div className="charts-section glass-panel">
+          <div className="chart-header">
+            <h2>{t('Predictive Maintenance Risk (AI Forecast)')}</h2>
+            <div className="chart-legend-custom">
+              <div className="chart-legend-item">
+                <div style={{ width: 12, height: 12, background: '#f43f5e', borderRadius: 2 }}></div> Failure Probability (%)
+              </div>
+              <div className="chart-legend-item">
+                <div style={{ width: 12, height: 2, background: '#f59e0b' }}></div> Action Threshold
+              </div>
+            </div>
+          </div>
+          <div className="chart-wrapper">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={riskData}>
+                <defs>
+                  <linearGradient id="colorRiskDash" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                <XAxis dataKey="time" stroke="#64748b" tick={{fill: '#64748b', fontSize: 12}} />
+                <YAxis stroke="#64748b" tick={{fill: '#64748b', fontSize: 12}} domain={[0, 100]} />
+                <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} />
+                <Area type="monotone" dataKey="risk" fill="url(#colorRiskDash)" stroke="#f43f5e" strokeWidth={2} isAnimationActive={false} />
+                <Line type="stepAfter" dataKey="threshold" stroke="#f59e0b" strokeWidth={2} dot={false} strokeDasharray="5 5" isAnimationActive={false} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
 
       </div>
     </div>

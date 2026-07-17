@@ -7,6 +7,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   RadarChart, PolarGrid, PolarAngleAxis, Radar, Legend
 } from 'recharts';
+import { DataTable, Column } from '../components/DataTable';
 import './MLOps.css';
 
 interface AIModelMetric {
@@ -84,6 +85,20 @@ export const MLOps = () => {
       setTraining(false);
     }
   };
+
+  const modelColumns: Column<any>[] = [
+    { key: 'id', label: 'Version ID', render: (row) => <span className="version">{row.id}</span> },
+    { key: 'arch', label: 'Architecture' },
+    { key: 'purpose', label: 'Purpose' },
+    { key: 'f1', label: 'F1 Score', render: (row) => <span style={{ fontWeight: 600 }}>{row.f1}</span> },
+    { key: 'latency', label: 'Latency' },
+    { key: 'status', label: 'Status', render: (row) => (
+      <span className={`badge ${row.status === 'Active' ? 'status-active' : row.status === 'Archived' ? 'status-archived' : 'status-failed'}`}>
+        {row.status === 'Failed' && <AlertCircle size={12} style={{ display: 'inline', marginRight: '4px' }} />}
+        {row.status}
+      </span>
+    )}
+  ];
 
   return (
     <div className="mlops-container">
@@ -198,35 +213,14 @@ export const MLOps = () => {
       {/* Model Registry Ledger */}
       <div className="registry-wrapper glass-panel">
         <h2 className="panel-title" style={{ marginBottom: '16px' }}><ShieldCheck size={18} className="text-success" /> Model Deployment Registry</h2>
-        <table className="registry-table">
-          <thead>
-            <tr>
-              <th>Version ID</th>
-              <th>Architecture</th>
-              <th>Purpose</th>
-              <th>F1 Score</th>
-              <th>Latency</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {MODEL_REGISTRY.map((model, idx) => (
-              <tr key={idx}>
-                <td className="version">{model.id}</td>
-                <td>{model.arch}</td>
-                <td>{model.purpose}</td>
-                <td style={{ fontWeight: 600 }}>{model.f1}</td>
-                <td>{model.latency}</td>
-                <td>
-                  <span className={`badge ${model.status === 'Active' ? 'status-active' : model.status === 'Archived' ? 'status-archived' : 'status-failed'}`}>
-                    {model.status === 'Failed' && <AlertCircle size={12} />}
-                    {model.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div style={{ padding: 0 }}>
+          <DataTable 
+            data={MODEL_REGISTRY} 
+            columns={modelColumns} 
+            searchPlaceholder="Search models..." 
+            itemsPerPage={5} 
+          />
+        </div>
       </div>
     </div>
   );

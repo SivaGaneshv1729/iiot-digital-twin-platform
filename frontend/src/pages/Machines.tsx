@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { 
   Activity, Clock, AlertTriangle, Wifi,
-  Settings, Zap, BarChart2, Server
+  Settings, Zap, BarChart2, Server, LayoutGrid, List
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { MachineHistoryModal } from '../components/MachineHistoryModal';
+import { DataTable, Column } from '../components/DataTable';
 import './Machines.css';
 
 interface Machine {
@@ -141,9 +142,11 @@ export const Machines = () => {
   const [machines, setMachines] = useState<Machine[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [selectedMachineId, setSelectedMachineId] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userRole = user.role || 'Operator';
+  const isAdmin = userRole === 'Admin';
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -184,6 +187,44 @@ export const Machines = () => {
     ? ((runningMachines / totalMachines) * 0.95 * 0.99 * 100).toFixed(1) 
     : 0;
 
+  const updateMachineStatus = async (machineId: number, status: string) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`http://localhost:4000/api/machines/${machineId}/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ status })
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        alert(error.error || 'Failed to update status');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Network error while updating status');
+    }
+  };
+
+  const columns: Column<Machine>[] = [
+    { key: 'name', label: 'Node Name', render: (row) => <span style={{ fontWeight: 'bold' }}><Server size={14} style={{ display: 'inline', marginRight: '6px' }}/>{row.name}</span> },
+    { key: 'status', label: 'Status', render: (row) => <span className={`status-badge status-${row.status}`}>{row.status}</span> },
+    { key: 'temperature', label: 'Core Temp', render: (row) => <span>{row.temperature}°C</span> },
+    { key: 'running_hours', label: 'Uptime', render: (row) => <span>{row.running_hours}h</span> },
+    { key: 'actions', label: 'Controls', sortable: false, render: (row) => (
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button className="btn-secondary" style={{ padding: '4px 8px', fontSize: '0.8rem' }} onClick={() => setSelectedMachineId(row.id)}>
+          <BarChart2 size={12} style={{ display: 'inline', marginRight: '4px' }}/> Telemetry
+        </button>
+        {isAdmin && (
+          <>
+            <button style={{ padding: '4px 8px', fontSize: '0.8rem', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '4px' }} onClick={() => updateMachineStatus(row.id, 'Running')}>Start</button>
+            <button style={{ padding: '4px 8px', fontSize: '0.8rem', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '4px' }} onClick={() => updateMachineStatus(row.id, 'Idle')}>Stop</button>
+          </>
+        )}
+      </div>
+    )}
+  ];
+
   return (
     <div className="machines-container">
       <div className="machines-header">
@@ -191,9 +232,25 @@ export const Machines = () => {
           <h1>Fleet & OEE Command Center</h1>
           <p className="subtitle">Global equipment effectiveness and predictive AI node analytics</p>
         </div>
-        <div className={`connection-badge ${isConnected ? 'connected' : 'disconnected'}`}>
-          <Wifi size={16} className={isConnected ? 'pulse' : ''} />
-          <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{isConnected ? 'IoT Stream Live' : 'IoT Disconnected'}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className="view-toggles" style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', padding: '4px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <button 
+              onClick={() => setViewMode('grid')}
+              style={{ padding: '6px 12px', background: viewMode === 'grid' ? 'rgba(59,130,246,0.2)' : 'transparent', color: viewMode === 'grid' ? '#3b82f6' : '#94a3b8', borderRadius: '4px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <LayoutGrid size={16} /> Grid
+            </button>
+            <button 
+              onClick={() => setViewMode('table')}
+              style={{ padding: '6px 12px', background: viewMode === 'table' ? 'rgba(59,130,246,0.2)' : 'transparent', color: viewMode === 'table' ? '#3b82f6' : '#94a3b8', borderRadius: '4px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <List size={16} /> Registry
+            </button>
+          </div>
+          <div className={`connection-badge ${isConnected ? 'connected' : 'disconnected'}`}>
+            <Wifi size={16} className={isConnected ? 'pulse' : ''} />
+            <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{isConnected ? 'IoT Stream Live' : 'IoT Disconnected'}</span>
+          </div>
         </div>
       </div>
 
@@ -222,17 +279,28 @@ export const Machines = () => {
         </div>
       </div>
 
-      {/* Machines Grid */}
-      <div className="machines-grid">
-        {machines.map(machine => (
-          <MachineCard 
-            key={machine.id} 
-            machine={machine} 
-            userRole={userRole} 
-            onOpenAnalytics={(id) => setSelectedMachineId(id)}
+      {/* Machines View */}
+      {viewMode === 'grid' ? (
+        <div className="machines-grid">
+          {machines.map(machine => (
+            <MachineCard 
+              key={machine.id} 
+              machine={machine} 
+              userRole={userRole} 
+              onOpenAnalytics={(id) => setSelectedMachineId(id)}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="glass-panel" style={{ padding: '0', marginTop: '24px' }}>
+          <DataTable 
+            data={machines} 
+            columns={columns} 
+            searchPlaceholder="Search equipment registry..." 
+            itemsPerPage={10} 
           />
-        ))}
-      </div>
+        </div>
+      )}
 
       {/* Machine History & AI Forecast Modal */}
       {selectedMachineId && (
