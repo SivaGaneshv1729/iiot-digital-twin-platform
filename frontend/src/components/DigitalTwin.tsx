@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Grid, Box, Cylinder, Cone, Text, FlyControls, Environment, Html } from '@react-three/drei';
+import { MapControls, Grid, Box, Cylinder, Cone, Text, FlyControls, Environment, Html } from '@react-three/drei';
 import { XR, ARButton, createXRStore } from '@react-three/xr';
 // import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
@@ -2096,7 +2096,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
           {viewMode === 'Drone' ? (
              <FlyControls movementSpeed={50} rollSpeed={0.5} dragToLook={true} />
           ) : (
-            <OrbitControls 
+            <MapControls 
               makeDefault
               enablePan={true}
               enableZoom={true}
