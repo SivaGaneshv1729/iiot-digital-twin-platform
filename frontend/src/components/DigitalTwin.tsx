@@ -763,7 +763,7 @@ const WarehouseRacks = ({ position, rackIndex = 0 }: { position: [number, number
       <Box args={[30, 20, 4]} position={[0, 10, 0]} castShadow>
         <meshStandardMaterial color="#334155" metalness={0.8} wireframe />
       </Box>
-      {[3, 8, 13, 18].map((y, i) => (
+      {[3, 8, 13, 18].map((y) => (
         <group key={`shelf-${y}`} position={[0, y, 0]}>
           <Box args={[30, 0.2, 4]}><meshStandardMaterial color="#1e293b" /></Box>
           {/* Consolidated crate block for performance, deterministic color based on index */}
