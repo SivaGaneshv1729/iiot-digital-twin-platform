@@ -266,10 +266,8 @@ const Building = ({ position, args, theme, isGlass = false, label = "", showLabe
 const FactoryBlock = ({ position, theme, label, args = [120, 60, 100], colorScheme = "blue", showLabels = false }: any) => {
   const [w, , d] = args;
   const isLight = theme === 'light';
-  const mainColor = isLight ? "#e8ecef" : "#d0d7de";
   const concreteColor = isLight ? "#c8cfd8" : "#9ea8b3";
   const accentColor = colorScheme === "blue" ? "#1d4ed8" : "#047857";
-  const glassColor = "#93c5fd";
   
   // Floor heights: 3 floors, each 20 units tall
   const floorH = 20;
@@ -1425,7 +1423,7 @@ const CampusEnvironment = ({ theme, showLabels, activeLayer }: { theme: string, 
       {/* Block A to Block B */}
       <ConveyorLine position={[50, 0, -150]} length={150} />
       {/* Block E to Block A */}
-      <ConveyorLine position={[-225, 0, -200]} length={150} rotation={[0, Math.PI / 2, 0]} />
+      <group rotation={[0, Math.PI / 2, 0]}><ConveyorLine position={[-225, 0, -200]} length={150} /></group>
       {/* Block G to Block F */}
       <ConveyorLine position={[0, 0, -250]} length={700} />
 
