@@ -269,9 +269,9 @@ const FactoryBlock = ({ position, theme, label, args = [120, 60, 100], colorSche
   const concreteColor = isLight ? "#c8cfd8" : "#9ea8b3";
   const accentColor = colorScheme === "blue" ? "#1d4ed8" : "#047857";
   
-  // Floor heights: 3 floors, each 20 units tall
-  const floorH = 20;
-  const floors = 3;
+  // Floor heights: 2 floors, each 40 units tall to fit heavy machinery
+  const floorH = 40;
+  const floors = 2;
   const totalH = floorH * floors;
   
   return (
@@ -281,16 +281,24 @@ const FactoryBlock = ({ position, theme, label, args = [120, 60, 100], colorSche
         <meshStandardMaterial color="#6b7280" roughness={0.95} />
       </Box>
       
-      {/* === 3 STACKED FLOORS === */}
-      {[0, 1, 2].map((fl) => {
+      {/* === STACKED FLOORS === */}
+      {Array.from({ length: floors }).map((_, fl) => {
         const floorY = fl * floorH + floorH / 2 + 3;
         return (
           <group key={fl}>
             {/* Main concrete walls (REMOVED to keep machinery visible) */}
             
-            {/* Glass window panels on front face (REMOVED) */}
-
-            {/* Window frame strips between panels (REMOVED) */}
+            {/* Machinery Inside The Floor */}
+            <group position={[0, floorY - floorH/2, 0]}>
+               <Box args={[15, 25, 15]} position={[-w/3, 12.5, -d/3]}><meshStandardMaterial color="#334155" metalness={0.8} /></Box>
+               <Box args={[15, 25, 15]} position={[w/3, 12.5, -d/3]}><meshStandardMaterial color="#334155" metalness={0.8} /></Box>
+               <Box args={[15, 25, 15]} position={[-w/3, 12.5, d/3]}><meshStandardMaterial color="#334155" metalness={0.8} /></Box>
+               <Box args={[15, 25, 15]} position={[w/3, 12.5, d/3]}><meshStandardMaterial color="#334155" metalness={0.8} /></Box>
+               
+               {/* Internal Tanks / Silos */}
+               <Cylinder args={[8, 8, 30]} position={[0, 15, 0]}><meshStandardMaterial color="#0ea5e9" metalness={0.6} /></Cylinder>
+               <Cylinder args={[8, 8, 30]} position={[0, 15, d/3]}><meshStandardMaterial color="#0ea5e9" metalness={0.6} /></Cylinder>
+            </group>
             
             {/* Floor slab band — concrete line between floors */}
             <Box args={[w + 2, 1, d + 2]} position={[0, floorY + floorH/2, 0]}>
@@ -339,6 +347,109 @@ const FactoryBlock = ({ position, theme, label, args = [120, 60, 100], colorSche
            <div style={{ color: '#0f172a', background: 'rgba(255,255,255,0.95)', padding: '4px 10px', fontSize: '0.9rem', border: `2px solid ${accentColor}`, borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '1px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', whiteSpace: 'nowrap' }}>{label}</div>
         </Html>
       )}
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
+// L-Shaped Factory Mega-Block
+// --------------------------------------------------------------------------
+const LShapedFactory = ({ position, theme, isEmergencyMode }: any) => {
+  const isLight = theme === 'light';
+  const concreteColor = isLight ? "#c8cfd8" : "#9ea8b3";
+  
+  // Dimensions
+  const mainWing = { w: 350, d: 100 }; // East-West
+  const subWing = { w: 100, d: 200 };  // North-South extending from West
+  
+  const floorH = 40;
+  const floors = 2;
+  const totalH = floorH * floors;
+
+  // Mock machine for high-detail internal geometry
+  const mockMachine = { status: 'running', name: 'CNC-M1' };
+  
+  return (
+    <group position={position}>
+      {/* === FOUNDATION === */}
+      <Box args={[mainWing.w + 10, 3, mainWing.d + 10]} position={[0, 1.5, 0]} receiveShadow>
+        <meshStandardMaterial color="#6b7280" roughness={0.95} />
+      </Box>
+      <Box args={[subWing.w + 10, 3, subWing.d + 10]} position={[-(mainWing.w/2) + (subWing.w/2), 1.5, -(mainWing.d/2) - (subWing.d/2) + 5]} receiveShadow>
+        <meshStandardMaterial color="#6b7280" roughness={0.95} />
+      </Box>
+      
+      {/* === STACKED FLOORS === */}
+      {Array.from({ length: floors }).map((_, fl) => {
+        const floorY = fl * floorH + floorH / 2 + 3;
+        return (
+          <group key={fl}>
+            
+            {/* Machinery in Main Wing */}
+            <group position={[0, floorY - floorH/2 + 2, 0]}>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <group key={`mw-mach-${i}`} position={[-100 + (i * 70), 0, 0]}>
+                  <CNCMachine position={[0, 0, -20]} machine={mockMachine} theme={theme} />
+                  <RoboticArm position={[0, 0, 15]} speedOffset={i} isEmergencyMode={isEmergencyMode} />
+                  {isEmergencyMode && i === 2 && <SmokeParticles position={[0, 15, 0]} />}
+                </group>
+              ))}
+            </group>
+            
+            {/* Machinery in Sub Wing */}
+            <group position={[-(mainWing.w/2) + (subWing.w/2), floorY - floorH/2 + 2, -(mainWing.d/2) - (subWing.d/2) + 5]}>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <group key={`sw-mach-${i}`} position={[0, 0, -40 + (i * 70)]}>
+                  <CNCMachine position={[20, 0, 0]} machine={mockMachine} theme={theme} />
+                  <RoboticArm position={[-15, 0, 0]} speedOffset={i*2} isEmergencyMode={isEmergencyMode} />
+                </group>
+              ))}
+            </group>
+
+            {/* Floor slab band — Main Wing */}
+            <Box args={[mainWing.w + 2, 1, mainWing.d + 2]} position={[0, floorY + floorH/2, 0]}>
+              <meshStandardMaterial color={concreteColor} roughness={0.9} />
+            </Box>
+            
+            {/* Floor slab band — Sub Wing */}
+            <Box args={[subWing.w + 2, 1, subWing.d + 2]} position={[-(mainWing.w/2) + (subWing.w/2), floorY + floorH/2, -(mainWing.d/2) - (subWing.d/2) + 5]}>
+              <meshStandardMaterial color={concreteColor} roughness={0.9} />
+            </Box>
+            
+            {/* Support Columns Main Wing */}
+            {[-mainWing.w/2 + 4, 0, mainWing.w/2 - 4].map((cx, ci) => (
+              <Box key={`mw-col-${ci}`} args={[4, floorH, 4]} position={[cx, floorY, -mainWing.d/2 + 4]}>
+                <meshStandardMaterial color={concreteColor} roughness={0.85} />
+              </Box>
+            ))}
+            {[-mainWing.w/2 + 4, 0, mainWing.w/2 - 4].map((cx, ci) => (
+              <Box key={`mw-col-s-${ci}`} args={[4, floorH, 4]} position={[cx, floorY, mainWing.d/2 - 4]}>
+                <meshStandardMaterial color={concreteColor} roughness={0.85} />
+              </Box>
+            ))}
+            
+            {/* Support Columns Sub Wing */}
+            {[-subWing.d/2 + 4, 0, subWing.d/2 - 4].map((cz, ci) => (
+              <Box key={`sw-col-${ci}`} args={[4, floorH, 4]} position={[-(mainWing.w/2) + 4, floorY, -(mainWing.d/2) - (subWing.d/2) + 5 + cz]}>
+                <meshStandardMaterial color={concreteColor} roughness={0.85} />
+              </Box>
+            ))}
+            {[-subWing.d/2 + 4, 0, subWing.d/2 - 4].map((cz, ci) => (
+              <Box key={`sw-col-e-${ci}`} args={[4, floorH, 4]} position={[-(mainWing.w/2) + subWing.w - 4, floorY, -(mainWing.d/2) - (subWing.d/2) + 5 + cz]}>
+                <meshStandardMaterial color={concreteColor} roughness={0.85} />
+              </Box>
+            ))}
+          </group>
+        );
+      })}
+
+      {/* === ROOF === */}
+      <Box args={[mainWing.w + 4, 3, mainWing.d + 4]} position={[0, totalH + 4.5, 0]} castShadow>
+        <meshStandardMaterial color={concreteColor} roughness={0.9} />
+      </Box>
+      <Box args={[subWing.w + 4, 3, subWing.d + 4]} position={[-(mainWing.w/2) + (subWing.w/2), totalH + 4.5, -(mainWing.d/2) - (subWing.d/2) + 5]} castShadow>
+        <meshStandardMaterial color={concreteColor} roughness={0.9} />
+      </Box>
     </group>
   );
 };
@@ -820,6 +931,19 @@ const WarehouseBuilding = ({ position, args = [100, 30, 200], children }: any) =
 };
 
 const ConveyorLine = ({ position, length }: { position: [number, number, number], length: number }) => {
+  const packagesRef = useRef<THREE.Group>(null);
+  
+  useFrame((state, delta) => {
+    if (!packagesRef.current) return;
+    const speed = 10; // units per second
+    packagesRef.current.children.forEach((child) => {
+      child.position.x += delta * speed;
+      if (child.position.x > length / 2) {
+        child.position.x = -length / 2;
+      }
+    });
+  });
+
   return (
     <group position={position}>
       <Box args={[length, 2, 3]} position={[0, 1, 0]} castShadow receiveShadow>
@@ -830,6 +954,16 @@ const ConveyorLine = ({ position, length }: { position: [number, number, number]
       </Box>
       <Box args={[length, 0.2, 0.2]} position={[0, 2.2, 1.3]}><meshBasicMaterial color="#f59e0b" /></Box>
       <Box args={[length, 0.2, 0.2]} position={[0, 2.2, -1.3]}><meshBasicMaterial color="#f59e0b" /></Box>
+      
+      {/* Moving Packages (Optimized: Removed shadows) */}
+      <group ref={packagesRef} position={[0, 2.7, 0]}>
+        {Array.from({ length: Math.floor(length / 12) }).map((_, i) => (
+          <mesh key={i} position={[-length/2 + (i * 12), 0, 0]}>
+            <boxGeometry args={[2, 1, 1.5]} />
+            <meshStandardMaterial color="#cbd5e1" roughness={0.7} />
+          </mesh>
+        ))}
+      </group>
     </group>
   );
 };
@@ -1382,7 +1516,7 @@ const EntryArchway = ({ position, rotation = [0,0,0] }: { position: [number, num
 // --------------------------------------------------------------------------
 // Campus Environment (Dense 4x Scale with Layers)
 // --------------------------------------------------------------------------
-const CampusEnvironment = ({ theme, showLabels, activeLayer }: { theme: string, showLabels: boolean, activeLayer: string }) => {
+const CampusEnvironment = ({ theme, showLabels, activeLayer, isEmergencyMode }: { theme: string, showLabels: boolean, activeLayer: string, isEmergencyMode?: boolean }) => {
   const concreteTex = useMemo(() => makeConcreteTexture(), []);
   return (
     <group>
@@ -1408,15 +1542,7 @@ const CampusEnvironment = ({ theme, showLabels, activeLayer }: { theme: string, 
       <EntryArchway position={[0, 0, 750]} />
       <EntryArchway position={[0, 0, -750]} rotation={[0, Math.PI, 0]} />
 
-      {/* Lush Outer Greenery (Procedural Forests filling empty 2400x2400 terrain) */}
-      <ForestPatch position={[-900, 0, -900]} count={150} radius={250} />
-      <ForestPatch position={[900, 0, -900]} count={150} radius={250} />
-      <ForestPatch position={[-900, 0, 900]} count={150} radius={250} />
-      <ForestPatch position={[900, 0, 900]} count={150} radius={250} />
-      <ForestPatch position={[0, 0, -1000]} count={80} radius={150} />
-      <ForestPatch position={[0, 0, 1000]} count={80} radius={150} />
-      <ForestPatch position={[-1000, 0, 0]} count={80} radius={150} />
-      <ForestPatch position={[1000, 0, 0]} count={80} radius={150} />
+      {/* Lush Outer Greenery (Removed out-of-bounds forests to optimize performance) */}
       
       {/* Manicured inner parks */}
       <ForestPatch position={[-150, 0, 150]} count={12} radius={30} />
@@ -1473,17 +1599,9 @@ const CampusEnvironment = ({ theme, showLabels, activeLayer }: { theme: string, 
       <FuelStation position={[-100, 0, 600]} />
       <FuelStation position={[100, 0, 600]} />
 
-      {/* === BLOCK A: RAW MATERIAL PROCESSING & HEAVY MACHINING === */}
-      <FactoryBlock position={[-150, 0, -100]} theme={theme} label="Block A: Raw Processing & Machining" colorScheme={activeLayer === 'manufacturing' ? 'orange' : 'blue'} args={[120, 60, 100]} showLabels={showLabels} />
-      <SolarArray position={[-150, 65, -100]} />
-
-      {/* === BLOCK B: PRECISION ASSEMBLY & ROBOTICS === */}
-      <FactoryBlock position={[150, 0, -100]} theme={theme} label="Block B: Precision Assembly & Testing" colorScheme={activeLayer === 'manufacturing' ? 'orange' : 'orange'} args={[120, 50, 100]} showLabels={showLabels} />
-      <SolarArray position={[150, 55, -100]} />
-
-      {/* === BLOCK E: HEAVY CASTING & FORGING (NEW) === */}
-      <FactoryBlock position={[-350, 0, -100]} theme={theme} label="Block E: Heavy Casting" colorScheme={activeLayer === 'manufacturing' ? 'orange' : 'blue'} args={[150, 70, 120]} showLabels={showLabels} />
-      
+      {/* === MAIN L-SHAPED MEGA-BLOCK (Merged Blocks A, B, E) === */}
+      <LShapedFactory position={[-50, 0, -100]} theme={theme} isEmergencyMode={isEmergencyMode} />
+      <SolarArray position={[-50, 85, -100]} />
       {/* === BLOCK F: AUTOMOTIVE BODY ASSEMBLY (NEW) === */}
       <FactoryBlock position={[350, 0, -100]} theme={theme} label="Block F: Auto Body Assembly" colorScheme={activeLayer === 'manufacturing' ? 'orange' : 'orange'} args={[180, 60, 130]} showLabels={showLabels} />
       
@@ -1565,6 +1683,107 @@ const CampusEnvironment = ({ theme, showLabels, activeLayer }: { theme: string, 
   );
 };
 
+
+// --------------------------------------------------------------------------
+// --------------------------------------------------------------------------
+// Smoke Particles (Emergency Simulation)
+// --------------------------------------------------------------------------
+const SmokeParticles = ({ position }: { position: [number, number, number] }) => {
+  const groupRef = useRef<THREE.Group>(null);
+  
+  useFrame((state, delta) => {
+    if (!groupRef.current) return;
+    groupRef.current.children.forEach((particle, i) => {
+      particle.position.y += delta * (15 + (i % 5));
+      particle.position.x += Math.sin(state.clock.elapsedTime * 2 + i) * delta * 10;
+      particle.position.z += Math.cos(state.clock.elapsedTime * 2 + i) * delta * 10;
+      (particle.material as THREE.MeshBasicMaterial).opacity -= delta * 0.3;
+      
+      if (particle.position.y > 80 || (particle.material as THREE.MeshBasicMaterial).opacity <= 0) {
+        particle.position.set((Math.random() - 0.5) * 5, 0, (Math.random() - 0.5) * 5);
+        (particle.material as THREE.MeshBasicMaterial).opacity = 0.5 + Math.random() * 0.3;
+      }
+    });
+  });
+
+  return (
+    <group position={position} ref={groupRef}>
+      {Array.from({ length: 20 }).map((_, i) => (
+        <mesh key={i} position={[(Math.random() - 0.5) * 5, Math.random() * 20, (Math.random() - 0.5) * 5]} rotation={[Math.random() * Math.PI, Math.random() * Math.PI, 0]}>
+          <boxGeometry args={[8, 8, 8]} />
+          <meshBasicMaterial color="#1e293b" transparent opacity={0.5 + Math.random() * 0.3} depthWrite={false} />
+        </mesh>
+      ))}
+    </group>
+  );
+};
+
+// --------------------------------------------------------------------------
+// Security Drone (Living Factory Upgrade)
+// --------------------------------------------------------------------------
+const SecurityDrone = ({ patrolRadius, height, speed, center, isEmergencyMode }: { patrolRadius: number, height: number, speed: number, center: [number, number, number], isEmergencyMode?: boolean }) => {
+  const droneRef = useRef<THREE.Group>(null);
+  const rotorsRef = useRef<THREE.Group>(null);
+  const scannerRef = useRef<THREE.Mesh>(null);
+  
+  useFrame((state, delta) => {
+    if (!droneRef.current || !rotorsRef.current) return;
+    
+    // Animate rotors
+    rotorsRef.current.rotation.y += delta * 15;
+    
+    // Patrol Circle
+    const t = state.clock.elapsedTime * speed;
+    droneRef.current.position.x = center[0] + Math.cos(t) * patrolRadius;
+    droneRef.current.position.z = center[2] + Math.sin(t) * patrolRadius;
+    droneRef.current.position.y = center[1] + height + Math.sin(t * 2) * 2; // slight bobbing
+    
+    // Face direction of travel
+    droneRef.current.rotation.y = -t;
+
+    if (scannerRef.current) {
+      const color = isEmergencyMode ? '#ef4444' : '#10b981';
+      (scannerRef.current.material as THREE.MeshBasicMaterial).color.set(color);
+      (scannerRef.current.material as THREE.MeshBasicMaterial).opacity = isEmergencyMode ? 0.6 + Math.sin(state.clock.elapsedTime * 15) * 0.4 : 0.4;
+    }
+  });
+
+  return (
+    <group ref={droneRef}>
+      {/* Body */}
+      <mesh position={[0, 0, 0]}>
+        <boxGeometry args={[3, 1, 3]} />
+        <meshStandardMaterial color="#1e293b" />
+      </mesh>
+      
+      {/* Rotors */}
+      <group ref={rotorsRef}>
+        <mesh position={[2, 0.6, 2]}>
+          <cylinderGeometry args={[1.5, 1.5, 0.1, 16]} />
+          <meshStandardMaterial color="#94a3b8" transparent opacity={0.5} />
+        </mesh>
+        <mesh position={[-2, 0.6, 2]}>
+          <cylinderGeometry args={[1.5, 1.5, 0.1, 16]} />
+          <meshStandardMaterial color="#94a3b8" transparent opacity={0.5} />
+        </mesh>
+        <mesh position={[2, 0.6, -2]}>
+          <cylinderGeometry args={[1.5, 1.5, 0.1, 16]} />
+          <meshStandardMaterial color="#94a3b8" transparent opacity={0.5} />
+        </mesh>
+        <mesh position={[-2, 0.6, -2]}>
+          <cylinderGeometry args={[1.5, 1.5, 0.1, 16]} />
+          <meshStandardMaterial color="#94a3b8" transparent opacity={0.5} />
+        </mesh>
+      </group>
+
+      {/* Scanner Cone */}
+      <mesh ref={scannerRef} position={[0, -10, 0]} rotation={[Math.PI, 0, 0]}>
+        <coneGeometry args={[10, 20, 16]} />
+        <meshBasicMaterial transparent opacity={0.4} color="#10b981" side={THREE.DoubleSide} blending={THREE.AdditiveBlending} />
+      </mesh>
+    </group>
+  );
+};
 
 // --------------------------------------------------------------------------
 // AGV Drone
@@ -2100,18 +2319,19 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
         </span>
       </div>
       
-      <ARButton 
-        store={store}
+      <button 
+        onClick={() => store.enterAR()}
         className="glass-panel" 
-        style={{ position: 'absolute', bottom: '16px', right: '16px', zIndex: 10, padding: '8px 16px', border: '1px solid #3b82f6', color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold' }}
+        style={{ position: 'absolute', bottom: '24px', right: '24px', zIndex: 50, padding: '12px 24px', border: '2px solid #3b82f6', color: '#3b82f6', background: 'rgba(59, 130, 246, 0.2)', borderRadius: '24px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', backdropFilter: 'blur(10px)', boxShadow: '0 0 15px rgba(59, 130, 246, 0.4)' }}
       >
-        Enter AR
-      </ARButton>
+        🕶️ Enter AR Mode
+      </button>
 
       <Canvas
+        dpr={[1, 1.5]}
         shadows={{ type: THREE.PCFShadowMap }}
-        camera={{ position: [0, 180, 220], fov: 40, near: 0.05, far: 20000 }}
-        gl={{ antialias: true, logarithmicDepthBuffer: true }}
+        camera={{ position: [0, 180, 220], fov: 40, near: 0.05, far: 4000 }}
+        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.2, logarithmicDepthBuffer: false }}
       >
         {/* Post-Processing disabled to massively improve framerates on lower-end machines */}
         {/* <EffectComposer>
@@ -2162,7 +2382,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
           )}
 
           {/* Core Terrain and Campus Buildings */}
-          <CampusEnvironment theme={theme} showLabels={showLabels} activeLayer={activeLayer} />
+          <CampusEnvironment theme={theme} showLabels={showLabels} activeLayer={activeLayer} isEmergencyMode={isEmergencyMode} />
 
           {/* Dynamic Machinery Seeding from Database */}
           {machines && machines.map((machine: any, index: number) => {
@@ -2175,6 +2395,9 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
                  <group key={machine.id || index} position={[bayX, 2, bayZ]}>
                    <CNCMachine position={[0, 0, 0]} machine={machine} theme={theme} aiHeatmapMode={aiHeatmapMode} onClick={() => { setViewMode('BlockA'); onSelectMachine?.(machine); }} />
                    <RoboticArm position={[8, 0, 15]} speedOffset={index*0.5} isEmergencyMode={isEmergencyMode} />
+                   {isEmergencyMode && (machine.status === 'down' || index % 3 === 0) && (
+                     <SmokeParticles position={[0, 20, 0]} />
+                   )}
                  </group>
                );
              }
@@ -2311,22 +2534,23 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
             <RoofTruss position={[0, 55, 5]} span={130} />
           </group>
 
+          {/* Security Drones Patrolling the Airspace */}
+          <SecurityDrone center={[0, 0, 0]} height={80} patrolRadius={300} speed={0.1} isEmergencyMode={isEmergencyMode} />
+          <SecurityDrone center={[400, 0, -400]} height={120} patrolRadius={150} speed={0.2} isEmergencyMode={isEmergencyMode} />
+          <SecurityDrone center={[-400, 0, 400]} height={100} patrolRadius={200} speed={-0.15} isEmergencyMode={isEmergencyMode} />
+
           {/* Massive AGV Swarm traveling along expanded road network */}
           <AGV3D waypoints={[[-200, 0, -100], [200, 0, -100], [200, 0, 100], [-200, 0, 100]]} speed={15} isEmergencyMode={isEmergencyMode} />
           <AGV3D waypoints={[[200, 0, -90], [-200, 0, -90], [-200, 0, 90], [200, 0, 90]]} speed={18} isEmergencyMode={isEmergencyMode} />
           <AGV3D waypoints={[[-600, 0, -100], [600, 0, -100], [600, 0, -300], [-600, 0, -300]]} speed={20} isEmergencyMode={isEmergencyMode} />
           
           {/* Expanded Logistics Trucks on Extended Main Roads */}
-          <LogisticsTruck startPosition={[-800, 0, 15]} delay={0} isEmergencyMode={isEmergencyMode} />
           <LogisticsTruck startPosition={[-400, 0, 15]} delay={5} isEmergencyMode={isEmergencyMode} />
           <LogisticsTruck startPosition={[0, 0, 15]} delay={10} isEmergencyMode={isEmergencyMode} />
           <LogisticsTruck startPosition={[400, 0, 15]} delay={15} isEmergencyMode={isEmergencyMode} />
-          <LogisticsTruck startPosition={[800, 0, 15]} delay={20} isEmergencyMode={isEmergencyMode} />
           
-          <LogisticsTruck startPosition={[-15, 0, -800]} delay={2} isEmergencyMode={isEmergencyMode} />
           <LogisticsTruck startPosition={[-15, 0, -400]} delay={8} isEmergencyMode={isEmergencyMode} />
           <LogisticsTruck startPosition={[-15, 0, 400]} delay={14} isEmergencyMode={isEmergencyMode} />
-          <LogisticsTruck startPosition={[-15, 0, 800]} delay={20} isEmergencyMode={isEmergencyMode} />
 
         </XR>
       </Canvas>

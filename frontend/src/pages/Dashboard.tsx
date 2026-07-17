@@ -47,6 +47,7 @@ export const Dashboard = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [liveMachines, setLiveMachines] = useState<any[]>([]);
   const [selectedMachineId, setSelectedMachineId] = useState<number | null>(null);
+  const [dvrTime, setDvrTime] = useState<number>(0);
   const [isEmergencyMode, setIsEmergencyMode] = useState(false);
   const [thermalMode, setThermalMode] = useState(false);
   const [aiHeatmapMode, setAiHeatmapMode] = useState(false);
@@ -375,6 +376,37 @@ export const Dashboard = () => {
         <DigitalTwin machines={liveMachines} onSelectMachine={setSelectedMachineId} thermalMode={thermalMode} isEmergencyMode={isEmergencyMode} aiHeatmapMode={aiHeatmapMode} />
       </ErrorBoundary>
       <MachineHistoryModal machineId={selectedMachineId} onClose={() => setSelectedMachineId(null)} />
+
+      {/* Time-Travel Playback (DVR HUD) */}
+      <div className="glass-panel" style={{ margin: '0 0 24px 0', padding: '16px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8' }}>
+          <Clock size={20} />
+          <span style={{ fontWeight: 'bold' }}>DVR Time-Travel:</span>
+        </div>
+        <input 
+          type="range" 
+          min="-24" 
+          max="0" 
+          value={dvrTime} 
+          style={{ flexGrow: 1, accentColor: '#3b82f6', cursor: 'pointer' }}
+          onChange={(e) => {
+            const val = parseInt(e.target.value);
+            setDvrTime(val);
+            if (val === 0) {
+              if (isEmergencyMode) revokeEmergencyStop();
+              setAiHeatmapMode(false);
+            } else if (val < -12) {
+              triggerEmergencyStop(true); // Simulate a past emergency state
+            } else {
+              if (isEmergencyMode) revokeEmergencyStop();
+              setAiHeatmapMode(true); // Simulate a past anomaly heatmap
+            }
+          }}
+        />
+        <div style={{ fontWeight: 'bold', color: dvrTime === 0 ? '#38bdf8' : '#f59e0b', minWidth: '120px', textAlign: 'right' }}>
+          {dvrTime === 0 ? 'LIVE NOW' : `${Math.abs(dvrTime)} HOURS AGO`}
+        </div>
+      </div>
 
       <div className="kpi-grid">
         <div className="kpi-card glass-panel">
