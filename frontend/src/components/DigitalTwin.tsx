@@ -2124,7 +2124,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
                const bayZ = -100 + (Math.floor(index / 5) * 20);
                return (
                  <group key={machine.id || index} position={[bayX, 2, bayZ]}>
-                   <CNCMachine position={[0, 0, 0]} machine={machine} theme={theme} aiHeatmapMode={aiHeatmapMode} onClick={() => { setViewMode('BlockA'); onSelectMachine(machine); }} />
+                   <CNCMachine position={[0, 0, 0]} machine={machine} theme={theme} aiHeatmapMode={aiHeatmapMode} onClick={() => { setViewMode('BlockA'); onSelectMachine?.(machine); }} />
                    <RoboticArm position={[8, 0, 15]} speedOffset={index*0.5} isEmergencyMode={isEmergencyMode} />
                  </group>
                );
@@ -2134,26 +2134,26 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
                const bayX = 150 + ((index % 5) * 25);
                const bayZ = -100 + (Math.floor(index / 5) * 20);
                return (
-                 <CNCMachine key={machine.id || index} position={[bayX, 2, bayZ]} machine={machine} theme={theme} aiHeatmapMode={aiHeatmapMode} onClick={() => { setViewMode('BlockB'); onSelectMachine(machine); }} />
+                 <CNCMachine key={machine.id || index} position={[bayX, 2, bayZ]} machine={machine} theme={theme} aiHeatmapMode={aiHeatmapMode} onClick={() => { setViewMode('BlockB'); onSelectMachine?.(machine); }} />
                );
              }
 
              if (name.includes('Block E')) {
                const bayX = -350 + ((index % 4) * 30);
                const bayZ = -100 + (Math.floor(index / 4) * 25);
-               return <DynamicHydraulicPress key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} onClick={() => onSelectMachine(machine)} />;
+               return <DynamicHydraulicPress key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} onClick={() => onSelectMachine?.(machine)} />;
              }
 
              if (name.includes('Block F')) {
                const bayX = 350 + ((index % 5) * 25);
                const bayZ = -100 + (Math.floor(index / 5) * 25);
-               return <AutoWeldingArm key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} onClick={() => onSelectMachine(machine)} />;
+               return <AutoWeldingArm key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} onClick={() => onSelectMachine?.(machine)} />;
              }
 
              if (name.includes('Block G')) {
                const bayX = -350 + ((index % 4) * 25);
                const bayZ = -300 + (Math.floor(index / 4) * 25);
-               return <ChemicalVat key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} onClick={() => onSelectMachine(machine)} />;
+               return <ChemicalVat key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} onClick={() => onSelectMachine?.(machine)} />;
              }
              
              return null;
