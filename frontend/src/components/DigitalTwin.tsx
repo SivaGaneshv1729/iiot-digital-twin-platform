@@ -1249,126 +1249,169 @@ const RoadSegment = ({ position, args, rotation = [0, 0, 0] }: { position: [numb
   );
 };
 
+// Power Flow Animated Line (Using Tube for 3D visibility and avoiding SVG line conflicts)
+const PowerFlowLine = ({ start, end, active }: { start: [number, number, number], end: [number, number, number], active: boolean }) => {
+  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
+  
+  const curve = useMemo(() => {
+    return new THREE.LineCurve3(new THREE.Vector3(...start), new THREE.Vector3(...end));
+  }, [start, end]);
+
+  useFrame((_, delta) => {
+    if (active && materialRef.current && materialRef.current.map) {
+      materialRef.current.map.offset.x -= 2 * delta;
+    }
+  });
+
+  const dashTex = useMemo(() => makeHazardStripeTexture(), []);
+
+  if (!active) return null;
+
+  return (
+    <mesh>
+      <tubeGeometry args={[curve, 20, 0.5, 8, false]} />
+      <meshStandardMaterial 
+        ref={materialRef}
+        color="#38bdf8" 
+        emissive="#0ea5e9"
+        emissiveIntensity={1}
+        map={dashTex}
+        transparent 
+        opacity={0.8}
+      />
+    </mesh>
+  );
+};
+
 // --------------------------------------------------------------------------
-// Campus Environment (Optimized - 4x Scale)
+// Campus Environment (Dense 4x Scale with Layers)
 // --------------------------------------------------------------------------
-const CampusEnvironment = ({ theme, showLabels }: { theme: string, showLabels: boolean }) => {
+const CampusEnvironment = ({ theme, showLabels, activeLayer }: { theme: string, showLabels: boolean, activeLayer: string }) => {
   const concreteTex = useMemo(() => makeConcreteTexture(), []);
   return (
     <group>
-      {/* Massive Terrain Plane with procedural concrete texture - Expanded 4x (4800x4800) */}
+      {/* Massive Terrain Plane with procedural concrete texture - Dense 4x (2400x2400) */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, -0.1, 0]}>
-        <planeGeometry args={[4800, 4800, 16, 16]} />
+        <planeGeometry args={[2400, 2400, 16, 16]} />
         <meshStandardMaterial map={concreteTex} color={theme === 'light' ? "#b0b8c4" : "#5a6270"} roughness={0.95} />
       </mesh>
       
       {/* Grid Helper - Expanded fadeDistance */}
       <Grid infiniteGrid fadeDistance={2000} cellColor={theme === 'light' ? "#cbd5e1" : "#334155"} sectionColor={theme === 'light' ? "#94a3b8" : "#475569"} />
 
-      {/* Perimeter Compound Wall */}
-      <PerimeterWall width={2600} depth={2600} />
+      {/* Perimeter Compound Wall - Shrunk to encircle the dense core */}
+      <PerimeterWall width={1400} depth={1400} />
 
       {/* Security Checkpoints at N/S/E/W */}
-      <SecurityGate position={[0, 0, 1300]} />
-      <SecurityGate position={[0, 0, -1300]} rotation={[0, Math.PI, 0]} />
-      <SecurityGate position={[1300, 0, 0]} rotation={[0, -Math.PI/2, 0]} />
-      <SecurityGate position={[-1300, 0, 0]} rotation={[0, Math.PI/2, 0]} />
+      <SecurityGate position={[0, 0, 700]} />
+      <SecurityGate position={[0, 0, -700]} rotation={[0, Math.PI, 0]} />
+      <SecurityGate position={[700, 0, 0]} rotation={[0, -Math.PI/2, 0]} />
+      <SecurityGate position={[-700, 0, 0]} rotation={[0, Math.PI/2, 0]} />
 
-      {/* Main Arterial Road Network */}
-      <RoadSegment position={[0, 0, 0]} args={[20, 1, 2600]} />
-      <RoadSegment position={[0, 0, 0]} args={[2600, 1, 20]} />
+      {/* Main Arterial Road Network (Condensed) */}
+      <RoadSegment position={[0, 0, 0]} args={[20, 1, 1400]} />
+      <RoadSegment position={[0, 0, 0]} args={[1400, 1, 20]} />
       
       {/* Inner ring road */}
-      <RoadSegment position={[-400, 0, 0]} args={[20, 1, 1600]} />
-      <RoadSegment position={[400, 0, 0]} args={[20, 1, 1600]} />
-      <RoadSegment position={[0, 0, -800]} args={[800, 1, 20]} />
-      <RoadSegment position={[0, 0, 800]} args={[800, 1, 20]} />
+      <RoadSegment position={[-300, 0, 0]} args={[20, 1, 800]} />
+      <RoadSegment position={[300, 0, 0]} args={[20, 1, 800]} />
+      <RoadSegment position={[0, 0, -400]} args={[600, 1, 20]} />
+      <RoadSegment position={[0, 0, 400]} args={[600, 1, 20]} />
 
       {/* Ambient Density - Shipping Containers around Logistics Hub */}
-      <ShippingContainer position={[-250, 0, 950]} color="#b91c1c" />
-      <ShippingContainer position={[-250, 5, 950]} color="#1e40af" />
-      <ShippingContainer position={[-235, 0, 950]} color="#047857" />
-      <ShippingContainer position={[-250, 0, 935]} color="#1e40af" />
+      <ShippingContainer position={[-150, 0, 450]} color="#b91c1c" />
+      <ShippingContainer position={[-150, 5, 450]} color="#1e40af" />
+      <ShippingContainer position={[-135, 0, 450]} color="#047857" />
+      <ShippingContainer position={[-150, 0, 435]} color="#1e40af" />
       
-      <ShippingContainer position={[250, 0, 950]} color="#047857" />
-      <ShippingContainer position={[250, 5, 950]} color="#b91c1c" />
-      <ShippingContainer position={[235, 0, 950]} color="#b91c1c" />
+      <ShippingContainer position={[150, 0, 450]} color="#047857" />
+      <ShippingContainer position={[150, 5, 450]} color="#b91c1c" />
+      <ShippingContainer position={[135, 0, 450]} color="#b91c1c" />
 
       {/* Dedicated Fuel Stations */}
-      <FuelStation position={[-150, 0, 1100]} />
-      <FuelStation position={[150, 0, 1100]} />
+      <FuelStation position={[-100, 0, 600]} />
+      <FuelStation position={[100, 0, 600]} />
 
       {/* === BLOCK A: RAW MATERIAL PROCESSING & HEAVY MACHINING === */}
-      <FactoryBlock position={[-200, 0, -200]} theme={theme} label="Block A: Raw Processing & Machining" colorScheme="blue" args={[160, 70, 140]} showLabels={showLabels} />
-      <SolarArray position={[-200, 75, -200]} />
+      <FactoryBlock position={[-150, 0, -100]} theme={theme} label="Block A: Raw Processing & Machining" colorScheme={activeLayer === 'manufacturing' ? 'orange' : 'blue'} args={[120, 60, 100]} showLabels={showLabels} />
+      <SolarArray position={[-150, 65, -100]} />
 
       {/* === BLOCK B: PRECISION ASSEMBLY & ROBOTICS === */}
-      <FactoryBlock position={[200, 0, -200]} theme={theme} label="Block B: Precision Assembly & Testing" colorScheme="orange" args={[160, 60, 140]} showLabels={showLabels} />
-      <SolarArray position={[200, 65, -200]} />
+      <FactoryBlock position={[150, 0, -100]} theme={theme} label="Block B: Precision Assembly & Testing" colorScheme={activeLayer === 'manufacturing' ? 'orange' : 'orange'} args={[120, 50, 100]} showLabels={showLabels} />
+      <SolarArray position={[150, 55, -100]} />
 
       {/* === BLOCK E: HEAVY CASTING & FORGING (NEW) === */}
-      <FactoryBlock position={[-600, 0, -200]} theme={theme} label="Block E: Heavy Casting" colorScheme="blue" args={[200, 80, 160]} showLabels={showLabels} />
+      <FactoryBlock position={[-350, 0, -100]} theme={theme} label="Block E: Heavy Casting" colorScheme={activeLayer === 'manufacturing' ? 'orange' : 'blue'} args={[150, 70, 120]} showLabels={showLabels} />
       
       {/* === BLOCK F: AUTOMOTIVE BODY ASSEMBLY (NEW) === */}
-      <FactoryBlock position={[600, 0, -200]} theme={theme} label="Block F: Auto Body Assembly" colorScheme="orange" args={[240, 70, 180]} showLabels={showLabels} />
+      <FactoryBlock position={[350, 0, -100]} theme={theme} label="Block F: Auto Body Assembly" colorScheme={activeLayer === 'manufacturing' ? 'orange' : 'orange'} args={[180, 60, 130]} showLabels={showLabels} />
       
       {/* === BLOCK G: CHEMICAL PROCESSING (NEW) === */}
-      <FactoryBlock position={[-600, 0, -600]} theme={theme} label="Block G: Chemical Processing" colorScheme="orange" args={[150, 50, 150]} showLabels={showLabels} />
-      <DrumStorage position={[-650, 0, -500]} />
-      <DrumStorage position={[-550, 0, -500]} />
+      <FactoryBlock position={[-350, 0, -300]} theme={theme} label="Block G: Chemical Processing" colorScheme={activeLayer === 'manufacturing' ? 'orange' : 'orange'} args={[120, 40, 120]} showLabels={showLabels} />
+      <DrumStorage position={[-380, 0, -230]} />
+      <DrumStorage position={[-320, 0, -230]} />
       
       {/* === BLOCK H: ADVANCED MATERIALS (NEW) === */}
-      <FactoryBlock position={[600, 0, -600]} theme={theme} label="Block H: Advanced Materials" colorScheme="blue" args={[180, 60, 150]} showLabels={showLabels} />
+      <FactoryBlock position={[350, 0, -300]} theme={theme} label="Block H: Advanced Materials" colorScheme={activeLayer === 'manufacturing' ? 'orange' : 'blue'} args={[140, 50, 120]} showLabels={showLabels} />
       
       {/* === BLOCK C: HIGH-VOLTAGE POWER DISTRIBUTION & TESTING === */}
-      <FactoryBlock position={[0, 0, -500]} theme={theme} label="Block C: Power Distribution & Testing" colorScheme="blue" args={[220, 80, 150]} showLabels={showLabels} />
+      <FactoryBlock position={[0, 0, -250]} theme={theme} label="Block C: Power Distribution & Testing" colorScheme="blue" args={[160, 70, 110]} showLabels={showLabels} />
       {/* Expanded Substation Grid (Northeast Corner) */}
-      <ElectricSubstation position={[-150, 0, -800]} />
-      <ElectricSubstation position={[-50, 0, -800]} />
-      <ElectricSubstation position={[50, 0, -800]} />
-      <ElectricSubstation position={[150, 0, -800]} />
+      <ElectricSubstation position={[-100, 0, -400]} />
+      <ElectricSubstation position={[-30, 0, -400]} />
+      <ElectricSubstation position={[40, 0, -400]} />
+      <ElectricSubstation position={[110, 0, -400]} />
+      
+      {/* Power Flow Lines */}
+      <PowerFlowLine start={[0, 2, -400]} end={[-150, 2, -100]} active={activeLayer === 'power'} />
+      <PowerFlowLine start={[0, 2, -400]} end={[150, 2, -100]} active={activeLayer === 'power'} />
+      <PowerFlowLine start={[0, 2, -400]} end={[-350, 2, -100]} active={activeLayer === 'power'} />
+      <PowerFlowLine start={[0, 2, -400]} end={[350, 2, -100]} active={activeLayer === 'power'} />
+      <PowerFlowLine start={[0, 2, -400]} end={[-350, 2, -300]} active={activeLayer === 'power'} />
+      <PowerFlowLine start={[0, 2, -400]} end={[350, 2, -300]} active={activeLayer === 'power'} />
+      <PowerFlowLine start={[0, 2, -400]} end={[0, 2, 400]} active={activeLayer === 'power'} />
       
       {/* Safety Barriers for High Voltage Zone */}
-      <SafetyBarrier position={[0, 0, -700]} length={400} />
-      <SafetyBarrier position={[-200, 0, -800]} length={200} rotation={[0, Math.PI/2, 0]} />
-      <SafetyBarrier position={[200, 0, -800]} length={200} rotation={[0, Math.PI/2, 0]} />
+      <SafetyBarrier position={[0, 0, -350]} length={300} />
+      <SafetyBarrier position={[-150, 0, -400]} length={150} rotation={[0, Math.PI/2, 0]} />
+      <SafetyBarrier position={[150, 0, -400]} length={150} rotation={[0, Math.PI/2, 0]} />
 
       {/* Infrastructure Connectivity */}
-      <UtilityBridge start={[-600, 40, -300]} end={[-200, 40, -300]} theme={theme} />
-      <UtilityBridge start={[-200, 40, -300]} end={[200, 40, -300]} theme={theme} />
-      <UtilityBridge start={[200, 40, -300]} end={[600, 40, -300]} theme={theme} />
-      <UtilityBridge start={[0, 40, -500]} end={[0, 40, -300]} theme={theme} />
+      <UtilityBridge start={[-350, 30, -180]} end={[-150, 30, -180]} theme={theme} />
+      <UtilityBridge start={[-150, 30, -180]} end={[150, 30, -180]} theme={theme} />
+      <UtilityBridge start={[150, 30, -180]} end={[350, 30, -180]} theme={theme} />
+      <UtilityBridge start={[0, 30, -250]} end={[0, 30, -180]} theme={theme} />
 
       {/* Heavy Industrial Silos */}
-      <IndustrialSilo position={[-250, 0, -400]} theme={theme} />
-      <IndustrialSilo position={[-210, 0, -400]} theme={theme} />
-      <IndustrialSilo position={[250, 0, -400]} theme={theme} />
+      <IndustrialSilo position={[-150, 0, -200]} theme={theme} />
+      <IndustrialSilo position={[-110, 0, -200]} theme={theme} />
+      <IndustrialSilo position={[150, 0, -200]} theme={theme} />
       
       {/* Water Treatment Plant (Environmental Goal) */}
-      <WaterTreatmentPlant position={[400, 0, -400]} />
+      <WaterTreatmentPlant position={[250, 0, -200]} />
 
       {/* Massive Transformers near Substation */}
-      <MassiveTransformer position={[-100, 0, -900]} />
-      <MassiveTransformer position={[100, 0, -900]} />
+      <MassiveTransformer position={[-80, 0, -500]} />
+      <MassiveTransformer position={[80, 0, -500]} />
 
       {/* Main Comm Tower - moved further back */}
-      <CommunicationTower position={[-400, 0, -800]} />
+      <CommunicationTower position={[-250, 0, -450]} />
       
       {/* === BLOCK D: ENGINEERING HQ & CONTROL CENTER === */}
-      <Building position={[0, 50, 200]} args={[80, 150, 80]} theme={theme} isGlass={true} label="Block D: Engineering HQ & Control" showLabels={showLabels} />
+      <Building position={[0, 50, 100]} args={[60, 120, 60]} theme={theme} isGlass={true} label="Block D: Engineering HQ & Control" showLabels={showLabels} />
 
       {/* Large Storage Tanks near Block G */}
-      <LargeStorageTank position={[-730, 0, -500]} color="#475569" />
-      <LargeStorageTank position={[-700, 0, -500]} color="#dc2626" />
-      <LargeStorageTank position={[-670, 0, -500]} color="#475569" />
+      <LargeStorageTank position={[-430, 0, -250]} color="#475569" />
+      <LargeStorageTank position={[-400, 0, -250]} color="#dc2626" />
+      <LargeStorageTank position={[-370, 0, -250]} color="#475569" />
 
       {/* === BLOCK I: MASSIVE LOGISTICS HUB (NEW) === */}
-      <FactoryBlock position={[0, 0, 800]} theme={theme} label="Block I: Global Logistics Hub" colorScheme="orange" args={[360, 50, 180]} showLabels={showLabels} />
+      <FactoryBlock position={[0, 0, 400]} theme={theme} label="Block I: Global Logistics Hub" colorScheme="orange" args={[260, 40, 120]} showLabels={showLabels} />
       {/* Loading Docks flanking the Logistics Hub */}
-      <LoadingDock position={[-200, 0, 920]} />
-      <LoadingDock position={[-100, 0, 920]} />
-      <LoadingDock position={[100, 0, 920]} />
-      <LoadingDock position={[200, 0, 920]} />
+      <LoadingDock position={[-120, 0, 480]} />
+      <LoadingDock position={[-50, 0, 480]} />
+      <LoadingDock position={[50, 0, 480]} />
+      <LoadingDock position={[120, 0, 480]} />
     </group>
   );
 };
@@ -1449,7 +1492,7 @@ const CameraController = ({ viewMode }: { viewMode: string }) => {
         break;
       case 'Global':
       default:
-        targetPos.current.set(0, 800, 1400);
+        targetPos.current.set(0, 1500, 2000);
         targetLookAt.current.set(0, 0, 0);
         break;
     }
@@ -1742,6 +1785,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
   const [theme, setTheme] = useState(document.documentElement.getAttribute('data-theme') || 'dark');
   const [viewMode, setViewMode] = useState('Global');
   const [showLabels, setShowLabels] = useState(false);
+  const [activeLayer, setActiveLayer] = useState('none');
 
 
   useEffect(() => {
@@ -1767,8 +1811,26 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
   return (
     <div className="digital-twin-wrapper" style={{ height: '600px', width: '100%', borderRadius: '12px', overflow: 'hidden', position: 'relative' }}>
       
+      
+      {/* Map Layers Panel (Google Maps Style) */}
+      <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 10, display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-glass)', padding: '16px', borderRadius: '12px', backdropFilter: 'blur(10px)', border: '1px solid var(--border-color)', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>
+        <h3 style={{ margin: '0 0 8px 0', fontSize: '0.9rem', color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Map Layers</h3>
+        <button 
+          onClick={() => setActiveLayer(activeLayer === 'power' ? 'none' : 'power')}
+          style={{ textAlign: 'left', padding: '8px 12px', borderRadius: '6px', border: 'none', background: activeLayer === 'power' ? 'rgba(56, 189, 248, 0.2)' : 'transparent', color: activeLayer === 'power' ? '#38bdf8' : 'var(--text-primary)', cursor: 'pointer', fontSize: '0.85rem', transition: 'all 0.2s', borderLeft: activeLayer === 'power' ? '3px solid #38bdf8' : '3px solid transparent' }}
+        >⚡ Power Supply Flow</button>
+        <button 
+          onClick={() => setActiveLayer(activeLayer === 'manufacturing' ? 'none' : 'manufacturing')}
+          style={{ textAlign: 'left', padding: '8px 12px', borderRadius: '6px', border: 'none', background: activeLayer === 'manufacturing' ? 'rgba(249, 115, 22, 0.2)' : 'transparent', color: activeLayer === 'manufacturing' ? '#f97316' : 'var(--text-primary)', cursor: 'pointer', fontSize: '0.85rem', transition: 'all 0.2s', borderLeft: activeLayer === 'manufacturing' ? '3px solid #f97316' : '3px solid transparent' }}
+        >🏭 Manufacturing Zones</button>
+        <button 
+          onClick={() => setActiveLayer(activeLayer === 'logistics' ? 'none' : 'logistics')}
+          style={{ textAlign: 'left', padding: '8px 12px', borderRadius: '6px', border: 'none', background: activeLayer === 'logistics' ? 'rgba(16, 185, 129, 0.2)' : 'transparent', color: activeLayer === 'logistics' ? '#10b981' : 'var(--text-primary)', cursor: 'pointer', fontSize: '0.85rem', transition: 'all 0.2s', borderLeft: activeLayer === 'logistics' ? '3px solid #10b981' : '3px solid transparent' }}
+        >🚚 Supply Chain Routes</button>
+      </div>
+
       {/* Cinematic View Control Panel */}
-      <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10, display: 'flex', gap: '12px', background: 'var(--bg-glass)', padding: '8px 16px', borderRadius: '30px', backdropFilter: 'blur(10px)', border: '1px solid var(--border-color)', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>
+      <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 10, display: 'flex', gap: '12px', background: 'var(--bg-glass)', padding: '8px 16px', borderRadius: '30px', backdropFilter: 'blur(10px)', border: '1px solid var(--border-color)', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>
         <button 
           onClick={() => setShowLabels(!showLabels)}
           style={{ padding: '6px 12px', borderRadius: '20px', border: '1px solid var(--accent-primary)', background: showLabels ? 'var(--accent-primary)' : 'transparent', color: showLabels ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
@@ -1823,7 +1885,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
 
       <Canvas
         shadows={{ type: THREE.PCFShadowMap }}
-        camera={{ position: [0, 180, 220], fov: 40, near: 0.05, far: 5000 }}
+        camera={{ position: [0, 180, 220], fov: 40, near: 0.05, far: 20000 }}
         gl={{ antialias: true, logarithmicDepthBuffer: true }}
       >
         {/* Post-Processing disabled to massively improve framerates on lower-end machines */}
@@ -1864,24 +1926,26 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
               enableZoom={true}
               enableRotate={true}
               minPolarAngle={0} 
-              maxPolarAngle={Math.PI / 2 - 0.02}
+              maxPolarAngle={Math.PI} // Unrestricted looking
               minDistance={1}
-              maxDistance={1000}
-              panSpeed={1.5}
-              zoomSpeed={1.2}
+              maxDistance={10000} // Unrestricted zoom out
+              panSpeed={2.0}
+              zoomSpeed={1.5}
               autoRotate={!isEmergencyMode && viewMode === 'Global'}
               autoRotateSpeed={0.3}
             />
           )}
 
           {/* Core Terrain and Campus Buildings */}
-          <CampusEnvironment theme={theme} showLabels={showLabels} />
+          <CampusEnvironment theme={theme} showLabels={showLabels} activeLayer={activeLayer} />
+
+          {/* AI & Heatmap Context Overlays */}
 
           {/* ================================================================
               BLOCK A: RAW MATERIAL PROCESSING & HEAVY MACHINING
               Electric Arc Furnaces → CNC Machining Bays → Conveyor output
           ================================================================ */}
-          <group position={[-200, 0, -200]}>
+          <group position={[-100, 0, -100]}>
             <Grid infiniteGrid={false} args={[155, 115]} sectionColor="#3b82f6" cellColor="#0ea5e9" position={[0, 2.1, 0]} />
             
             {/* Smelting zone: two furnaces */}
