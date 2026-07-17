@@ -1333,6 +1333,7 @@ const CNCMachine = ({ position, machine, theme, aiHeatmapMode, onClick }: { posi
   const drillRef = useRef<THREE.Mesh>(null);
   const workpieceRef = useRef<THREE.Mesh>(null);
   const anomalyPulseRef = useRef<THREE.Mesh>(null);
+  const [hovered, setHovered] = useState(false);
   
   const isRunning = machine?.status === 'Running';
   const isWarning = machine?.status === 'Maintenance' || machine?.status === 'Offline';
@@ -1371,7 +1372,47 @@ const CNCMachine = ({ position, machine, theme, aiHeatmapMode, onClick }: { posi
   });
 
   return (
-    <group position={position} onClick={(e) => { e.stopPropagation(); onClick && onClick(); }}>
+    <group 
+      position={position} 
+      onClick={(e) => { e.stopPropagation(); onClick && onClick(); }}
+      onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer'; }}
+      onPointerOut={(e) => { e.stopPropagation(); setHovered(false); document.body.style.cursor = 'auto'; }}
+    >
+      {/* Detailed Data HUD on Hover */}
+      {hovered && machine && (
+        <Html position={[0, 18, 0]} center zIndexRange={[100, 0]} style={{ pointerEvents: 'none' }}>
+          <div style={{
+            background: 'rgba(15, 23, 42, 0.95)',
+            border: `1px solid ${hasAnomaly ? '#ef4444' : '#3b82f6'}`,
+            borderRadius: '8px',
+            padding: '12px 16px',
+            color: 'white',
+            width: '240px',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', borderBottom: '1px solid #334155', paddingBottom: '4px', color: '#38bdf8' }}>{machine.name}</h4>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '0.85rem' }}>
+              <span style={{ color: '#94a3b8' }}>Status:</span>
+              <span style={{ color: isRunning ? '#10b981' : '#f59e0b', fontWeight: 'bold' }}>{machine.status}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '0.85rem' }}>
+              <span style={{ color: '#94a3b8' }}>Core Temp:</span>
+              <span style={{ color: hasAnomaly ? '#ef4444' : '#10b981', fontWeight: 'bold' }}>{machine.temperature}°C</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+              <span style={{ color: '#94a3b8' }}>Uptime:</span>
+              <span style={{ fontWeight: 'bold' }}>{machine.running_hours} hrs</span>
+            </div>
+            {hasAnomaly && (
+              <div style={{ marginTop: '8px', padding: '4px', background: 'rgba(239, 68, 68, 0.2)', color: '#fca5a5', fontSize: '0.75rem', textAlign: 'center', borderRadius: '4px', fontWeight: 'bold' }}>
+                THERMAL ANOMALY DETECTED
+              </div>
+            )}
+          </div>
+        </Html>
+      )}
+
       {/* AI Anomaly Heatmap Overlay */}
       {aiHeatmapMode && hasAnomaly && (
         <group position={[0, 0.5, 0]}>
@@ -1631,7 +1672,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
 
       <Canvas
         shadows={{ type: THREE.PCFShadowMap }}
-        camera={{ position: [0, 180, 220], fov: 40, near: 0.5, far: 3000 }}
+        camera={{ position: [0, 180, 220], fov: 40, near: 0.05, far: 5000 }}
         gl={{ antialias: true, logarithmicDepthBuffer: true }}
       >
         {/* Post-Processing disabled to massively improve framerates on lower-end machines */}
@@ -1672,9 +1713,11 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
               enableZoom={true}
               enableRotate={true}
               minPolarAngle={0} 
-              maxPolarAngle={Math.PI / 2 - 0.05}
-              minDistance={10}
-              maxDistance={500}
+              maxPolarAngle={Math.PI / 2 - 0.02}
+              minDistance={1}
+              maxDistance={1000}
+              panSpeed={1.5}
+              zoomSpeed={1.2}
               autoRotate={!isEmergencyMode && viewMode === 'Global'}
               autoRotateSpeed={0.3}
             />
