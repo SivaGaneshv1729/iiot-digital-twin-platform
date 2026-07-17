@@ -1173,7 +1173,7 @@ const PerimeterWall = ({ width, depth }: { width: number, depth: number }) => {
 // Security Gate / Checkpoint
 const SecurityGate = ({ position, rotation = [0, 0, 0] }: { position: [number, number, number], rotation?: [number, number, number] }) => {
   return (
-    <group position={position} rotation={new THREE.Euler(...rotation)}>
+    <group position={position} rotation={rotation}>
       {/* Guard house */}
       <Box args={[12, 10, 8]} position={[15, 5, 0]} castShadow>
         <meshStandardMaterial color="#cbd5e1" roughness={0.7} />
@@ -1237,7 +1237,7 @@ const FuelStation = ({ position }: { position: [number, number, number] }) => {
 // Road Network Segment
 const RoadSegment = ({ position, args, rotation = [0, 0, 0] }: { position: [number, number, number], args: [number, number, number], rotation?: [number, number, number] }) => {
   return (
-    <group position={position} rotation={new THREE.Euler(...rotation)}>
+    <group position={position} rotation={rotation}>
       <Box args={args} position={[0, 0.2, 0]} receiveShadow>
         <meshStandardMaterial color="#1e293b" roughness={0.9} />
       </Box>
@@ -1313,7 +1313,7 @@ const ForestPatch = ({ position, count, radius }: { position: [number, number, n
 };
 
 const FireStation = ({ position, rotation = [0,0,0] }: { position: [number, number, number], rotation?: [number, number, number] }) => (
-  <group position={position} rotation={new THREE.Euler(...rotation)}>
+  <group position={position} rotation={rotation}>
     <Box args={[60, 25, 40]} position={[0, 12.5, 0]} castShadow receiveShadow><meshStandardMaterial color="#b91c1c" roughness={0.8} /></Box>
     {[-15, 0, 15].map(x => <Box key={x} args={[10, 15, 1]} position={[x, 7.5, 20]}><meshStandardMaterial color="#94a3b8" metalness={0.5} roughness={0.4} /></Box>)}
     <Cylinder args={[10, 10, 1]} position={[0, 25.5, 0]}><meshStandardMaterial color="#1e293b" /></Cylinder>
@@ -1323,7 +1323,7 @@ const FireStation = ({ position, rotation = [0,0,0] }: { position: [number, numb
 );
 
 const FireTruck = ({ position, rotation = [0,0,0] }: { position: [number, number, number], rotation?: [number, number, number] }) => (
-  <group position={position} rotation={new THREE.Euler(...rotation)}>
+  <group position={position} rotation={rotation}>
     <Box args={[12, 4, 4]} position={[0, 3, 0]} castShadow><meshStandardMaterial color="#ef4444" roughness={0.3} metalness={0.2} /></Box>
     <Box args={[4, 3, 3.8]} position={[4, 6.5, 0]}><meshStandardMaterial color="#ef4444" /></Box>
     <Box args={[3.8, 2, 3.9]} position={[4, 6.5, 0]}><meshStandardMaterial color="#0f172a" metalness={0.8} /></Box>
@@ -1335,7 +1335,7 @@ const FireTruck = ({ position, rotation = [0,0,0] }: { position: [number, number
 );
 
 const DataCenter = ({ position, rotation = [0,0,0] }: { position: [number, number, number], rotation?: [number, number, number] }) => (
-  <group position={position} rotation={new THREE.Euler(...rotation)}>
+  <group position={position} rotation={rotation}>
     <Box args={[140, 40, 100]} position={[0, 20, 0]} castShadow receiveShadow><meshStandardMaterial color="#0f172a" roughness={0.2} metalness={0.8} /></Box>
     {[-40, 0, 40].map(x => [-20, 20].map(z => (
       <group key={`${x}-${z}`} position={[x, 40.5, z]}>
@@ -1349,7 +1349,7 @@ const DataCenter = ({ position, rotation = [0,0,0] }: { position: [number, numbe
 );
 
 const EntryArchway = ({ position, rotation = [0,0,0] }: { position: [number, number, number], rotation?: [number, number, number] }) => (
-  <group position={position} rotation={new THREE.Euler(...rotation)}>
+  <group position={position} rotation={rotation}>
     <Box args={[4, 30, 4]} position={[-25, 15, 0]} castShadow><meshStandardMaterial color="#475569" /></Box>
     <Box args={[4, 30, 4]} position={[25, 15, 0]} castShadow><meshStandardMaterial color="#475569" /></Box>
     <Box args={[54, 8, 4]} position={[0, 34, 0]} castShadow><meshStandardMaterial color="#1e293b" /></Box>
@@ -1668,7 +1668,7 @@ const CNCMachine = ({ position, machine, theme, aiHeatmapMode, onClick }: { posi
   return (
     <group 
       position={position} 
-      onClick={(e) => { e.stopPropagation(); onClick && onClick(); }}
+      onClick={(e) => { e.stopPropagation(); onClick?.(); }}
       onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer'; }}
       onPointerOut={(e) => { e.stopPropagation(); setHovered(false); document.body.style.cursor = 'auto'; }}
     >
