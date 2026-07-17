@@ -1673,39 +1673,7 @@ const CNCMachine = ({ position, machine, theme, aiHeatmapMode, onClick }: { posi
       onPointerOut={(e) => { e.stopPropagation(); setHovered(false); document.body.style.cursor = 'auto'; }}
     >
       {/* Detailed Data HUD on Hover */}
-      {hovered && machine && (
-        <Html position={[0, 18, 0]} center zIndexRange={[100, 0]} style={{ pointerEvents: 'none' }}>
-          <div style={{
-            background: 'rgba(15, 23, 42, 0.95)',
-            border: `1px solid ${hasAnomaly ? '#ef4444' : '#3b82f6'}`,
-            borderRadius: '8px',
-            padding: '12px 16px',
-            color: 'white',
-            width: '240px',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-            backdropFilter: 'blur(10px)'
-          }}>
-            <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', borderBottom: '1px solid #334155', paddingBottom: '4px', color: '#38bdf8' }}>{machine.name}</h4>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '0.85rem' }}>
-              <span style={{ color: '#94a3b8' }}>Status:</span>
-              <span style={{ color: isRunning ? '#10b981' : '#f59e0b', fontWeight: 'bold' }}>{machine.status}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '0.85rem' }}>
-              <span style={{ color: '#94a3b8' }}>Core Temp:</span>
-              <span style={{ color: hasAnomaly ? '#ef4444' : '#10b981', fontWeight: 'bold' }}>{machine.temperature}°C</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-              <span style={{ color: '#94a3b8' }}>Uptime:</span>
-              <span style={{ fontWeight: 'bold' }}>{machine.running_hours} hrs</span>
-            </div>
-            {hasAnomaly && (
-              <div style={{ marginTop: '8px', padding: '4px', background: 'rgba(239, 68, 68, 0.2)', color: '#fca5a5', fontSize: '0.75rem', textAlign: 'center', borderRadius: '4px', fontWeight: 'bold' }}>
-                THERMAL ANOMALY DETECTED
-              </div>
-            )}
-          </div>
-        </Html>
-      )}
+      {hovered && machine && <MachineHUD machine={machine} hasAnomaly={hasAnomaly} />}
 
       {/* AI Anomaly Heatmap Overlay */}
       {aiHeatmapMode && hasAnomaly && (
@@ -1873,6 +1841,112 @@ const LogisticsTruck = ({ startPosition, delay, isEmergencyMode }: { startPositi
       <Box args={[1.6, 0.2, 0.1]} position={[0, 0.4, -2.25]}>
         <meshBasicMaterial color="#ef4444" />
       </Box>
+    </group>
+  );
+};
+
+const MachineHUD = ({ machine, hasAnomaly }: { machine: any, hasAnomaly: boolean }) => (
+  <Html position={[0, 18, 0]} center zIndexRange={[100, 0]} style={{ pointerEvents: 'none' }}>
+    <div style={{
+      background: 'rgba(15, 23, 42, 0.95)',
+      border: `1px solid ${hasAnomaly ? '#ef4444' : '#3b82f6'}`,
+      padding: '12px 16px',
+      borderRadius: '8px',
+      color: 'white',
+      width: '240px',
+      backdropFilter: 'blur(8px)',
+      boxShadow: hasAnomaly ? '0 0 20px rgba(239, 68, 68, 0.4)' : '0 4px 6px rgba(0,0,0,0.3)',
+      fontFamily: 'monospace'
+    }}>
+      <h4 style={{ margin: '0 0 8px 0', borderBottom: '1px solid #334155', paddingBottom: '4px', color: '#38bdf8' }}>{machine.name}</h4>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+        <span style={{ color: '#94a3b8' }}>STATUS:</span>
+        <span style={{ color: machine.status === 'Running' ? '#10b981' : machine.status === 'Idle' ? '#f59e0b' : '#ef4444', fontWeight: 'bold' }}>{machine.status.toUpperCase()}</span>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+        <span style={{ color: '#94a3b8' }}>TEMP:</span>
+        <span style={{ color: machine.temperature > 85 ? '#ef4444' : '#fff' }}>{machine.temperature}°C</span>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span style={{ color: '#94a3b8' }}>UPTIME:</span>
+        <span>{machine.running_hours} hrs</span>
+      </div>
+    </div>
+  </Html>
+);
+
+const HydraulicPress = ({ position, machine, onClick }: any) => {
+  const [hovered, setHovered] = useState(false);
+  const isRunning = machine?.status === 'Running';
+  const hasAnomaly = machine?.temperature > 85 || machine?.status === 'Maintenance';
+  const pressRef = useRef<THREE.Mesh>(null);
+
+  useFrame((state) => {
+    if (isRunning && pressRef.current) {
+      pressRef.current.position.y = 5 + Math.sin(state.clock.elapsedTime * 4) * 3;
+    }
+  });
+
+  return (
+    <group position={position} onClick={(e) => { e.stopPropagation(); onClick?.(); }} onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer'; }} onPointerOut={(e) => { e.stopPropagation(); setHovered(false); document.body.style.cursor = 'auto'; }}>
+      <Box args={[12, 2, 8]} position={[0, 1, 0]}><meshStandardMaterial color="#334155" /></Box>
+      <Box args={[2, 16, 2]} position={[-5, 9, 0]}><meshStandardMaterial color="#ef4444" /></Box>
+      <Box args={[2, 16, 2]} position={[5, 9, 0]}><meshStandardMaterial color="#ef4444" /></Box>
+      <Box args={[14, 4, 10]} position={[0, 19, 0]}><meshStandardMaterial color="#1e293b" /></Box>
+      <Box ref={pressRef as any} args={[8, 4, 6]} position={[0, 8, 0]}><meshStandardMaterial color="#94a3b8" metalness={0.8} roughness={0.2} /></Box>
+      {hovered && machine && <MachineHUD machine={machine} hasAnomaly={hasAnomaly} />}
+    </group>
+  );
+};
+
+const AutoWeldingArm = ({ position, machine, onClick }: any) => {
+  const [hovered, setHovered] = useState(false);
+  const isRunning = machine?.status === 'Running';
+  const hasAnomaly = machine?.temperature > 85 || machine?.status === 'Maintenance';
+  const armRef = useRef<THREE.Group>(null);
+  const sparkRef = useRef<THREE.Mesh>(null);
+
+  useFrame((state, delta) => {
+    const t = state.clock.elapsedTime;
+    if (isRunning && armRef.current) {
+      armRef.current.rotation.y = Math.sin(t * 3) * Math.PI / 4;
+      if (sparkRef.current) {
+        (sparkRef.current.material as THREE.MeshBasicMaterial).opacity = Math.random() > 0.5 ? 1 : 0.2;
+      }
+    }
+  });
+
+  return (
+    <group position={position} onClick={(e) => { e.stopPropagation(); onClick?.(); }} onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer'; }} onPointerOut={(e) => { e.stopPropagation(); setHovered(false); document.body.style.cursor = 'auto'; }}>
+      <Cylinder args={[2, 3, 2]} position={[0, 1, 0]}><meshStandardMaterial color="#f59e0b" /></Cylinder>
+      <group ref={armRef} position={[0, 2, 0]}>
+        <Box args={[1.5, 8, 1.5]} position={[0, 4, 0]} rotation={[0, 0, 0.2]}><meshStandardMaterial color="#fbbf24" /></Box>
+        <Box args={[1, 6, 1]} position={[1.5, 9, 0]} rotation={[0, 0, -1]}><meshStandardMaterial color="#f59e0b" /></Box>
+        <Box ref={sparkRef as any} args={[0.5, 0.5, 0.5]} position={[4.5, 6, 0]}><meshBasicMaterial color="#38bdf8" transparent opacity={0} /></Box>
+      </group>
+      {hovered && machine && <MachineHUD machine={machine} hasAnomaly={hasAnomaly} />}
+    </group>
+  );
+};
+
+const ChemicalVat = ({ position, machine, onClick }: any) => {
+  const [hovered, setHovered] = useState(false);
+  const isRunning = machine?.status === 'Running';
+  const hasAnomaly = machine?.temperature > 85 || machine?.status === 'Maintenance';
+  const liquidRef = useRef<THREE.Mesh>(null);
+
+  useFrame((state) => {
+    if (isRunning && liquidRef.current) {
+      liquidRef.current.position.y = 5 + Math.sin(state.clock.elapsedTime * 2) * 0.5;
+    }
+  });
+
+  return (
+    <group position={position} onClick={(e) => { e.stopPropagation(); onClick?.(); }} onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer'; }} onPointerOut={(e) => { e.stopPropagation(); setHovered(false); document.body.style.cursor = 'auto'; }}>
+      <Cylinder args={[5, 5, 12]} position={[0, 6, 0]} transparent opacity={0.6}><meshPhysicalMaterial color="#94a3b8" transmission={0.9} roughness={0.1} /></Cylinder>
+      <Cylinder ref={liquidRef as any} args={[4.8, 4.8, 10]} position={[0, 5, 0]}><meshStandardMaterial color={hasAnomaly ? "#ef4444" : "#10b981"} /></Cylinder>
+      <Box args={[12, 1, 12]} position={[0, 0.5, 0]}><meshStandardMaterial color="#475569" /></Box>
+      {hovered && machine && <MachineHUD machine={machine} hasAnomaly={hasAnomaly} />}
     </group>
   );
 };
@@ -2145,27 +2219,6 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
             <PalletStack position={[-30, 0, -35]} />
             <PalletStack position={[30, 0, -35]} />
 
-            {/* 5 precision assembly robots + machines */}
-            {machines && machines.map((machine: any, index: number) => {
-               if (index < 5 || index >= 10) return null;
-               const bayX = -50 + ((index - 5) * 25);
-               return (
-                  <group key={machine.id || index}>
-                    <CNCMachine 
-                      position={[bayX, 2, 0]} 
-                      machine={machine} 
-                      theme={theme} 
-                      aiHeatmapMode={aiHeatmapMode}
-                      onClick={() => onSelectMachine && onSelectMachine(machine.id)} 
-                    />
-                    {/* Dense Robotic Cluster */}
-                    <RoboticArm position={[bayX - 8, 2, 15]} speedOffset={index*0.1} isEmergencyMode={isEmergencyMode} />
-                    <RoboticArm position={[bayX - 4, 2, 15]} speedOffset={index*0.2} isEmergencyMode={isEmergencyMode} />
-                    <RoboticArm position={[bayX + 4, 2, 15]} speedOffset={index*0.3} isEmergencyMode={isEmergencyMode} />
-                    <RoboticArm position={[bayX + 8, 2, 15]} speedOffset={index*0.4} isEmergencyMode={isEmergencyMode} />
-                  </group>
-               )
-            })}
 
             {/* Additional Block B machinery */}
             {/* Pipe rack delivering coolant and air to all assembly stations */}
