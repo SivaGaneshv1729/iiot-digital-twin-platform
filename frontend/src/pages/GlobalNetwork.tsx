@@ -20,7 +20,7 @@ export const GlobalNetwork = () => {
   const { t } = useTranslation('translation');
   const navigate = useNavigate();
   const globeEl = useRef<any>(null);
-  const [dimensions, setDimensions] = useState({ width: window.innerWidth - 250, height: window.innerHeight - 100 });
+  const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
   const [isEmergency, setIsEmergency] = useState(false);
 
   // Expanded Global Network Nodes
@@ -76,7 +76,7 @@ export const GlobalNetwork = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setDimensions({ width: window.innerWidth - 250, height: window.innerHeight - 100 });
+      setDimensions({ width: window.innerWidth, height: window.innerHeight });
     };
     window.addEventListener('resize', handleResize);
 
@@ -146,57 +146,70 @@ export const GlobalNetwork = () => {
         </div>
       </div>
 
-      <Globe
-        ref={globeEl}
-        width={dimensions.width}
-        height={dimensions.height}
-        globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
-        bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
-        backgroundColor="rgba(0,0,0,0)"
-        pointsData={locations}
-        pointAltitude="size"
-        pointColor="color"
-        arcsData={arcsData}
-        arcColor="color"
-        arcDashLength={0.4}
-        arcDashGap={0.2}
-        arcDashAnimateTime={2000}
-        arcLabel={(d: any) => `${d.name}: ${d.throughput}`}
-        ringsData={ringsData}
-        ringColor="color"
-        ringMaxRadius="maxR"
-        ringPropagationSpeed="propagationSpeed"
-        ringRepeatPeriod="repeatPeriod"
-        labelsData={labelsData}
-        labelLat="lat"
-        labelLng="lng"
-        labelText="text"
-        labelSize="size"
-        labelDotRadius={0.5}
-        labelColor="color"
-        labelResolution={2}
-        onPointClick={(point: any) => navigate(`/?factory=${encodeURIComponent(point.name)}`)}
-        pointLabel="name"
-        
-        customLayerData={satellitesData}
-        customThreeObject={(d: any) => {
-          const group = new THREE.Group();
-          const geometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
-          const material = new THREE.MeshBasicMaterial({ color: d.color });
-          const mesh = new THREE.Mesh(geometry, material);
-          group.add(mesh);
-          return group;
-        }}
-        customThreeObjectUpdate={(obj: any, d: any) => {
-          if (globeEl.current) {
-            // Move satellite
-            d.lng += d.speed;
-            if (d.lng > 180) d.lng -= 360;
-            // Update 3D position
-            Object.assign(obj.position, globeEl.current.getCoords(d.lat, d.lng, d.alt));
-          }
-        }}
-      />
+      {/* Globe — centered absolutely behind overlay panels */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1,
+      }}>
+        <Globe
+          ref={globeEl}
+          width={dimensions.width}
+          height={dimensions.height}
+          globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+          bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
+          backgroundColor="rgba(0,0,0,0)"
+          pointsData={locations}
+          pointAltitude="size"
+          pointColor="color"
+          arcsData={arcsData}
+          arcColor="color"
+          arcDashLength={0.4}
+          arcDashGap={0.2}
+          arcDashAnimateTime={2000}
+          arcLabel={(d: any) => `${d.name}: ${d.throughput}`}
+          ringsData={ringsData}
+          ringColor="color"
+          ringMaxRadius="maxR"
+          ringPropagationSpeed="propagationSpeed"
+          ringRepeatPeriod="repeatPeriod"
+          labelsData={labelsData}
+          labelLat="lat"
+          labelLng="lng"
+          labelText="text"
+          labelSize="size"
+          labelDotRadius={0.5}
+          labelColor="color"
+          labelResolution={2}
+          onPointClick={(point: any) => navigate(`/?factory=${encodeURIComponent(point.name)}`)}
+          pointLabel="name"
+          
+          customLayerData={satellitesData}
+          customThreeObject={(d: any) => {
+            const group = new THREE.Group();
+            const geometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+            const material = new THREE.MeshBasicMaterial({ color: d.color });
+            const mesh = new THREE.Mesh(geometry, material);
+            group.add(mesh);
+            return group;
+          }}
+          customThreeObjectUpdate={(obj: any, d: any) => {
+            if (globeEl.current) {
+              // Move satellite
+              d.lng += d.speed;
+              if (d.lng > 180) d.lng -= 360;
+              // Update 3D position
+              Object.assign(obj.position, globeEl.current.getCoords(d.lat, d.lng, d.alt));
+            }
+          }}
+        />
+      </div>
     </div>
   );
 };

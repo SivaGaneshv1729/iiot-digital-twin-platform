@@ -5,7 +5,7 @@
   --bg-secondary: #ffffff;
   --bg-glass: rgba(255, 255, 255, 0.85);
   
-  --text-primary: var(--bg-primary);
+  --text-primary: #0f172a;
   --text-secondary: #64748b;
   
   --accent-primary: #2563eb;
@@ -20,8 +20,8 @@
 }
 
 [data-theme='dark'] {
-  --bg-primary: var(--bg-primary);
-  --bg-secondary: var(--bg-secondary);
+  --bg-primary: #0f172a;
+  --bg-secondary: #13141f;
   --bg-glass: rgba(19, 20, 31, 0.7);
   
   --text-primary: #ffffff;
