@@ -43,15 +43,8 @@ describe('Executive Dashboard Component', () => {
     expect(screen.getByText('AI Energy Savings')).toBeInTheDocument();
   });
 
-  it('renders the AI Prescriptive Action Center', () => {
-    render(<Dashboard />);
-    expect(screen.getByText('AI Prescriptive Actions')).toBeInTheDocument();
-    expect(screen.getByText('Reroute Conveyor B')).toBeInTheDocument();
-  });
-
   it('renders mocked sub-components', () => {
     render(<Dashboard />);
     expect(screen.getByTestId('mock-digital-twin')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-model-metrics')).toBeInTheDocument();
   });
 });

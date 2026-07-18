@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { 
   ClipboardList, User, Clock, ShieldCheck, Download, 
-  Search, ShieldAlert, Users, Lock
+  ShieldAlert, Users, Lock
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';

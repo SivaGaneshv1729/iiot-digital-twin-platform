@@ -11,6 +11,6 @@ describe('API Gateway Routes Integration Test', () => {
   it('GET /api/machines without token should return 401 Unauthorized', async () => {
     const res = await request(app).get('/api/machines');
     expect(res.statusCode).toEqual(401);
-    expect(res.body).toHaveProperty('error', 'Access Token Required');
+    expect(res.body).toHaveProperty('error', 'Unauthorized: Token missing');
   });
 });

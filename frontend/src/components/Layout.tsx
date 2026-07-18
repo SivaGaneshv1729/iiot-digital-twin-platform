@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Server, Settings, Bell, Search, Package, LogOut, ScanEye, Globe, ClipboardList, Cpu, Sun, Moon, Video } from 'lucide-react';
+import { LayoutDashboard, Server, Settings, Bell, Search, Package, LogOut, ScanEye, Globe, ClipboardList, Cpu, Sun, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { FactoryAssistant } from './FactoryAssistant';
 import { CommandPalette } from './CommandPalette';

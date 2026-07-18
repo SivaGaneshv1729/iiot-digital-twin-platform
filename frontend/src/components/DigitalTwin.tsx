@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { MapControls, Grid, Box, Cylinder, Cone, Text, FlyControls, Environment, Html } from '@react-three/drei';
-import { XR, ARButton, createXRStore } from '@react-three/xr';
+import { XR, createXRStore } from '@react-three/xr';
 // import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import './DigitalTwin.css';
@@ -933,7 +933,7 @@ const WarehouseBuilding = ({ position, args = [100, 30, 200], children }: any) =
 const ConveyorLine = ({ position, length }: { position: [number, number, number], length: number }) => {
   const packagesRef = useRef<THREE.Group>(null);
   
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     if (!packagesRef.current) return;
     const speed = 10; // units per second
     packagesRef.current.children.forEach((child) => {

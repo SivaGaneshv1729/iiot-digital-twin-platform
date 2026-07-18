@@ -3,7 +3,7 @@ import {
   ComposedChart, Line, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart 
 } from 'recharts';
 import { 
-  Activity, Zap, Wifi, DollarSign, Leaf, Clock, Download, AlertOctagon, Bell, Mic, Power, Database, Target, ShieldCheck, ArrowRight
+  Activity, Zap, Wifi, DollarSign, Clock, Download, AlertOctagon, Bell, Mic, Power, Database, Target, ArrowRight
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { useTranslation } from 'react-i18next';
