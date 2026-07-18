@@ -96,14 +96,14 @@ h1, h2, h3 {
 .status-Maintenance { color: var(--danger); }
 
 /* Responsive Scaling for Laptop Screens */
-@media (max-width: 1440px) {
+@media (max-width: 1920px) {
   html {
     zoom: 0.85;
   }
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 1600px) {
   html {
     zoom: 0.75;
   }
-}
+}
