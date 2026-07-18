@@ -43,9 +43,9 @@ const DAILY_DEPLETION_RATES: Record<string, number> = {
 const TreemapTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div style={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '8px', color: '#f8fafc' }}>
+      <div style={{ background: 'var(--bg-primary)', border: "1px solid var(--border-color)", padding: '12px', borderRadius: '8px', color: '#f8fafc' }}>
         <p style={{ margin: '0 0 4px 0', fontWeight: 'bold' }}>{payload[0].payload.name}</p>
-        <p style={{ margin: 0, color: '#94a3b8' }}>Volume: {payload[0].value}</p>
+        <p style={{ margin: 0, color: "var(--text-secondary)" }}>Volume: {payload[0].value}</p>
       </div>
     );
   }
@@ -130,10 +130,10 @@ export const Inventory = () => {
     { key: 'machine', label: 'Assigned Machine', render: (row) => <span className="badge category-badge">{row.machine}</span> },
     { key: 'progress', label: 'Progress', render: (row) => (
       <div style={{ width: '200px' }}>
-        <div className="progress-bar-bg" style={{ width: '100%', height: '8px', background: '#1e293b', borderRadius: '4px', overflow: 'hidden' }}>
+        <div className="progress-bar-bg" style={{ width: '100%', height: '8px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
           <div className="progress-bar-fill" style={{ width: `${row.progress}%`, height: '100%', background: row.progress === 100 ? '#10b981' : '#3b82f6' }}></div>
         </div>
-        <span style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px', display: 'block' }}>{row.progress}% Completed</span>
+        <span style={{ fontSize: '0.8rem', color: "var(--text-secondary)", marginTop: '4px', display: 'block' }}>{row.progress}% Completed</span>
       </div>
     )},
     { key: 'status', label: 'Status', render: (row) => (
@@ -184,7 +184,7 @@ export const Inventory = () => {
             <Briefcase size={28} className="text-accent" />
             <div className="stat-info">
               <h3>Live Order Fulfillment</h3>
-              <span>92.4% <small style={{ fontSize: '1rem', color: '#94a3b8' }}>On-Time</small></span>
+              <span>92.4% <small style={{ fontSize: '1rem', color: "var(--text-secondary)" }}>On-Time</small></span>
             </div>
           </div>
 
@@ -202,13 +202,13 @@ export const Inventory = () => {
           <div className="panel-header">
             <h3><BarChart2 size={18} className="text-accent"/> Spatial Distribution</h3>
           </div>
-          <p style={{ margin: '0 0 16px 0', fontSize: '0.85rem', color: '#94a3b8' }}>Physical stock allocation by warehouse zone</p>
+          <p style={{ margin: '0 0 16px 0', fontSize: '0.85rem', color: "var(--text-secondary)" }}>Physical stock allocation by warehouse zone</p>
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height="100%">
               <Treemap 
                 data={treemapData} 
                 dataKey="size" 
-                stroke="#0f172a" 
+                stroke="var(--bg-primary)" 
                 fill="#3b82f6"
               >
                 <Tooltip content={<TreemapTooltip />} />

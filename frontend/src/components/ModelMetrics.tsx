@@ -63,7 +63,7 @@ export const ModelMetrics = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                   <XAxis dataKey="epoch" stroke="#666" tick={{fill: '#666'}} />
                   <YAxis stroke="#666" tick={{fill: '#666'}} />
-                  <Tooltip contentStyle={{ backgroundColor: '#13141f', borderColor: 'rgba(255,255,255,0.1)' }} />
+                  <Tooltip contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'rgba(255,255,255,0.1)' }} />
                   <Line type="monotone" dataKey="loss" stroke="#ef4444" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
@@ -76,7 +76,7 @@ export const ModelMetrics = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                   <XAxis dataKey="epoch" stroke="#666" tick={{fill: '#666'}} />
                   <YAxis stroke="#666" tick={{fill: '#666'}} domain={[0, 100]} />
-                  <Tooltip contentStyle={{ backgroundColor: '#13141f', borderColor: 'rgba(255,255,255,0.1)' }} />
+                  <Tooltip contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'rgba(255,255,255,0.1)' }} />
                   <Line type="monotone" dataKey="accuracy" stroke="#10b981" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>

@@ -233,7 +233,7 @@ export const Machines = () => {
           <p className="subtitle">Global equipment effectiveness and predictive AI node analytics</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div className="view-toggles" style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', padding: '4px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="view-toggles" style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', padding: '4px', borderRadius: '8px', border: "1px solid var(--border-color)" }}>
             <button 
               onClick={() => setViewMode('grid')}
               style={{ padding: '6px 12px', background: viewMode === 'grid' ? 'rgba(59,130,246,0.2)' : 'transparent', color: viewMode === 'grid' ? '#3b82f6' : '#94a3b8', borderRadius: '4px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}

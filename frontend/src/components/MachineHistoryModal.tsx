@@ -110,11 +110,11 @@ const MachineHologram = ({ temperature }: { temperature: number }) => {
       <group position={[0, 2.1, 0]}>
         <mesh position={[-0.8, 0, 0]} ref={fanRef1}>
           <cylinderGeometry args={[0.5, 0.5, 0.1, 8]} />
-          <meshStandardMaterial color="#0f172a" metalness={0.8} roughness={0.2} />
+          <meshStandardMaterial color="var(--bg-primary)" metalness={0.8} roughness={0.2} />
         </mesh>
         <mesh position={[0.8, 0, 0]} ref={fanRef2}>
           <cylinderGeometry args={[0.5, 0.5, 0.1, 8]} />
-          <meshStandardMaterial color="#0f172a" metalness={0.8} roughness={0.2} />
+          <meshStandardMaterial color="var(--bg-primary)" metalness={0.8} roughness={0.2} />
         </mesh>
       </group>
 
@@ -300,7 +300,7 @@ export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalP
                       stroke="#38bdf8" 
                       strokeWidth={3}
                       dot={false}
-                      activeDot={{ r: 6, fill: '#38bdf8', stroke: '#0f172a', strokeWidth: 2 }}
+                      activeDot={{ r: 6, fill: '#38bdf8', stroke: 'var(--bg-primary)', strokeWidth: 2 }}
                     />
                     <Line 
                       name="AI Predicted Forecast"
@@ -310,7 +310,7 @@ export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalP
                       strokeWidth={3}
                       strokeDasharray="5 5"
                       dot={false}
-                      activeDot={{ r: 6, fill: '#c084fc', stroke: '#0f172a', strokeWidth: 2 }}
+                      activeDot={{ r: 6, fill: '#c084fc', stroke: 'var(--bg-primary)', strokeWidth: 2 }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -326,7 +326,7 @@ export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalP
                 
                 {/* Bi-directional Control Panel */}
                 <div style={{ marginTop: '24px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '16px' }}>
-                  <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '12px' }}>Command & Control (Bi-directional Link)</h3>
+                  <h3 style={{ fontSize: '0.9rem', color: "var(--text-secondary)", marginBottom: '12px' }}>Command & Control (Bi-directional Link)</h3>
                   <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
                     <button 
                       onClick={() => setMachineStatus('Running')}

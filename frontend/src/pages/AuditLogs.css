@@ -106,7 +106,7 @@
   width: 100%;
   padding: 10px 10px 10px 40px;
   background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   color: var(--text-primary);
   font-size: 0.9rem;
@@ -127,7 +127,7 @@
 .audit-table th {
   padding: 16px;
   background: rgba(0, 0, 0, 0.2);
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-weight: 600;
   font-size: 0.85rem;
   text-transform: uppercase;
@@ -138,7 +138,7 @@
 .audit-table td {
   padding: 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  color: #e2e8f0;
+  color: var(--text-primary);
   font-size: 0.95rem;
   font-family: 'Inter', monospace;
 }

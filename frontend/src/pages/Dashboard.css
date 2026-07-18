@@ -75,7 +75,7 @@
   top: 70px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(15, 23, 42, 0.95);
+  background: var(--bg-glass);
   border: 1px solid rgba(56, 189, 248, 0.3);
   border-radius: 12px;
   padding: 16px;
@@ -338,7 +338,7 @@
 
 .action-time {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -397,7 +397,7 @@
   padding: 6px 12px;
   background: var(--border-color);
   border: 1px solid var(--border-color);
-  color: #94a3b8;
+  color: var(--text-secondary);
   border-radius: 6px;
   font-size: 0.8rem;
   font-weight: 500;
@@ -407,5 +407,5 @@
 
 .btn-dismiss:hover:not(:disabled) {
   background: var(--border-color);
-  color: #e2e8f0;
+  color: var(--text-primary);
 }

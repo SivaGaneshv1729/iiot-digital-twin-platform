@@ -2060,7 +2060,7 @@ const CNCMachine = ({ position, machine, theme, aiHeatmapMode, onClick }: { posi
 
       {/* Floating UI */}
       <Html position={[0, 19, 0]} center zIndexRange={[100, 0]}>
-        <div style={{ background: 'rgba(15,23,42,0.9)', border: `1px solid ${statusColor}`, color: 'white', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 'bold', whiteSpace: 'nowrap', pointerEvents: 'none', boxShadow: `0 0 10px ${statusColor}40` }}>
+        <div style={{ background: 'var(--bg-glass)', border: `1px solid ${statusColor}`, color: 'white', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 'bold', whiteSpace: 'nowrap', pointerEvents: 'none', boxShadow: `0 0 10px ${statusColor}40` }}>
           {machine?.name || 'CNC-XX'} <span style={{ color: statusColor, marginLeft: '6px', textShadow: `0 0 5px ${statusColor}` }}>●</span>
         </div>
       </Html>
@@ -2116,7 +2116,7 @@ const LogisticsTruck = ({ startPosition, delay, isEmergencyMode }: { startPositi
 const MachineHUD = ({ machine, hasAnomaly }: { machine: any, hasAnomaly: boolean }) => (
   <Html position={[0, 18, 0]} center zIndexRange={[100, 0]} style={{ pointerEvents: 'none' }}>
     <div style={{
-      background: 'rgba(15, 23, 42, 0.95)',
+      background: 'var(--bg-glass)',
       border: `1px solid ${hasAnomaly ? '#ef4444' : '#3b82f6'}`,
       padding: '12px 16px',
       borderRadius: '8px',
@@ -2128,15 +2128,15 @@ const MachineHUD = ({ machine, hasAnomaly }: { machine: any, hasAnomaly: boolean
     }}>
       <h4 style={{ margin: '0 0 8px 0', borderBottom: '1px solid #334155', paddingBottom: '4px', color: '#38bdf8' }}>{machine.name}</h4>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-        <span style={{ color: '#94a3b8' }}>STATUS:</span>
+        <span style={{ color: "#94a3b8" }}>STATUS:</span>
         <span style={{ color: machine.status === 'Running' ? '#10b981' : machine.status === 'Idle' ? '#f59e0b' : '#ef4444', fontWeight: 'bold' }}>{machine.status.toUpperCase()}</span>
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-        <span style={{ color: '#94a3b8' }}>TEMP:</span>
+        <span style={{ color: "#94a3b8" }}>TEMP:</span>
         <span style={{ color: machine.temperature > 85 ? '#ef4444' : '#fff' }}>{machine.temperature}°C</span>
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span style={{ color: '#94a3b8' }}>UPTIME:</span>
+        <span style={{ color: "#94a3b8" }}>UPTIME:</span>
         <span>{machine.running_hours} hrs</span>
       </div>
     </div>
@@ -2258,18 +2258,18 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
       
       {/* Map Layers Panel (Google Maps Style) */}
       <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 10, display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-glass)', padding: '16px', borderRadius: '12px', backdropFilter: 'blur(10px)', border: '1px solid var(--border-color)', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>
-        <h3 style={{ margin: '0 0 8px 0', fontSize: '0.9rem', color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Map Layers</h3>
+        <h3 style={{ margin: '0 0 8px 0', fontSize: '0.9rem', color: '#ffffff', textTransform: 'uppercase', letterSpacing: '1px' }}>Map Layers</h3>
         <button 
           onClick={() => setActiveLayer(activeLayer === 'power' ? 'none' : 'power')}
-          style={{ textAlign: 'left', padding: '8px 12px', borderRadius: '6px', border: 'none', background: activeLayer === 'power' ? 'rgba(56, 189, 248, 0.2)' : 'transparent', color: activeLayer === 'power' ? '#38bdf8' : 'var(--text-primary)', cursor: 'pointer', fontSize: '0.85rem', transition: 'all 0.2s', borderLeft: activeLayer === 'power' ? '3px solid #38bdf8' : '3px solid transparent' }}
+          style={{ textAlign: 'left', padding: '8px 12px', borderRadius: '6px', border: 'none', background: activeLayer === 'power' ? 'rgba(56, 189, 248, 0.2)' : 'transparent', color: activeLayer === 'power' ? '#38bdf8' : '#ffffff', cursor: 'pointer', fontSize: '0.85rem', transition: 'all 0.2s', borderLeft: activeLayer === 'power' ? '3px solid #38bdf8' : '3px solid transparent' }}
         >⚡ Power Supply Flow</button>
         <button 
           onClick={() => setActiveLayer(activeLayer === 'manufacturing' ? 'none' : 'manufacturing')}
-          style={{ textAlign: 'left', padding: '8px 12px', borderRadius: '6px', border: 'none', background: activeLayer === 'manufacturing' ? 'rgba(249, 115, 22, 0.2)' : 'transparent', color: activeLayer === 'manufacturing' ? '#f97316' : 'var(--text-primary)', cursor: 'pointer', fontSize: '0.85rem', transition: 'all 0.2s', borderLeft: activeLayer === 'manufacturing' ? '3px solid #f97316' : '3px solid transparent' }}
+          style={{ textAlign: 'left', padding: '8px 12px', borderRadius: '6px', border: 'none', background: activeLayer === 'manufacturing' ? 'rgba(249, 115, 22, 0.2)' : 'transparent', color: activeLayer === 'manufacturing' ? '#f97316' : '#ffffff', cursor: 'pointer', fontSize: '0.85rem', transition: 'all 0.2s', borderLeft: activeLayer === 'manufacturing' ? '3px solid #f97316' : '3px solid transparent' }}
         >🏭 Manufacturing Zones</button>
         <button 
           onClick={() => setActiveLayer(activeLayer === 'logistics' ? 'none' : 'logistics')}
-          style={{ textAlign: 'left', padding: '8px 12px', borderRadius: '6px', border: 'none', background: activeLayer === 'logistics' ? 'rgba(16, 185, 129, 0.2)' : 'transparent', color: activeLayer === 'logistics' ? '#10b981' : 'var(--text-primary)', cursor: 'pointer', fontSize: '0.85rem', transition: 'all 0.2s', borderLeft: activeLayer === 'logistics' ? '3px solid #10b981' : '3px solid transparent' }}
+          style={{ textAlign: 'left', padding: '8px 12px', borderRadius: '6px', border: 'none', background: activeLayer === 'logistics' ? 'rgba(16, 185, 129, 0.2)' : 'transparent', color: activeLayer === 'logistics' ? '#10b981' : '#ffffff', cursor: 'pointer', fontSize: '0.85rem', transition: 'all 0.2s', borderLeft: activeLayer === 'logistics' ? '3px solid #10b981' : '3px solid transparent' }}
         >🚚 Supply Chain Routes</button>
       </div>
 
@@ -2277,32 +2277,32 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
       <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 10, display: 'flex', gap: '12px', background: 'var(--bg-glass)', padding: '8px 16px', borderRadius: '30px', backdropFilter: 'blur(10px)', border: '1px solid var(--border-color)', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>
         <button 
           onClick={() => setShowLabels(!showLabels)}
-          style={{ padding: '6px 12px', borderRadius: '20px', border: '1px solid var(--accent-primary)', background: showLabels ? 'var(--accent-primary)' : 'transparent', color: showLabels ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
+          style={{ padding: '6px 12px', borderRadius: '20px', border: '1px solid var(--accent-primary)', background: showLabels ? 'var(--accent-primary)' : 'transparent', color: showLabels ? '#fff' : '#ffffff', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
         >🏷️ Labels</button>
         <button 
           onClick={() => setViewMode('Global')}
-          style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Global' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Global' ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
+          style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Global' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Global' ? '#fff' : '#ffffff', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
         >Global Map</button>
         <button 
           onClick={() => setViewMode('Unit1')}
-          style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Unit1' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Unit1' ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
+          style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Unit1' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Unit1' ? '#fff' : '#ffffff', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
         >Block A: Machining</button>
         <button 
           onClick={() => setViewMode('Unit2')}
-          style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Unit2' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Unit2' ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
+          style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Unit2' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Unit2' ? '#fff' : '#ffffff', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
         >Block B: Assembly</button>
         <button 
           onClick={() => setViewMode('Tower')}
-          style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Tower' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Tower' ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
+          style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Tower' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Tower' ? '#fff' : '#ffffff', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
         >Block C: Testing</button>
         <button 
           onClick={() => setViewMode('Drone')}
-          style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Drone' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Drone' ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '4px' }}
+          style={{ padding: '6px 12px', borderRadius: '20px', border: 'none', background: viewMode === 'Drone' ? 'var(--accent-primary)' : 'transparent', color: viewMode === 'Drone' ? '#fff' : '#ffffff', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '4px' }}
         >🚁 Drone</button>
       </div>
 
       {viewMode === 'Drone' && (
-        <div style={{ position: 'absolute', top: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 10, background: 'rgba(0,0,0,0.7)', color: 'white', padding: '12px 24px', borderRadius: '12px', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+        <div style={{ position: 'absolute', top: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 10, background: 'rgba(0,0,0,0.7)', color: 'white', padding: '12px 24px', borderRadius: '12px', backdropFilter: 'blur(8px)', border: "1px solid var(--border-color)" }}>
           <p style={{ margin: 0, fontSize: '0.95rem', fontWeight: 'bold', color: '#38bdf8' }}>DRONE EXPLORATION ACTIVE</p>
           <ul style={{ margin: '8px 0 0', paddingLeft: '20px', fontSize: '0.85rem', lineHeight: '1.6' }}>
             <li><strong>W A S D</strong> - Fly Forward/Left/Back/Right</li>

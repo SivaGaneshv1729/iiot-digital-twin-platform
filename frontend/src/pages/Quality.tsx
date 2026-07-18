@@ -221,7 +221,7 @@ export const Quality = () => {
                       <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '8px' }} />
+                  <Tooltip contentStyle={{ backgroundColor: 'var(--bg-primary)', border: 'none', borderRadius: '8px' }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -246,7 +246,7 @@ export const Quality = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
                   <XAxis type="number" stroke="#64748b" tick={{fill: '#64748b', fontSize: 11}} />
                   <YAxis dataKey="name" type="category" stroke="#64748b" tick={{fill: '#64748b', fontSize: 11}} width={90} />
-                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} />
+                  <Tooltip contentStyle={{ backgroundColor: 'var(--bg-primary)', border: "1px solid var(--border-color)", borderRadius: '8px' }} />
                   <Bar dataKey="count" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={16}>
                     {defectTypeData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={index === 0 ? '#ef4444' : '#f59e0b'} />
@@ -274,7 +274,7 @@ export const Quality = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                   <XAxis dataKey="day" stroke="#64748b" tick={{fill: '#64748b', fontSize: 11}} />
                   <YAxis domain={[80, 100]} stroke="#64748b" tick={{fill: '#64748b', fontSize: 11}} />
-                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} />
+                  <Tooltip contentStyle={{ backgroundColor: 'var(--bg-primary)', border: "1px solid var(--border-color)", borderRadius: '8px' }} />
                   <Area type="monotone" dataKey="fpy" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorFpy)" name="FPY (%)" />
                 </AreaChart>
               </ResponsiveContainer>

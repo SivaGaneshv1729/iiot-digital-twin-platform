@@ -5,6 +5,25 @@
   overflow: hidden;
 }
 
+/* Global App Scaling for Laptops */
+@media (max-width: 1600px) {
+  .layout-container {
+    width: 125vw; /* 100 / 0.8 */
+    height: 125vh; /* 100 / 0.8 */
+    transform: scale(0.8);
+    transform-origin: top left;
+  }
+}
+
+@media (max-width: 1440px) {
+  .layout-container {
+    width: 133.33vw; /* 100 / 0.75 */
+    height: 133.33vh; /* 100 / 0.75 */
+    transform: scale(0.75);
+    transform-origin: top left;
+  }
+}
+
 .sidebar {
   width: 260px;
   display: flex;

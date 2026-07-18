@@ -45,23 +45,14 @@ export const GlobalNetwork = () => {
 
   // Complex Arcs: Hubs connect to each other and their regional depots
   const arcsData = [
-    // Trans-Pacific
-    { startLat: 35.6762, startLng: 139.6503, endLat: 34.0522, endLng: -118.2437, color: isEmergency ? ['#ef4444', '#ef4444'] : ['#10b981', '#f59e0b'] },
-    // Trans-Atlantic
-    { startLat: 40.7128, startLng: -74.0060, endLat: 51.5074, endLng: -0.1278, color: ['#10b981', '#3b82f6'] },
-    // Europe to Asia
-    { startLat: 52.5200, startLng: 13.4050, endLat: 25.2048, endLng: 55.2708, color: ['#10b981', '#f59e0b'] },
-    { startLat: 25.2048, startLng: 55.2708, endLat: 1.3521, endLng: 103.8198, color: ['#f59e0b', '#10b981'] },
-    // Intra-Asia
-    { startLat: 1.3521, startLng: 103.8198, endLat: 35.6762, endLng: 139.6503, color: isEmergency ? ['#ef4444', '#ef4444'] : ['#10b981', '#10b981'] },
-    { startLat: 19.0760, startLng: 72.8777, endLat: 1.3521, endLng: 103.8198, color: ['#8b5cf6', '#10b981'] },
-    { startLat: 37.5665, startLng: 126.9780, endLat: 35.6762, endLng: 139.6503, color: isEmergency ? ['#ef4444', '#ef4444'] : ['#8b5cf6', '#10b981'] },
-    // North/South America
-    { startLat: 40.7128, startLng: -74.0060, endLat: -23.5505, endLng: -46.6333, color: ['#10b981', '#10b981'] },
-    // Europe to Africa
-    { startLat: 52.5200, startLng: 13.4050, endLat: -26.2041, endLng: 28.0473, color: ['#10b981', '#14b8a6'] },
-    // Asia to Australia
-    { startLat: 1.3521, startLng: 103.8198, endLat: -33.8688, endLng: 151.2093, color: ['#10b981', '#3b82f6'] }
+    // Tokyo HQ to Berlin (High Throughput)
+    { startLat: 35.6762, startLng: 139.6503, endLat: 52.5200, endLng: 13.4050, color: ['#10b981', '#3b82f6'], name: 'Tokyo-Berlin Data Trunk', throughput: '1.2 PB/s' },
+    // Tokyo HQ to New York (Warning/Emergency sensitive)
+    { startLat: 35.6762, startLng: 139.6503, endLat: 40.7128, endLng: -74.0060, color: isEmergency ? ['#ef4444', '#ef4444'] : ['#10b981', '#f59e0b'], name: 'Tokyo-NY Logistics Sync', throughput: '800 TB/s' },
+    // Tokyo HQ to Singapore (Standard)
+    { startLat: 35.6762, startLng: 139.6503, endLat: 1.3521, endLng: 103.8198, color: isEmergency ? ['#ef4444', '#ef4444'] : ['#10b981', '#10b981'], name: 'Tokyo-Singapore Assembly Line', throughput: '2.4 PB/s' },
+    // Berlin to New York
+    { startLat: 52.5200, startLng: 13.4050, endLat: 40.7128, endLng: -74.0060, color: ['#3b82f6', '#f59e0b'], name: 'Berlin-NY Production Flow', throughput: '450 TB/s' }
   ];
 
   // Pulsating Rings for Tier 1 Hubs
@@ -170,6 +161,7 @@ export const GlobalNetwork = () => {
         arcDashLength={0.4}
         arcDashGap={0.2}
         arcDashAnimateTime={2000}
+        arcLabel={(d: any) => `${d.name}: ${d.throughput}`}
         ringsData={ringsData}
         ringColor="color"
         ringMaxRadius="maxR"

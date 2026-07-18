@@ -136,7 +136,7 @@ export const Dashboard = () => {
     if (!dashboardElement) return;
 
     try {
-      const canvas = await html2canvas(dashboardElement, { scale: 2, backgroundColor: '#0a0a0f' });
+      const canvas = await html2canvas(dashboardElement, { scale: 2, backgroundColor: 'var(--bg-primary)' });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -506,7 +506,7 @@ export const Dashboard = () => {
                     <XAxis dataKey="time" stroke="var(--text-secondary)" tick={{fill: 'var(--text-secondary)', fontSize: 10}} />
                     <YAxis yAxisId="left" stroke="var(--text-secondary)" tick={{fill: 'var(--text-secondary)', fontSize: 10}} />
                     <YAxis yAxisId="right" orientation="right" stroke="var(--text-secondary)" tick={{fill: 'var(--text-secondary)', fontSize: 10}} />
-                    <Tooltip contentStyle={{ backgroundColor: 'var(--bg-primary)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} />
+                    <Tooltip contentStyle={{ backgroundColor: 'var(--bg-primary)', border: "1px solid var(--border-color)", borderRadius: '8px' }} />
                     <Area yAxisId="right" type="monotone" dataKey="energy" fill="url(#colorEnergyDash)" stroke="#10b981" isAnimationActive={false} />
                     <Bar yAxisId="left" dataKey="output" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={20} isAnimationActive={false} />
                   </ComposedChart>

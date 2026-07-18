@@ -2,8 +2,8 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
   backdrop-filter: blur(12px);
@@ -22,7 +22,7 @@
   display: flex;
   align-items: center;
   background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 8px 12px;
   width: 300px;
@@ -67,11 +67,11 @@
   padding: 14px 16px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(15, 23, 42, 0.8);
+  background: var(--bg-glass);
   white-space: nowrap;
 }
 
@@ -102,7 +102,7 @@
 .datatable td {
   padding: 16px;
   font-size: 0.95rem;
-  color: #e2e8f0;
+  color: var(--text-primary);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   vertical-align: middle;
 }
@@ -132,12 +132,12 @@
   justify-content: space-between;
   align-items: center;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(15, 23, 42, 0.4);
+  background: var(--bg-glass);
 }
 
 .pagination-info {
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 
 .pagination-controls {
@@ -148,12 +148,12 @@
 
 .page-indicator {
   font-size: 0.9rem;
-  color: #e2e8f0;
+  color: var(--text-primary);
 }
 
 .pagination-btn {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   color: #f8fafc;
   padding: 6px;
   border-radius: 6px;

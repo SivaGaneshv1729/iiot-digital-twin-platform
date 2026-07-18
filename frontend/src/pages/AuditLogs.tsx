@@ -190,7 +190,7 @@ export const AuditLogs = () => {
                       <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                     ))}
                   </Pie>
-                  <RechartsTooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} />
+                  <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-primary)', border: "1px solid var(--border-color)", borderRadius: '8px' }} />
                   <Legend verticalAlign="bottom" height={36} iconType="circle" />
                 </PieChart>
               </ResponsiveContainer>
@@ -204,7 +204,7 @@ export const AuditLogs = () => {
         <div className="table-panel glass-panel">
           <div className="card-body" style={{ padding: '0' }}>
             {loading ? (
-              <div style={{ padding: '32px', textAlign: 'center', color: '#94a3b8' }}>Decrypting secure logs...</div>
+              <div style={{ padding: '32px', textAlign: 'center', color: "var(--text-secondary)" }}>Decrypting secure logs...</div>
             ) : (
               <DataTable 
                 data={logs} 

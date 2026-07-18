@@ -184,7 +184,7 @@ export const MLOps = () => {
                   <YAxis yAxisId="left" stroke="#ef4444" domain={[0, 'dataMax']} tick={{fill: '#ef4444', fontSize: 12}} />
                   <YAxis yAxisId="right" orientation="right" stroke="#10b981" domain={[0, 100]} tick={{fill: '#10b981', fontSize: 12}} />
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#f8fafc' }} />
+                  <Tooltip contentStyle={{ backgroundColor: 'var(--bg-primary)', border: "1px solid var(--border-color)", borderRadius: '8px', color: '#f8fafc' }} />
                   <Area yAxisId="left" type="monotone" dataKey="loss" stroke="#ef4444" fillOpacity={1} fill="url(#colorLoss)" name="BCE Loss" />
                   <Area yAxisId="right" type="monotone" dataKey="accuracy" stroke="#10b981" fillOpacity={1} fill="url(#colorAcc)" name="Accuracy (%)" />
                 </AreaChart>
@@ -202,7 +202,7 @@ export const MLOps = () => {
                 <PolarGrid stroke="rgba(255,255,255,0.1)" />
                 <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 10 }} />
                 <Radar name="RTX 4090 (Edge)" dataKey="A" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.4} />
-                <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '8px' }} />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--bg-primary)', border: 'none', borderRadius: '8px' }} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
               </RadarChart>
             </ResponsiveContainer>
