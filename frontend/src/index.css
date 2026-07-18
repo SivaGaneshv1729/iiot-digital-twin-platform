@@ -93,17 +93,4 @@ h1, h2, h3 {
 /* Status Colors */
 .status-Running { color: var(--success); }
 .status-Idle { color: var(--warning); }
-.status-Maintenance { color: var(--danger); }
-
-/* Responsive Scaling for Laptop Screens */
-@media (max-width: 1920px) {
-  html {
-    zoom: 0.85;
-  }
-}
-
-@media (max-width: 1600px) {
-  html {
-    zoom: 0.75;
-  }
-}
+.status-Maintenance { color: var(--danger); }

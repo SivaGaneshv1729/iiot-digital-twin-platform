@@ -12,6 +12,13 @@
   flex: 1;
 }
 
+@media (max-width: 1600px) {
+  .dashboard-layout {
+    grid-template-columns: 1fr 280px;
+    gap: 12px;
+  }
+}
+
 .dashboard-sidebar-left {
   display: flex;
   flex-direction: column;
@@ -91,6 +98,12 @@
   margin-bottom: 4px;
 }
 
+@media (max-width: 1600px) {
+  .dashboard-header h1 {
+    font-size: 1.5rem;
+  }
+}
+
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -104,6 +117,13 @@
   gap: 16px;
   border: 1px solid var(--border-color);
   transition: all 0.2s ease;
+}
+
+@media (max-width: 1600px) {
+  .kpi-card {
+    padding: 12px;
+    gap: 12px;
+  }
 }
 
 .kpi-card:hover {
@@ -228,6 +248,12 @@
 .chart-wrapper {
   height: 350px;
   width: 100%;
+}
+
+@media (max-width: 1600px) {
+  .chart-wrapper {
+    height: 250px;
+  }
 }
 
 /* Prescriptive Action Center */
