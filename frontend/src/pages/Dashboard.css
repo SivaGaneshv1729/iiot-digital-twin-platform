@@ -157,18 +157,9 @@
   gap: 16px;
 }
 
-@media (max-width: 1600px) {
-  .dashboard-layout {
-    grid-template-columns: 200px 1fr 280px;
-  }
-}
-
 @media (max-width: 1300px) {
   .dashboard-layout {
     grid-template-columns: 1fr 300px;
-  }
-  .dashboard-sidebar-left {
-    display: none;
   }
   .charts-bottom-row {
     grid-template-columns: 1fr;
