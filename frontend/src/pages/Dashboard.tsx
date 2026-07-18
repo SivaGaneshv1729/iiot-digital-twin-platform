@@ -419,55 +419,7 @@ export const Dashboard = () => {
 
       <div className="dashboard-layout">
         
-        {/* Left Sidebar */}
-        <div className="dashboard-sidebar-left">
-          <div className="glass-panel" style={{ padding: '20px' }}>
-            <h3 style={{ fontSize: '0.8rem', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px' }}>Factory Overview</h3>
-            <ul className="sidebar-menu">
-              <li className="active"><Activity size={16} /> Overview</li>
-              <li><Zap size={16} /> Energy Monitor</li>
-              <li><Leaf size={16} /> Sustainability</li>
-              <li><Database size={16} /> Inventory</li>
-              <li><Target size={16} /> Quality</li>
-              <li><ShieldCheck size={16} /> Safety</li>
-            </ul>
-          </div>
-          
-          <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-             <h3 style={{ fontSize: '0.8rem', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px', alignSelf: 'flex-start' }}>Campus Status</h3>
-             <div style={{ position: 'relative', width: '160px', height: '160px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-               <svg width="160" height="160" viewBox="0 0 160 160">
-                 <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="12" />
-                 <circle cx="80" cy="80" r="70" fill="none" stroke="#10b981" strokeWidth="12" strokeDasharray="440" strokeDashoffset="96.8" strokeLinecap="round" transform="rotate(-90 80 80)" />
-               </svg>
-               <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                 <span style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#f8fafc' }}>78<span style={{ fontSize: '1rem' }}>%</span></span>
-                 <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Overall Health</span>
-               </div>
-             </div>
-             
-             <div style={{ marginTop: '24px', width: '100%', fontSize: '0.85rem' }}>
-               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                 <span style={{ color: '#10b981', display: 'flex', alignItems: 'center' }}>
-                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', marginRight: '8px' }}></div>Healthy
-                 </span>
-                 <span style={{ fontWeight: 600 }}>128</span>
-               </div>
-               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                 <span style={{ color: '#f59e0b', display: 'flex', alignItems: 'center' }}>
-                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b', marginRight: '8px' }}></div>At Risk
-                 </span>
-                 <span style={{ fontWeight: 600 }}>18</span>
-               </div>
-               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                 <span style={{ color: '#ef4444', display: 'flex', alignItems: 'center' }}>
-                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', marginRight: '8px' }}></div>Critical
-                 </span>
-                 <span style={{ fontWeight: 600 }}>6</span>
-               </div>
-             </div>
-          </div>
-        </div>
+
 
         {/* Center Main Area */}
         <div className="dashboard-main-center">
@@ -590,6 +542,41 @@ export const Dashboard = () => {
 
         {/* Right Sidebar */}
         <div className="dashboard-sidebar-right">
+          <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '16px' }}>
+             <h3 style={{ fontSize: '0.8rem', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px', alignSelf: 'flex-start' }}>Campus Status</h3>
+             <div style={{ position: 'relative', width: '160px', height: '160px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+               <svg width="160" height="160" viewBox="0 0 160 160">
+                 <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="12" />
+                 <circle cx="80" cy="80" r="70" fill="none" stroke="#10b981" strokeWidth="12" strokeDasharray="440" strokeDashoffset="96.8" strokeLinecap="round" transform="rotate(-90 80 80)" />
+               </svg>
+               <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                 <span style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#f8fafc' }}>78<span style={{ fontSize: '1rem' }}>%</span></span>
+                 <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Overall Health</span>
+               </div>
+             </div>
+             
+             <div style={{ marginTop: '24px', width: '100%', fontSize: '0.85rem' }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                 <span style={{ color: '#10b981', display: 'flex', alignItems: 'center' }}>
+                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', marginRight: '8px' }}></div>Healthy
+                 </span>
+                 <span style={{ fontWeight: 600 }}>128</span>
+               </div>
+               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                 <span style={{ color: '#f59e0b', display: 'flex', alignItems: 'center' }}>
+                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b', marginRight: '8px' }}></div>At Risk
+                 </span>
+                 <span style={{ fontWeight: 600 }}>18</span>
+               </div>
+               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                 <span style={{ color: '#ef4444', display: 'flex', alignItems: 'center' }}>
+                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', marginRight: '8px' }}></div>Critical
+                 </span>
+                 <span style={{ fontWeight: 600 }}>6</span>
+               </div>
+             </div>
+          </div>
+
            <div className="glass-panel" style={{ padding: '20px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
              <h3 style={{ fontSize: '0.8rem', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 AI Assistant <span style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>BETA</span>
