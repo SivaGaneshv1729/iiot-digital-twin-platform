@@ -1697,11 +1697,11 @@ const SmokeParticles = ({ position }: { position: [number, number, number] }) =>
       particle.position.y += delta * (15 + (i % 5));
       particle.position.x += Math.sin(state.clock.elapsedTime * 2 + i) * delta * 10;
       particle.position.z += Math.cos(state.clock.elapsedTime * 2 + i) * delta * 10;
-      (particle.material as THREE.MeshBasicMaterial).opacity -= delta * 0.3;
+      ((particle as THREE.Mesh).material as THREE.MeshBasicMaterial).opacity -= delta * 0.3;
       
-      if (particle.position.y > 80 || (particle.material as THREE.MeshBasicMaterial).opacity <= 0) {
+      if (particle.position.y > 80 || ((particle as THREE.Mesh).material as THREE.MeshBasicMaterial).opacity <= 0) {
         particle.position.set((Math.random() - 0.5) * 5, 0, (Math.random() - 0.5) * 5);
-        (particle.material as THREE.MeshBasicMaterial).opacity = 0.5 + Math.random() * 0.3;
+        ((particle as THREE.Mesh).material as THREE.MeshBasicMaterial).opacity = 0.5 + Math.random() * 0.3;
       }
     });
   });

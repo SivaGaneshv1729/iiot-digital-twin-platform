@@ -8,7 +8,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, L
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
-import { DataTable, Column } from '../components/DataTable';
+import { DataTable, type Column } from '../components/DataTable';
 import './AuditLogs.css';
 
 interface AuditLog {

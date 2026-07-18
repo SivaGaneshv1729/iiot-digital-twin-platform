@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { MachineHistoryModal } from '../components/MachineHistoryModal';
-import { DataTable, Column } from '../components/DataTable';
+import { DataTable, type Column } from '../components/DataTable';
 import './Machines.css';
 
 interface Machine {

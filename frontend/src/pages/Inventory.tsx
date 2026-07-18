@@ -7,7 +7,7 @@ import { io } from 'socket.io-client';
 import { 
   Treemap, ResponsiveContainer, Tooltip 
 } from 'recharts';
-import { DataTable, Column } from '../components/DataTable';
+import { DataTable, type Column } from '../components/DataTable';
 import './Inventory.css';
 
 interface InventoryItem {

@@ -7,7 +7,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   RadarChart, PolarGrid, PolarAngleAxis, Radar, Legend
 } from 'recharts';
-import { DataTable, Column } from '../components/DataTable';
+import { DataTable, type Column } from '../components/DataTable';
 import './MLOps.css';
 
 interface AIModelMetric {
