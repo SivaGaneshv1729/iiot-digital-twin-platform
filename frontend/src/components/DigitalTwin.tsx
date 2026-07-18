@@ -2253,7 +2253,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
   }
 
   return (
-    <div className="digital-twin-wrapper" style={{ height: '600px', width: '100%', borderRadius: '12px', overflow: 'hidden', position: 'relative' }}>
+    <div className="digital-twin-wrapper" style={{ flex: 1, minHeight: '600px', width: '100%', borderRadius: '12px', overflow: 'hidden', position: 'relative', display: 'flex' }}>
       
       
       {/* Map Layers Panel (Google Maps Style) */}
