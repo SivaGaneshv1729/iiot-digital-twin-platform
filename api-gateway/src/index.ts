@@ -116,13 +116,16 @@ setInterval(async () => {
 
         // Periodically log to telemetry_history (every 10 seconds to save DB writes)
         // We'll use a simple static counter or just Math.random to throttle DB writes
-        if (Math.random() < 0.2) {
+        if (Math.random() < 0.2 && machines.length > 0) {
+            const values = [];
+            const flatParams = [];
+            let i = 1;
             for (const m of machines) {
-                await query(
-                    'INSERT INTO telemetry_history (machine_id, temperature, status) VALUES ($1, $2, $3)',
-                    [m.id, m.temperature, m.status]
-                );
+                values.push(`($${i++}, $${i++}, $${i++})`);
+                flatParams.push(m.id, m.temperature, m.status);
             }
+            const queryStr = `INSERT INTO telemetry_history (machine_id, temperature, status) VALUES ${values.join(', ')}`;
+            await query(queryStr, flatParams);
         }
 
         // Phase 14: Supply Chain Integration - Deplete inventory based on production
