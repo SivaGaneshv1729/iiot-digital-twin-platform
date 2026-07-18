@@ -29,6 +29,24 @@ router.get('/', cacheMiddleware(10), async (req: Request, res: Response) => {
     }
 });
 
+/**
+ * @openapi
+ * /api/machines/emergency-stop:
+ *   post:
+ *     summary: POST operation for /api/machines/emergency-stop
+ *     tags: [machines]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/emergency-stop', requireAdmin, async (req, res) => {
     try {
         const user = (req as any).user;
@@ -53,6 +71,24 @@ router.post('/emergency-stop', requireAdmin, async (req, res) => {
     }
 });
 
+/**
+ * @openapi
+ * /api/machines/emergency-revoke:
+ *   post:
+ *     summary: POST operation for /api/machines/emergency-revoke
+ *     tags: [machines]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/emergency-revoke', requireAdmin, async (req, res) => {
     try {
         const user = (req as any).user;
@@ -74,6 +110,30 @@ router.post('/emergency-revoke', requireAdmin, async (req, res) => {
     }
 });
 
+/**
+ * @openapi
+ * /api/machines/{id}:
+ *   get:
+ *     summary: GET operation for /api/machines/{id}
+ *     tags: [machines]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -90,6 +150,30 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+/**
+ * @openapi
+ * /api/machines/{id}/history:
+ *   get:
+ *     summary: GET operation for /api/machines/{id}/history
+ *     tags: [machines]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/:id/history', async (req, res) => {
     try {
         const { id } = req.params;
@@ -106,6 +190,30 @@ router.get('/:id/history', async (req, res) => {
     }
 });
 
+/**
+ * @openapi
+ * /api/machines/{id}/status:
+ *   post:
+ *     summary: POST operation for /api/machines/{id}/status
+ *     tags: [machines]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/:id/status', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;

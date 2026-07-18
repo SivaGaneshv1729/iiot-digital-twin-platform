@@ -8,6 +8,24 @@ const AI_SERVICE_URL = 'http://localhost:8000';
  * @description Proxies real-time telemetry to the Python FastApi service.
  * Utilizes the FFNN to predict equipment failure probabilities.
  */
+/**
+ * @openapi
+ * /api/ai/predict/maintenance:
+ *   post:
+ *     summary: POST operation for /api/ai/predict/maintenance
+ *     tags: [ai]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/predict/maintenance', async (req, res) => {
     try {
         const response = await fetch(`${AI_SERVICE_URL}/predict/maintenance`, {
@@ -28,6 +46,24 @@ router.post('/predict/maintenance', async (req, res) => {
     }
 });
 
+/**
+ * @openapi
+ * /api/ai/forecast/temperature:
+ *   post:
+ *     summary: POST operation for /api/ai/forecast/temperature
+ *     tags: [ai]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/forecast/temperature', async (req, res) => {
     try {
         const response = await fetch(`${AI_SERVICE_URL}/forecast/temperature`, {
@@ -48,6 +84,24 @@ router.post('/forecast/temperature', async (req, res) => {
     }
 });
 
+/**
+ * @openapi
+ * /api/ai/chat:
+ *   post:
+ *     summary: POST operation for /api/ai/chat
+ *     tags: [ai]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/chat', async (req, res) => {
     try {
         const response = await fetch(`${AI_SERVICE_URL}/chat`, {
@@ -68,6 +122,24 @@ router.post('/chat', async (req, res) => {
     }
 });
 
+/**
+ * @openapi
+ * /api/ai/metrics:
+ *   get:
+ *     summary: GET operation for /api/ai/metrics
+ *     tags: [ai]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/metrics', async (req, res) => {
     try {
         const response = await fetch(`${AI_SERVICE_URL}/predict/metrics`);
@@ -82,6 +154,24 @@ router.get('/metrics', async (req, res) => {
     }
 });
 
+/**
+ * @openapi
+ * /api/ai/train:
+ *   post:
+ *     summary: POST operation for /api/ai/train
+ *     tags: [ai]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/train', async (req, res) => {
     try {
         const response = await fetch(`${AI_SERVICE_URL}/train`, {

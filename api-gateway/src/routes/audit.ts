@@ -4,6 +4,24 @@ import { requireAdmin } from '../middleware/auth';
 
 const router = Router();
 
+/**
+ * @openapi
+ * /api/audit:
+ *   get:
+ *     summary: GET operation for /api/audit
+ *     tags: [audit]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/', requireAdmin, async (req, res) => {
     try {
         const result = await query(`

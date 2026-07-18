@@ -15,10 +15,46 @@ webpush.setVapidDetails(
 
 export const subscriptions: webpush.PushSubscription[] = [];
 
+/**
+ * @openapi
+ * /api/push/vapidPublicKey:
+ *   get:
+ *     summary: GET operation for /api/push/vapidPublicKey
+ *     tags: [push]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/vapidPublicKey', authenticateToken, (req, res) => {
     res.send(publicVapidKey);
 });
 
+/**
+ * @openapi
+ * /api/push/subscribe:
+ *   post:
+ *     summary: POST operation for /api/push/subscribe
+ *     tags: [push]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/subscribe', authenticateToken, (req, res) => {
     const subscription = req.body;
     subscriptions.push(subscription);

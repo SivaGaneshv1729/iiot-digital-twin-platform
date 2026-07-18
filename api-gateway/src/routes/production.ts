@@ -3,6 +3,24 @@ import { query } from '../db';
 
 const router = Router();
 
+/**
+ * @openapi
+ * /api/production/summary:
+ *   get:
+ *     summary: GET operation for /api/production/summary
+ *     tags: [production]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/summary', async (req, res) => {
     try {
         // Fetch KPI stats
@@ -24,6 +42,24 @@ router.get('/summary', async (req, res) => {
     }
 });
 
+/**
+ * @openapi
+ * /api/production/orders:
+ *   get:
+ *     summary: GET operation for /api/production/orders
+ *     tags: [production]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/orders', async (req, res) => {
     try {
         const result = await query(`

@@ -40,6 +40,24 @@ const ensureInventoryTable = async () => {
 // Initialize table on route load
 ensureInventoryTable().catch(err => console.error("Failed to initialize inventory table:", err));
 
+/**
+ * @openapi
+ * /api/inventory:
+ *   get:
+ *     summary: GET operation for /api/inventory
+ *     tags: [inventory]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/', async (req, res) => {
     try {
         const result = await query('SELECT * FROM inventory ORDER BY category, item_name');

@@ -5,6 +5,24 @@ import { query } from '../db';
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey_for_smartfactory';
 
+/**
+ * @openapi
+ * /api/auth/login:
+ *   post:
+ *     summary: POST operation for /api/auth/login
+ *     tags: [auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;

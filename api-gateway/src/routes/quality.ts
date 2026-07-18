@@ -38,6 +38,24 @@ const ensureQualityTable = async () => {
 // Initialize table on route load
 ensureQualityTable().catch(err => console.error("Failed to initialize quality table:", err));
 
+/**
+ * @openapi
+ * /api/quality:
+ *   get:
+ *     summary: GET operation for /api/quality
+ *     tags: [quality]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/', async (req, res) => {
     try {
         const result = await query(`
@@ -53,6 +71,24 @@ router.get('/', async (req, res) => {
     }
 });
 
+/**
+ * @openapi
+ * /api/quality/stats:
+ *   get:
+ *     summary: GET operation for /api/quality/stats
+ *     tags: [quality]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/stats', async (req, res) => {
     try {
         const passRes = await query("SELECT COUNT(*) FROM quality_inspections WHERE status = 'Pass'");
@@ -75,6 +111,24 @@ router.get('/stats', async (req, res) => {
     }
 });
 
+/**
+ * @openapi
+ * /api/quality/defect-types:
+ *   get:
+ *     summary: GET operation for /api/quality/defect-types
+ *     tags: [quality]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/defect-types', async (req, res) => {
     try {
         const result = await query(`
@@ -103,6 +157,24 @@ router.get('/defect-types', async (req, res) => {
     }
 });
 
+/**
+ * @openapi
+ * /api/quality/trends:
+ *   get:
+ *     summary: GET operation for /api/quality/trends
+ *     tags: [quality]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/trends', async (req, res) => {
     try {
         // Mock trend data for last 7 days since DB is freshly seeded
@@ -127,6 +199,24 @@ router.get('/trends', async (req, res) => {
     }
 });
 
+/**
+ * @openapi
+ * /api/quality/inject-defect:
+ *   post:
+ *     summary: POST operation for /api/quality/inject-defect
+ *     tags: [quality]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/inject-defect', async (req, res) => {
     try {
         await query(`
