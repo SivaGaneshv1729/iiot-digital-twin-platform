@@ -387,7 +387,7 @@ export const Dashboard = () => {
 
       {showDVR && (
         <div className="dvr-panel">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}>
             <Clock size={20} />
             <span style={{ fontWeight: 'bold' }}>DVR Time-Travel:</span>
           </div>
@@ -502,11 +502,11 @@ export const Dashboard = () => {
                         <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                    <XAxis dataKey="time" stroke="#64748b" tick={{fill: '#64748b', fontSize: 10}} />
-                    <YAxis yAxisId="left" stroke="#64748b" tick={{fill: '#64748b', fontSize: 10}} />
-                    <YAxis yAxisId="right" orientation="right" stroke="#64748b" tick={{fill: '#64748b', fontSize: 10}} />
-                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                    <XAxis dataKey="time" stroke="var(--text-secondary)" tick={{fill: 'var(--text-secondary)', fontSize: 10}} />
+                    <YAxis yAxisId="left" stroke="var(--text-secondary)" tick={{fill: 'var(--text-secondary)', fontSize: 10}} />
+                    <YAxis yAxisId="right" orientation="right" stroke="var(--text-secondary)" tick={{fill: 'var(--text-secondary)', fontSize: 10}} />
+                    <Tooltip contentStyle={{ backgroundColor: 'var(--bg-primary)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} />
                     <Area yAxisId="right" type="monotone" dataKey="energy" fill="url(#colorEnergyDash)" stroke="#10b981" isAnimationActive={false} />
                     <Bar yAxisId="left" dataKey="output" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={20} isAnimationActive={false} />
                   </ComposedChart>
@@ -527,10 +527,10 @@ export const Dashboard = () => {
                         <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                    <XAxis dataKey="time" stroke="#64748b" tick={{fill: '#64748b', fontSize: 10}} />
-                    <YAxis stroke="#64748b" tick={{fill: '#64748b', fontSize: 10}} domain={[0, 100]} />
-                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '8px' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                    <XAxis dataKey="time" stroke="var(--text-secondary)" tick={{fill: 'var(--text-secondary)', fontSize: 10}} />
+                    <YAxis stroke="var(--text-secondary)" tick={{fill: 'var(--text-secondary)', fontSize: 10}} domain={[0, 100]} />
+                    <Tooltip contentStyle={{ backgroundColor: 'var(--bg-primary)', border: 'none', borderRadius: '8px' }} />
                     <Area type="monotone" dataKey="risk" fill="url(#colorRiskDash)" stroke="#f43f5e" strokeWidth={2} isAnimationActive={false} />
                     <Line type="stepAfter" dataKey="threshold" stroke="#f59e0b" strokeWidth={2} dot={false} strokeDasharray="5 5" isAnimationActive={false} />
                   </ComposedChart>
@@ -542,16 +542,16 @@ export const Dashboard = () => {
 
         {/* Right Sidebar */}
         <div className="dashboard-sidebar-right">
-          <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '16px', background: 'rgba(30, 41, 59, 0.85)', border: '1px solid rgba(148, 163, 184, 0.2)' }}>
-             <h3 style={{ fontSize: '0.85rem', color: '#cbd5e1', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px', alignSelf: 'flex-start', fontWeight: 'bold' }}>Campus Status</h3>
+          <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '16px', background: 'var(--bg-glass)', border: '1px solid rgba(148, 163, 184, 0.2)' }}>
+             <h3 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px', alignSelf: 'flex-start', fontWeight: 'bold' }}>Campus Status</h3>
              <div style={{ position: 'relative', width: '160px', height: '160px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                <svg width="160" height="160" viewBox="0 0 160 160">
-                 <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="12" />
+                 <circle cx="80" cy="80" r="70" fill="none" stroke="var(--border-color)" strokeWidth="12" />
                  <circle cx="80" cy="80" r="70" fill="none" stroke="#10b981" strokeWidth="12" strokeDasharray="440" strokeDashoffset="96.8" strokeLinecap="round" transform="rotate(-90 80 80)" />
                </svg>
                <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                 <span style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#f8fafc' }}>78<span style={{ fontSize: '1rem' }}>%</span></span>
-                 <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Overall Health</span>
+                 <span style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>78<span style={{ fontSize: '1rem' }}>%</span></span>
+                 <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Overall Health</span>
                </div>
              </div>
              
@@ -577,39 +577,39 @@ export const Dashboard = () => {
              </div>
           </div>
 
-           <div className="glass-panel" style={{ padding: '20px', background: 'rgba(30, 41, 59, 0.85)', border: '1px solid rgba(148, 163, 184, 0.2)' }}>
-             <h3 style={{ fontSize: '0.85rem', color: '#cbd5e1', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
-                AI Assistant <span style={{ background: 'rgba(59, 130, 246, 0.3)', color: '#60a5fa', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>BETA</span>
+           <div className="glass-panel" style={{ padding: '20px', background: 'var(--bg-glass)', border: '1px solid rgba(148, 163, 184, 0.2)' }}>
+             <h3 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
+                AI Assistant <span style={{ background: 'var(--accent-primary)', color: '#60a5fa', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>BETA</span>
              </h3>
              
-             <div style={{ background: 'rgba(59, 130, 246, 0.15)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '8px', padding: '12px', marginBottom: '16px' }}>
-                <div style={{ fontSize: '0.95rem', color: '#f8fafc', marginBottom: '4px', fontWeight: '600' }}>Hello! 👋</div>
-                <div style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>How can I help you today?</div>
+             <div style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '8px', padding: '12px', marginBottom: '16px' }}>
+                <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '4px', fontWeight: '600' }}>Hello! 👋</div>
+                <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>How can I help you today?</div>
              </div>
              
              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-               <button style={{ background: 'rgba(59, 130, 246, 0.2)', border: '1px solid rgba(59, 130, 246, 0.5)', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#f8fafc', fontSize: '0.85rem', cursor: 'pointer', borderRadius: '8px', transition: 'all 0.2s', fontWeight: '500' }}>
+               <button style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(59, 130, 246, 0.5)', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-primary)', fontSize: '0.85rem', cursor: 'pointer', borderRadius: '8px', transition: 'all 0.2s', fontWeight: '500' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><AlertOctagon size={16} color="#ef4444"/> Show me machines with highest failure risk</div>
                   <ArrowRight size={14} style={{ opacity: 0.8 }} />
                </button>
-               <button style={{ background: 'rgba(59, 130, 246, 0.2)', border: '1px solid rgba(59, 130, 246, 0.5)', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#f8fafc', fontSize: '0.85rem', cursor: 'pointer', borderRadius: '8px', transition: 'all 0.2s', fontWeight: '500' }}>
+               <button style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(59, 130, 246, 0.5)', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-primary)', fontSize: '0.85rem', cursor: 'pointer', borderRadius: '8px', transition: 'all 0.2s', fontWeight: '500' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><DollarSign size={16} color="#f59e0b"/> What is the revenue at risk today?</div>
                   <ArrowRight size={14} style={{ opacity: 0.8 }} />
                </button>
              </div>
 
-             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 255, 255, 0.1)', padding: '12px 14px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.2)' }}>
-               <button onClick={toggleListening} style={{ background: 'none', border: 'none', cursor: 'pointer', color: isListening ? '#ec4899' : '#cbd5e1' }}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--border-color)', padding: '12px 14px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.2)' }}>
+               <button onClick={toggleListening} style={{ background: 'none', border: 'none', cursor: 'pointer', color: isListening ? '#ec4899' : 'var(--text-secondary)' }}>
                  {isListening ? <Mic size={18} className="listening-pulse" /> : <Mic size={18} />}
                </button>
-               <input type="text" placeholder="Ask anything about your factory..." style={{ background: 'transparent', border: 'none', color: '#f8fafc', fontSize: '0.9rem', outline: 'none', width: '100%' }} />
+               <input type="text" placeholder="Ask anything about your factory..." style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', width: '100%' }} />
              </div>
            </div>
 
-           <div className="glass-panel" style={{ padding: '20px', background: 'rgba(30, 41, 59, 0.85)', border: '1px solid rgba(148, 163, 184, 0.2)' }}>
-             <h3 style={{ fontSize: '0.85rem', color: '#cbd5e1', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px', fontWeight: 'bold' }}>Revenue At Risk</h3>
+           <div className="glass-panel" style={{ padding: '20px', background: 'var(--bg-glass)', border: '1px solid rgba(148, 163, 184, 0.2)' }}>
+             <h3 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1px', fontWeight: 'bold' }}>Revenue At Risk</h3>
              <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '16px' }}>
-               <span style={{ fontSize: '2rem', fontWeight: 'bold', color: '#f8fafc' }}>${revenueAtRisk.toLocaleString()}</span>
+               <span style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>${revenueAtRisk.toLocaleString()}</span>
                <span style={{ color: '#ef4444', fontSize: '0.85rem', fontWeight: 600 }}>↑ 18.6%</span>
              </div>
              <div style={{ height: '80px', width: '100%' }}>
@@ -621,7 +621,7 @@ export const Dashboard = () => {
              </div>
            </div>
            
-           <div className="event-stream-section glass-panel" style={{ flex: 1, background: 'rgba(30, 41, 59, 0.85)', border: '1px solid rgba(148, 163, 184, 0.2)' }}>
+           <div className="event-stream-section glass-panel" style={{ flex: 1, background: 'var(--bg-glass)', border: '1px solid rgba(148, 163, 184, 0.2)' }}>
               <div className="event-stream-header">
                 <h2><div className="live-dot"></div> AI Prescriptions</h2>
               </div>

@@ -52,7 +52,7 @@
 }
 
 .sidebar-menu li:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--border-color);
   color: var(--text-primary);
 }
 
@@ -102,7 +102,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
   transition: all 0.2s ease;
 }
 
@@ -201,7 +201,7 @@
 
 .charts-section {
   padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -242,7 +242,7 @@
 /* Prescriptive Action Center */
 .event-stream-section {
   padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -287,16 +287,16 @@
 
 /* Custom Scrollbar */
 .event-list::-webkit-scrollbar { width: 4px; }
-.event-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
-.event-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
+.event-list::-webkit-scrollbar-track { background: var(--border-color); }
+.event-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
 
 .action-card {
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 16px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255,255,255,0.05);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   transition: border-color 0.2s ease;
 }
@@ -370,16 +370,16 @@
 }
 
 .btn-approve:disabled {
-  background: rgba(255,255,255,0.05);
-  border-color: rgba(255,255,255,0.1);
+  background: var(--border-color);
+  border-color: var(--border-color);
   color: #64748b;
   cursor: not-allowed;
 }
 
 .btn-dismiss {
   padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--border-color);
+  border: 1px solid var(--border-color);
   color: #94a3b8;
   border-radius: 6px;
   font-size: 0.8rem;
@@ -389,6 +389,6 @@
 }
 
 .btn-dismiss:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border-color);
   color: #e2e8f0;
 }
