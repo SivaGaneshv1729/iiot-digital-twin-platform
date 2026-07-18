@@ -348,23 +348,25 @@
 }
 
 .btn-approve {
-  padding: 6px 12px;
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #10b981;
+  padding: 8px 16px;
+  background: #10b981;
+  border: none;
+  color: white;
   border-radius: 6px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
   transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
 }
 
 .btn-approve:hover {
-  background: rgba(16, 185, 129, 0.25);
-  border-color: rgba(16, 185, 129, 0.5);
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 8px rgba(16, 185, 129, 0.3);
 }
 
 .btn-approve:disabled {
