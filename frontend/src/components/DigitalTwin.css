@@ -16,6 +16,9 @@
   }
 }
 
-.digital-twin-container canvas {
+.digital-twin-container canvas,
+.digital-twin-wrapper canvas {
+  width: 100% !important;
+  height: 100% !important;
   border-radius: 12px;
 }
