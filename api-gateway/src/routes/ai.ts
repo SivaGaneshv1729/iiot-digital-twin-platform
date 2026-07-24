@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 const router = Router();
-const AI_SERVICE_URL = 'http://localhost:8000';
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
 /**
  * @route POST /api/ai/predict/maintenance
