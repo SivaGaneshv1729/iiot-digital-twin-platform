@@ -3,9 +3,10 @@ import Redis from 'ioredis';
 
 const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
 const REDIS_PORT = parseInt(process.env.REDIS_PORT || '6379');
+const REDIS_URL = process.env.REDIS_URL;
 
-// Create a dedicated Redis client for caching
-const redisCache = new Redis({ host: REDIS_HOST, port: REDIS_PORT });
+// Ensure this matches the main Redis setup in index.ts
+const redisCache = REDIS_URL ? new Redis(REDIS_URL) : new Redis({ host: REDIS_HOST, port: REDIS_PORT });
 
 /**
  * Express middleware to cache API responses in Redis.

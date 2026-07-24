@@ -66,6 +66,7 @@ import Redis from 'ioredis';
 // Redis Configuration
 const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
 const REDIS_PORT = parseInt(process.env.REDIS_PORT || '6379');
+const REDIS_URL = process.env.REDIS_URL;
 
 const TELEMETRY_CHANNEL = 'iot:machine:telemetry';
 
@@ -73,8 +74,8 @@ let redisPublisher: any;
 let redisSubscriber: any;
 
 if (process.env.NODE_ENV !== 'test') {
-    redisPublisher = new Redis({ host: REDIS_HOST, port: REDIS_PORT });
-    redisSubscriber = new Redis({ host: REDIS_HOST, port: REDIS_PORT });
+    redisPublisher = REDIS_URL ? new Redis(REDIS_URL) : new Redis({ host: REDIS_HOST, port: REDIS_PORT });
+    redisSubscriber = REDIS_URL ? new Redis(REDIS_URL) : new Redis({ host: REDIS_HOST, port: REDIS_PORT });
 
     // Subscribe to Redis Channel and forward to WebSockets
     redisSubscriber.subscribe(TELEMETRY_CHANNEL, (err: any, count: any) => {
