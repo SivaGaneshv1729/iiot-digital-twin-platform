@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { MapControls, Grid, Box, Cylinder, Cone, Text, FlyControls, Environment, Html } from '@react-three/drei';
+import { MapControls, Grid, Box, Cylinder, Cone, FlyControls, Environment, Html } from '@react-three/drei';
 import { XR, createXRStore } from '@react-three/xr';
 // import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
@@ -141,7 +141,7 @@ const DimLayerGroup = ({ dimmed, children }: { dimmed: boolean, children: React.
     groupRef.current.traverse((child: any) => {
       if (child.isMesh && child.material) {
         const mats = Array.isArray(child.material) ? child.material : [child.material];
-        mats.forEach(m => {
+        mats.forEach((m: any) => {
           // Store original transparent value if not stored
           if (m.userData.originalTransparent === undefined) {
             m.userData.originalTransparent = m.transparent;
