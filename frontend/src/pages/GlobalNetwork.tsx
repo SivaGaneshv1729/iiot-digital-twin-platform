@@ -81,7 +81,7 @@ export const GlobalNetwork = () => {
     window.addEventListener('resize', handleResize);
 
     // Socket for emergency state
-    const socket = io('http://localhost:4000');
+    const socket = io(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}`);
     socket.on('emergency_stop', () => setIsEmergency(true));
     
     // Auto-rotate the globe slightly

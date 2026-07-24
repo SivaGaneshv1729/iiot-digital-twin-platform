@@ -43,7 +43,7 @@ export const MLOps = () => {
   const fetchMetrics = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:4000/api/ai/metrics', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/ai/metrics`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -72,7 +72,7 @@ export const MLOps = () => {
     setTraining(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:4000/api/ai/train', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/ai/train`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });

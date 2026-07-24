@@ -13,7 +13,7 @@ export const ModelMetrics = () => {
     const fetchMetrics = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:4000/api/ai/metrics', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/ai/metrics`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         

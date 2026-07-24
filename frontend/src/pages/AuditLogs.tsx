@@ -26,7 +26,7 @@ export const AuditLogs = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch('http://localhost:4000/api/audit', {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/audit`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => {

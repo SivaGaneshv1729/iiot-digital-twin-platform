@@ -22,7 +22,7 @@ const MachineCard = ({ machine, userRole, onOpenAnalytics }: { machine: Machine,
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch('http://localhost:4000/api/ai/predict/maintenance', {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/ai/predict/maintenance`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ const MachineCard = ({ machine, userRole, onOpenAnalytics }: { machine: Machine,
   const updateStatus = async (status: string) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:4000/api/machines/${machine.id}/status`, {
+      const res = await fetch(`\${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/machines/${machine.id}/status`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ export const Machines = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     // Initial fetch
-    fetch('http://localhost:4000/api/machines', {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/machines`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -159,7 +159,7 @@ export const Machines = () => {
       .catch(err => console.error(err));
 
     // Connect WebSocket
-    const socket = io('http://localhost:4000');
+    const socket = io(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}`);
     
     socket.on('connect', () => setIsConnected(true));
     socket.on('disconnect', () => setIsConnected(false));
@@ -190,7 +190,7 @@ export const Machines = () => {
   const updateMachineStatus = async (machineId: number, status: string) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:4000/api/machines/${machineId}/status`, {
+      const res = await fetch(`\${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/machines/${machineId}/status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ status })

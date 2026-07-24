@@ -75,7 +75,7 @@ export const Inventory = () => {
     const fetchInventory = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:4000/api/inventory', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/inventory`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -94,7 +94,7 @@ export const Inventory = () => {
     fetchInventory();
 
     // Subscribe to live inventory depletion stream
-    const socket = io('http://localhost:4000');
+    const socket = io(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}`);
     socket.on('inventory_update', (data: InventoryItem[]) => {
       if (Array.isArray(data)) {
         setInventory(data);

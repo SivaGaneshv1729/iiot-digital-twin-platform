@@ -182,21 +182,21 @@ export const Dashboard = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     
-    fetch('http://localhost:4000/api/production/summary', {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/production/summary`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
       .then(data => setSummary(data))
       .catch(err => console.error(err));
 
-    fetch('http://localhost:4000/api/machines', {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/machines`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
       .then(data => setLiveMachines(Array.isArray(data) ? data : []))
       .catch(err => console.error(err));
 
-    const socket = io('http://localhost:4000');
+    const socket = io(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}`);
     socket.on('connect', () => setIsConnected(true));
     socket.on('disconnect', () => setIsConnected(false));
     socket.on('telemetry_update', (machines: any[]) => {
@@ -230,7 +230,7 @@ export const Dashboard = () => {
     
     try {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:4000/api/machines/emergency-stop', {
+      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/machines/emergency-stop`, {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -248,7 +248,7 @@ export const Dashboard = () => {
     
     try {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:4000/api/machines/emergency-revoke', {
+      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/machines/emergency-revoke`, {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -269,7 +269,7 @@ export const Dashboard = () => {
           alert("Already subscribed to Global Push Notifications.");
           return;
       }
-      const response = await fetch('http://localhost:4000/api/push/vapidPublicKey', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/push/vapidPublicKey`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       const vapidPublicKey = await response.text();
@@ -288,7 +288,7 @@ export const Dashboard = () => {
           userVisibleOnly: true,
           applicationServerKey: convertedVapidKey
       });
-      await fetch('http://localhost:4000/api/push/subscribe', {
+      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/push/subscribe`, {
           method: 'POST',
           body: JSON.stringify(subscription),
           headers: {

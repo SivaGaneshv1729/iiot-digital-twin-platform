@@ -110,7 +110,7 @@ export const Security = () => {
   const [isEmergencyMode, setIsEmergencyMode] = useState(false);
 
   useEffect(() => {
-    const socket = io('http://localhost:4000');
+    const socket = io(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}`);
     
     socket.on('emergency_stop', () => {
       setIsEmergencyMode(true);
@@ -124,7 +124,7 @@ export const Security = () => {
     
     try {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:4000/api/machines/emergency-stop', {
+      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/machines/emergency-stop`, {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${token}`,

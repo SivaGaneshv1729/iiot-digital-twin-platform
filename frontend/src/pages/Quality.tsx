@@ -47,10 +47,10 @@ export const Quality = () => {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       const [inspectionsRes, statsRes, typesRes, trendsRes] = await Promise.all([
-        fetch('http://localhost:4000/api/quality', { headers }),
-        fetch('http://localhost:4000/api/quality/stats', { headers }),
-        fetch('http://localhost:4000/api/quality/defect-types', { headers }),
-        fetch('http://localhost:4000/api/quality/trends', { headers })
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/quality`, { headers }),
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/quality/stats`, { headers }),
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/quality/defect-types`, { headers }),
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/quality/trends`, { headers })
       ]);
 
       if (inspectionsRes.ok && statsRes.ok) {
@@ -123,7 +123,7 @@ export const Quality = () => {
   const handleSimulateDefect = async () => {
     try {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:4000/api/quality/inject-defect', {
+      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/quality/inject-defect`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });

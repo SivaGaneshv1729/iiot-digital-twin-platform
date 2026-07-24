@@ -150,7 +150,7 @@ export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalP
       const token = localStorage.getItem('token');
       
       // 1. Fetch History
-      fetch(`http://localhost:4000/api/machines/${machineId}/history`, {
+      fetch(`\${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/machines/${machineId}/history`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
         .then(res => res.json())
@@ -165,7 +165,7 @@ export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalP
           // 2. Fetch AI Forecast (Phase 15)
           try {
             const tempsOnly = formatted.map((d: any) => d.temperature);
-            const forecastRes = await fetch('http://localhost:4000/api/ai/forecast/temperature', {
+            const forecastRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/ai/forecast/temperature`, {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${token}`,
@@ -206,7 +206,7 @@ export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalP
     if (!machineId) return;
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:4000/api/machines/${machineId}/status`, {
+      await fetch(`\${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/machines/${machineId}/status`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

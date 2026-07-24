@@ -20,7 +20,7 @@ export const FactoryAssistant = () => {
   useEffect(() => {
     if (isOpen) {
       const token = localStorage.getItem('token');
-      fetch('http://localhost:4000/api/production/summary', {
+      fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/production/summary`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
         .then(res => res.json())
@@ -39,7 +39,7 @@ export const FactoryAssistant = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:4000/api/ai/chat', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/ai/chat`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
