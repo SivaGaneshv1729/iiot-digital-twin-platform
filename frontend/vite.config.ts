@@ -2,36 +2,35 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+import { cloudflare } from "@cloudflare/vite-plugin";
+
 export default defineConfig({
-  plugins: [
-    react(),
-    VitePWA({
-      strategies: 'injectManifest',
-      srcDir: 'src',
-      filename: 'sw.ts',
-      registerType: 'autoUpdate',
-      includeAssets: ['logo.svg'],
-      manifest: {
-        name: 'SmartFactory AI Command Center',
-        short_name: 'SmartFactory',
-        description: 'Enterprise IIoT Digital Twin and AI Command Center',
-        theme_color: '#0a0a0f',
-        background_color: '#0a0a0f',
-        display: 'standalone',
-        icons: [
-          {
-            src: 'logo.svg',
-            sizes: '192x192 512x512',
-            type: 'image/svg+xml',
-            purpose: 'any maskable'
-          }
-        ]
-      },
-      injectManifest: {
-        maximumFileSizeToCacheInBytes: 15 * 1024 * 1024 // 15 MB
-      }
-    })
-  ],
+  plugins: [react(), VitePWA({
+    strategies: 'injectManifest',
+    srcDir: 'src',
+    filename: 'sw.ts',
+    registerType: 'autoUpdate',
+    includeAssets: ['logo.svg'],
+    manifest: {
+      name: 'SmartFactory AI Command Center',
+      short_name: 'SmartFactory',
+      description: 'Enterprise IIoT Digital Twin and AI Command Center',
+      theme_color: '#0a0a0f',
+      background_color: '#0a0a0f',
+      display: 'standalone',
+      icons: [
+        {
+          src: 'logo.svg',
+          sizes: '192x192 512x512',
+          type: 'image/svg+xml',
+          purpose: 'any maskable'
+        }
+      ]
+    },
+    injectManifest: {
+      maximumFileSizeToCacheInBytes: 15 * 1024 * 1024 // 15 MB
+    }
+  }), cloudflare()],
   build: {
     rollupOptions: {
       output: {
