@@ -283,6 +283,30 @@ const RoboticArm = ({ position, speedOffset = 0, isEmergencyMode }: { position: 
 
 
 // --------------------------------------------------------------------------
+// Root Scaler for AR Mode
+// --------------------------------------------------------------------------
+const targetScaleAR = new THREE.Vector3(0.005, 0.005, 0.005);
+const targetPosAR = new THREE.Vector3(0, -1, -2);
+const targetScaleNormal = new THREE.Vector3(1, 1, 1);
+const targetPosNormal = new THREE.Vector3(0, 0, 0);
+
+const RootScaler = ({ children }: { children: React.ReactNode }) => {
+  const groupRef = useRef<THREE.Group>(null);
+  useFrame((state, delta) => {
+    if (!groupRef.current) return;
+    const isPresenting = state.gl.xr.isPresenting;
+    if (isPresenting) {
+      groupRef.current.scale.lerp(targetScaleAR, delta * 5);
+      groupRef.current.position.lerp(targetPosAR, delta * 5);
+    } else {
+      groupRef.current.scale.lerp(targetScaleNormal, delta * 5);
+      groupRef.current.position.lerp(targetPosNormal, delta * 5);
+    }
+  });
+  return <group ref={groupRef}>{children}</group>;
+};
+
+// --------------------------------------------------------------------------
 // Campus Structures (High-Fidelity Buildings, Roads, Silos)
 // --------------------------------------------------------------------------
 
@@ -290,20 +314,21 @@ const ProximityMaterial = ({ baseColor }: { baseColor: string }) => {
   const materialRef = useRef<THREE.MeshStandardMaterial>(null);
   useFrame((state, delta) => {
     if (!materialRef.current) return;
-    const isZoomed = state.camera.position.y < 120;
+    
+    // Calculate distance to camera from origin, or just use Y height
+    const isZoomed = state.camera.position.y < 120 || state.camera.position.z < 80;
+    
     if (isZoomed) {
-      materialRef.current.transparent = true;
+      if (!materialRef.current.wireframe) materialRef.current.wireframe = true;
       materialRef.current.opacity = THREE.MathUtils.lerp(materialRef.current.opacity, 0.15, delta * 5);
-      materialRef.current.wireframe = true;
     } else {
       materialRef.current.opacity = THREE.MathUtils.lerp(materialRef.current.opacity, 1.0, delta * 5);
-      if (materialRef.current.opacity > 0.95) {
-        materialRef.current.transparent = false;
+      if (materialRef.current.opacity > 0.95 && materialRef.current.wireframe) {
         materialRef.current.wireframe = false;
       }
     }
   });
-  return <meshStandardMaterial ref={materialRef} color={baseColor} roughness={0.8} metalness={0.5} />;
+  return <meshStandardMaterial ref={materialRef} color={baseColor} roughness={0.8} metalness={0.5} transparent={true} opacity={1} />;
 };
 
 const Building = ({ position, args, theme, isGlass = false, label = "", showLabels = false }: any) => {
@@ -2481,26 +2506,6 @@ const ChemicalVat = ({ position, machine, onClick }: any) => {
       {hovered && machine && <MachineHUD machine={machine} hasAnomaly={hasAnomaly} />}
     </group>
   );
-};
-
-// --------------------------------------------------------------------------
-// Root Scaler for AR Mode
-// --------------------------------------------------------------------------
-const RootScaler = ({ children }: { children: React.ReactNode }) => {
-  const groupRef = useRef<THREE.Group>(null);
-  useFrame((state) => {
-    if (!groupRef.current) return;
-    const isPresenting = state.gl.xr.isPresenting;
-    if (isPresenting) {
-      // Scale entire 400x400 factory down to a 2x2 meter tabletop hologram
-      groupRef.current.scale.lerp(new THREE.Vector3(0.005, 0.005, 0.005), 0.1);
-      groupRef.current.position.lerp(new THREE.Vector3(0, -1, -2), 0.1);
-    } else {
-      groupRef.current.scale.lerp(new THREE.Vector3(1, 1, 1), 0.1);
-      groupRef.current.position.lerp(new THREE.Vector3(0, 0, 0), 0.1);
-    }
-  });
-  return <group ref={groupRef}>{children}</group>;
 };
 
 // --------------------------------------------------------------------------
