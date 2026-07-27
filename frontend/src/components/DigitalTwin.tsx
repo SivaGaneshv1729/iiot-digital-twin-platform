@@ -285,6 +285,27 @@ const RoboticArm = ({ position, speedOffset = 0, isEmergencyMode }: { position: 
 // --------------------------------------------------------------------------
 // Campus Structures (High-Fidelity Buildings, Roads, Silos)
 // --------------------------------------------------------------------------
+
+const ProximityMaterial = ({ baseColor }: { baseColor: string }) => {
+  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
+  useFrame((state, delta) => {
+    if (!materialRef.current) return;
+    const isZoomed = state.camera.position.y < 120;
+    if (isZoomed) {
+      materialRef.current.transparent = true;
+      materialRef.current.opacity = THREE.MathUtils.lerp(materialRef.current.opacity, 0.15, delta * 5);
+      materialRef.current.wireframe = true;
+    } else {
+      materialRef.current.opacity = THREE.MathUtils.lerp(materialRef.current.opacity, 1.0, delta * 5);
+      if (materialRef.current.opacity > 0.95) {
+        materialRef.current.transparent = false;
+        materialRef.current.wireframe = false;
+      }
+    }
+  });
+  return <meshStandardMaterial ref={materialRef} color={baseColor} roughness={0.8} metalness={0.5} />;
+};
+
 const Building = ({ position, args, theme, isGlass = false, label = "", showLabels = false }: any) => {
   const [w, h, d] = args;
   return (
@@ -315,7 +336,7 @@ const Building = ({ position, args, theme, isGlass = false, label = "", showLabe
         </group>
       ) : (
         <Box args={args} castShadow receiveShadow>
-          <meshStandardMaterial color={theme === 'light' ? "#f1f5f9" : "#1e293b"} metalness={0.5} roughness={0.8} />
+          <ProximityMaterial baseColor={theme === 'light' ? "#f1f5f9" : "#1e293b"} />
         </Box>
       )}
 
@@ -357,14 +378,32 @@ const FactoryBlock = ({ position, theme, label, args = [120, 60, 100], colorSche
       <Box args={[w + 12, 3, d + 12]} position={[0, 1.5, 0]} castShadow receiveShadow>
         <meshStandardMaterial color="#6b7280" roughness={0.95} />
       </Box>
+
+      {/* === WALLS === */}
+      <group>
+        {/* Long Wall Back */}
+        <Box args={[w, totalH, 2]} position={[0, totalH/2, -d/2]} castShadow receiveShadow>
+          <ProximityMaterial baseColor={concreteColor} />
+        </Box>
+        {/* Long Wall Front */}
+        <Box args={[w, totalH, 2]} position={[0, totalH/2, d/2]} castShadow receiveShadow>
+          <ProximityMaterial baseColor={concreteColor} />
+        </Box>
+        {/* Short Wall Left */}
+        <Box args={[2, totalH, d]} position={[-w/2, totalH/2, 0]} castShadow receiveShadow>
+          <ProximityMaterial baseColor={concreteColor} />
+        </Box>
+        {/* Short Wall Right */}
+        <Box args={[2, totalH, d]} position={[w/2, totalH/2, 0]} castShadow receiveShadow>
+          <ProximityMaterial baseColor={concreteColor} />
+        </Box>
+      </group>
       
       {/* === STACKED FLOORS === */}
       {Array.from({ length: floors }).map((_, fl) => {
         const floorY = fl * floorH + floorH / 2 + 3;
         return (
           <group key={fl}>
-            {/* Main concrete walls (REMOVED to keep machinery visible) */}
-            
             {/* Machinery Inside The Floor */}
             <group position={[0, floorY - floorH/2, 0]}>
                <Box args={[15, 25, 15]} position={[-w/3, 12.5, -d/3]}><meshStandardMaterial color="#334155" metalness={0.8} /></Box>
@@ -2445,6 +2484,26 @@ const ChemicalVat = ({ position, machine, onClick }: any) => {
 };
 
 // --------------------------------------------------------------------------
+// Root Scaler for AR Mode
+// --------------------------------------------------------------------------
+const RootScaler = ({ children }: { children: React.ReactNode }) => {
+  const groupRef = useRef<THREE.Group>(null);
+  useFrame((state) => {
+    if (!groupRef.current) return;
+    const isPresenting = state.gl.xr.isPresenting;
+    if (isPresenting) {
+      // Scale entire 400x400 factory down to a 2x2 meter tabletop hologram
+      groupRef.current.scale.lerp(new THREE.Vector3(0.005, 0.005, 0.005), 0.1);
+      groupRef.current.position.lerp(new THREE.Vector3(0, -1, -2), 0.1);
+    } else {
+      groupRef.current.scale.lerp(new THREE.Vector3(1, 1, 1), 0.1);
+      groupRef.current.position.lerp(new THREE.Vector3(0, 0, 0), 0.1);
+    }
+  });
+  return <group ref={groupRef}>{children}</group>;
+};
+
+// --------------------------------------------------------------------------
 // Main Composition
 // --------------------------------------------------------------------------
 export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergencyMode, aiHeatmapMode }: DigitalTwinProps) => {
@@ -2579,6 +2638,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
             shadow-camera-bottom={-100}
           />
 
+          <RootScaler>
           {viewMode === 'Drone' ? (
              <FlyControls movementSpeed={50} rollSpeed={0.5} dragToLook={true} />
           ) : (
@@ -2768,6 +2828,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
           
           <LogisticsTruck startPosition={[-15, 0, -400]} delay={8} isEmergencyMode={isEmergencyMode} />
           <LogisticsTruck startPosition={[-15, 0, 400]} delay={14} isEmergencyMode={isEmergencyMode} />
+          </RootScaler>
 
         </XR>
       </Canvas>

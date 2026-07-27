@@ -76,6 +76,6 @@ class MockSocket {
   }
 }
 
-export const io = (url?: string) => {
+export const io = (_url?: string) => {
   return new MockSocket();
 };
