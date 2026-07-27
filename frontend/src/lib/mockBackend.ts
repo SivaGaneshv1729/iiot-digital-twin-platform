@@ -77,6 +77,47 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Res
         ip_address: '192.168.1.100'
       }));
     }
+    else if (url.includes('/history')) {
+      responseData = Array.from({ length: 60 }).map((_, i) => ({
+        time: new Date(Date.now() - (60 - i) * 60000).toISOString(),
+        temperature: 40 + Math.random() * 20
+      }));
+    }
+    else if (url.includes('/api/ai/forecast/temperature')) {
+      responseData = { forecast: Array.from({ length: 20 }).map(() => 50 + Math.random() * 30) };
+    }
+    else if (url.includes('/api/ai/predict/maintenance')) {
+      responseData = { failure_probability: Math.floor(Math.random() * 100) };
+    }
+    else if (url.includes('/api/quality/trends')) {
+      responseData = Array.from({ length: 7 }).map((_, i) => ({
+        date: new Date(Date.now() - (6 - i) * 86400000).toLocaleDateString(),
+        defectRate: 1 + Math.random() * 4
+      }));
+    }
+    else if (url.match(/\/api\/quality$/)) {
+      responseData = Array.from({ length: 7 }).map((_, i) => ({
+        date: new Date(Date.now() - (6 - i) * 86400000).toLocaleDateString(),
+        passed: 2000 + Math.floor(Math.random() * 500),
+        failed: 50 + Math.floor(Math.random() * 100),
+        yield: 95 + Math.random() * 4
+      }));
+    }
+    else if (url.includes('/api/ai/chat')) {
+      responseData = { response: "I am SmartFactory AI. The factory is operating at 94% efficiency with no critical anomalies detected." };
+    }
+    else if (url.includes('/api/push/vapidPublicKey')) {
+      responseData = { publicKey: "mock-vapid-public-key" };
+    }
+    else if (
+      url.includes('/status') || 
+      url.includes('emergency') || 
+      url.includes('inject-defect') || 
+      url.includes('/api/ai/train') || 
+      url.includes('/api/push/subscribe')
+    ) {
+      responseData = { success: true };
+    }
 
     return new Response(JSON.stringify(responseData), {
       status: 200,
