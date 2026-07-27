@@ -310,25 +310,36 @@ const RootScaler = ({ children }: { children: React.ReactNode }) => {
 // Campus Structures (High-Fidelity Buildings, Roads, Silos)
 // --------------------------------------------------------------------------
 
-const ProximityMaterial = ({ baseColor }: { baseColor: string }) => {
-  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
-  useFrame((state, delta) => {
-    if (!materialRef.current) return;
+const ProximityWall = ({ args, position, baseColor }: { args: any, position?: any, baseColor: string }) => {
+  const solidRef = useRef<THREE.Mesh>(null);
+  const wireRef = useRef<THREE.Mesh>(null);
+  
+  useFrame((state) => {
+    if (!solidRef.current || !wireRef.current) return;
     
-    // Calculate distance to camera from origin, or just use Y height
-    const isZoomed = state.camera.position.y < 120 || state.camera.position.z < 80;
+    // Check zoom level based on camera height or depth
+    const isZoomed = state.camera.position.y < 150 || state.camera.position.z < 100;
     
-    if (isZoomed) {
-      if (!materialRef.current.wireframe) materialRef.current.wireframe = true;
-      materialRef.current.opacity = THREE.MathUtils.lerp(materialRef.current.opacity, 0.15, delta * 5);
-    } else {
-      materialRef.current.opacity = THREE.MathUtils.lerp(materialRef.current.opacity, 1.0, delta * 5);
-      if (materialRef.current.opacity > 0.95 && materialRef.current.wireframe) {
-        materialRef.current.wireframe = false;
-      }
+    // Toggle visibility without forcing WebGL shader recompilation
+    if (isZoomed && solidRef.current.visible) {
+      solidRef.current.visible = false;
+      wireRef.current.visible = true;
+    } else if (!isZoomed && !solidRef.current.visible) {
+      solidRef.current.visible = true;
+      wireRef.current.visible = false;
     }
   });
-  return <meshStandardMaterial ref={materialRef} color={baseColor} roughness={0.8} metalness={0.5} transparent={true} opacity={1} />;
+
+  return (
+    <group position={position}>
+      <Box args={args} castShadow receiveShadow ref={solidRef}>
+        <meshStandardMaterial color={baseColor} roughness={0.8} metalness={0.5} />
+      </Box>
+      <Box args={args} ref={wireRef} visible={false}>
+        <meshBasicMaterial color={baseColor} wireframe={true} />
+      </Box>
+    </group>
+  );
 };
 
 const Building = ({ position, args, theme, isGlass = false, label = "", showLabels = false }: any) => {
@@ -360,9 +371,7 @@ const Building = ({ position, args, theme, isGlass = false, label = "", showLabe
           </Box>
         </group>
       ) : (
-        <Box args={args} castShadow receiveShadow>
-          <ProximityMaterial baseColor={theme === 'light' ? "#f1f5f9" : "#1e293b"} />
-        </Box>
+        <ProximityWall args={args} baseColor={theme === 'light' ? "#f1f5f9" : "#1e293b"} />
       )}
 
       {/* Roof Parapet */}
@@ -407,21 +416,13 @@ const FactoryBlock = ({ position, theme, label, args = [120, 60, 100], colorSche
       {/* === WALLS === */}
       <group>
         {/* Long Wall Back */}
-        <Box args={[w, totalH, 2]} position={[0, totalH/2, -d/2]} castShadow receiveShadow>
-          <ProximityMaterial baseColor={concreteColor} />
-        </Box>
+        <ProximityWall args={[w, totalH, 2]} position={[0, totalH/2, -d/2]} baseColor={concreteColor} />
         {/* Long Wall Front */}
-        <Box args={[w, totalH, 2]} position={[0, totalH/2, d/2]} castShadow receiveShadow>
-          <ProximityMaterial baseColor={concreteColor} />
-        </Box>
+        <ProximityWall args={[w, totalH, 2]} position={[0, totalH/2, d/2]} baseColor={concreteColor} />
         {/* Short Wall Left */}
-        <Box args={[2, totalH, d]} position={[-w/2, totalH/2, 0]} castShadow receiveShadow>
-          <ProximityMaterial baseColor={concreteColor} />
-        </Box>
+        <ProximityWall args={[2, totalH, d]} position={[-w/2, totalH/2, 0]} baseColor={concreteColor} />
         {/* Short Wall Right */}
-        <Box args={[2, totalH, d]} position={[w/2, totalH/2, 0]} castShadow receiveShadow>
-          <ProximityMaterial baseColor={concreteColor} />
-        </Box>
+        <ProximityWall args={[2, totalH, d]} position={[w/2, totalH/2, 0]} baseColor={concreteColor} />
       </group>
       
       {/* === STACKED FLOORS === */}
