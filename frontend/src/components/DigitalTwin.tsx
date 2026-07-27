@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { MapControls, Grid, Box, Cylinder, Cone, FlyControls, Environment, Html } from '@react-three/drei';
+import { MapControls, Grid, Box, Cylinder, Cone, FlyControls, Environment, Html, BakeShadows } from '@react-three/drei';
 import { XR, createXRStore } from '@react-three/xr';
 // import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
@@ -16,8 +16,8 @@ function makeConcreteTexture(): THREE.CanvasTexture {
   const ctx = canvas.getContext('2d')!;
   ctx.fillStyle = '#8a9099';
   ctx.fillRect(0, 0, size, size);
-  // Noise overlay
-  for (let i = 0; i < 6000; i++) {
+  // Noise overlay reduced for massive performance gain
+  for (let i = 0; i < 500; i++) {
     const x = Math.random() * size, y = Math.random() * size;
     const g = Math.floor(Math.random() * 40 - 20);
     const c = 138 + g;
@@ -2544,24 +2544,18 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
       
       <button 
         onClick={() => store.enterAR()}
-        className="glass-panel" 
         style={{ position: 'absolute', bottom: '24px', right: '24px', zIndex: 50, padding: '12px 24px', border: '2px solid #3b82f6', color: '#3b82f6', background: 'rgba(59, 130, 246, 0.2)', borderRadius: '24px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', backdropFilter: 'blur(10px)', boxShadow: '0 0 15px rgba(59, 130, 246, 0.4)' }}
       >
-        🕶️ Enter AR Mode
+        Enter AR Mode
       </button>
 
       <Canvas
-        dpr={[1, 2]}
+        dpr={[1, 1.5]}
         shadows={{ type: THREE.PCFSoftShadowMap }}
         camera={{ position: [0, 180, 220], fov: 40, near: 0.1, far: 4000 }}
-        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.2, logarithmicDepthBuffer: true }}
+        gl={{ antialias: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.2, logarithmicDepthBuffer: true }}
       >
-        {/* Post-Processing disabled to massively improve framerates on lower-end machines */}
-        {/* <EffectComposer>
-          <Bloom luminanceThreshold={0.2} mipmapBlur intensity={1.5} />
-          <Vignette eskil={false} offset={0.1} darkness={1.1} />
-        </EffectComposer> */}
-
+        <BakeShadows />
         <CameraController viewMode={viewMode} />
 
         <XR store={store}>

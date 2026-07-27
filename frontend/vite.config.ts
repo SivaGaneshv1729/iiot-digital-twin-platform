@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-import { cloudflare } from "@cloudflare/vite-plugin";
+
 
 export default defineConfig({
   plugins: [react(), VitePWA({
@@ -30,7 +30,12 @@ export default defineConfig({
     injectManifest: {
       maximumFileSizeToCacheInBytes: 15 * 1024 * 1024 // 15 MB
     }
-  }), cloudflare()],
+  })],
+  resolve: {
+    alias: {
+      'socket.io-client': '/src/lib/mockSocket.ts'
+    }
+  },
   build: {
     rollupOptions: {
       output: {
