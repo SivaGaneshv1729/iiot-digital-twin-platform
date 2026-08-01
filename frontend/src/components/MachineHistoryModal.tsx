@@ -233,7 +233,7 @@ export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalP
           };
         });
 
-        const lastTemp = mockHistory[mockHistory.length - 1].temperature;
+        const lastTemp = (mockHistory.length > 0 ? mockHistory[mockHistory.length - 1].temperature : undefined) ?? 50;
         const forecastPoints = Array.from({ length: 5 }).map((_, i) => {
           const futureTime = new Date(now + (i + 1) * 60000);
           const delta = (i + 1) * (lastTemp > 75 ? 1.5 : -0.2);
@@ -243,7 +243,9 @@ export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalP
           };
         });
 
-        mockHistory[mockHistory.length - 1].forecast_temperature = lastTemp;
+        if (mockHistory.length > 0) {
+          mockHistory[mockHistory.length - 1].forecast_temperature = lastTemp;
+        }
         setHistory([...mockHistory, ...forecastPoints]);
       })
       .finally(() => setLoading(false));
