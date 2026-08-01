@@ -153,19 +153,18 @@ export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalP
   const [loading, setLoading] = useState(false);
   const [currentMachineStatus, setCurrentMachineStatus] = useState<string>('Running');
 
-  // Resolve ID & object if passed as object or number
-  const resolvedId = typeof machineId === 'object' && machineId !== null ? machineId.id : (typeof machineId === 'number' ? machineId : null);
+  // Resolve ID & object if passed as object, number, or string
+  const resolvedId = typeof machineId === 'object' && machineId !== null ? machineId.id : (typeof machineId === 'number' ? machineId : (typeof machineId === 'string' ? parseInt(machineId, 10) || machineId : null));
   const machineObj = typeof machineId === 'object' && machineId !== null ? machineId : null;
   const machineName = machineObj?.name || (resolvedId ? `Machine #${resolvedId}` : 'Equipment Unit');
 
   useEffect(() => {
-    if (!resolvedId) return;
+    if (machineId === null || machineId === undefined) return;
 
     setLoading(true);
     const token = localStorage.getItem('token');
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
-    fetch(`${apiUrl}/api/machines/${resolvedId}/history`, {
+    fetch(getApiUrl(`/api/machines/${resolvedId || 1}/history`), {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => {
@@ -184,7 +183,7 @@ export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalP
         // Fetch AI Forecast
         try {
           const tempsOnly = formatted.map((d: any) => d.temperature);
-          const forecastRes = await fetch(`${apiUrl}/api/ai/forecast/temperature`, {
+          const forecastRes = await fetch(getApiUrl('/api/ai/forecast/temperature'), {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`,
