@@ -1,0 +1,15 @@
+{
+  "$schema": "frontend/node_modules/wrangler/config-schema.json",
+  "name": "iiot-digital-twin-platform",
+  "compatibility_date": "2026-07-26",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "./frontend/dist",
+    "not_found_handling": "single-page-application"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
