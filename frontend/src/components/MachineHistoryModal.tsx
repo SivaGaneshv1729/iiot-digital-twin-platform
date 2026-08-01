@@ -6,6 +6,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Box, Environment, ContactShadows } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
+import { getApiUrl } from '../lib/api';
 import './MachineHistoryModal.css';
 
 export interface HistoryPoint {
