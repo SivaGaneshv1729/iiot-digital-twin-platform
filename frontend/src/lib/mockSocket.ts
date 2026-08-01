@@ -47,15 +47,15 @@ class MockSocket {
   }
 
   private startTelemetry() {
-    // Generate 150 machines once
-    const machines = Array.from({ length: 150 }).map((_, i) => ({
+    // Generate 16 active factory machines
+    const machines = Array.from({ length: 16 }).map((_, i) => ({
       id: i + 1,
-      name: `CNC-${(i + 1).toString().padStart(3, '0')}`,
-      status: Math.random() > 0.05 ? 'Running' : (Math.random() > 0.5 ? 'Maintenance' : 'Error'),
-      temperature: 45 + Math.random() * 40,
-      vibration: 0.1 + Math.random() * 0.5,
-      running_hours: 1000 + Math.random() * 5000,
-      power_draw: 12 + Math.random() * 8
+      name: i < 6 ? `CNC Milling ${(i + 1).toString().padStart(2, '0')}` : i < 11 ? `Stamping Press ${(i - 5).toString().padStart(2, '0')}` : `Lathe Machine ${(i - 10).toString().padStart(2, '0')}`,
+      status: i === 3 ? 'Maintenance' : i === 7 ? 'Warning' : 'Running',
+      temperature: Math.round(45 + (i * 2.5) % 35),
+      vibration: Number((0.15 + (i * 0.05) % 0.6).toFixed(2)),
+      running_hours: 1200 + i * 340,
+      power_draw: Number((12 + (i * 0.8) % 10).toFixed(1))
     }));
 
     const interval = window.setInterval(() => {

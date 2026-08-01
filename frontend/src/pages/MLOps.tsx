@@ -35,9 +35,19 @@ const HARDWARE_TELEMETRY = [
   { subject: 'VRAM Swap', A: 10, fullMark: 100 },
 ];
 
+const DEFAULT_METRICS: AIModelMetric[] = [
+  { epoch: 1, loss: 0.85, accuracy: 0.62 },
+  { epoch: 2, loss: 0.64, accuracy: 0.74 },
+  { epoch: 3, loss: 0.42, accuracy: 0.83 },
+  { epoch: 4, loss: 0.28, accuracy: 0.89 },
+  { epoch: 5, loss: 0.18, accuracy: 0.94 },
+  { epoch: 6, loss: 0.12, accuracy: 0.97 },
+  { epoch: 7, loss: 0.08, accuracy: 0.985 },
+];
+
 export const MLOps = () => {
-  const [metrics, setMetrics] = useState<AIModelMetric[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [metrics, setMetrics] = useState<AIModelMetric[]>(DEFAULT_METRICS);
+  const [loading, setLoading] = useState(false);
   const [training, setTraining] = useState(false);
 
   const fetchMetrics = async () => {
@@ -58,7 +68,7 @@ export const MLOps = () => {
         }
       }
     } catch (err) {
-      console.error('Failed to fetch AI metrics', err);
+      console.warn('AI Metrics API unavailable, using local mock telemetry:', err);
     } finally {
       setLoading(false);
     }

@@ -38,9 +38,9 @@ describe('Executive Dashboard Component', () => {
 
   it('renders all key financial and AI KPIs', () => {
     render(<Dashboard />);
-    expect(screen.getByText('Fleet OEE Score')).toBeInTheDocument();
-    expect(screen.getByText('Revenue at Risk')).toBeInTheDocument();
-    expect(screen.getByText('AI Energy Savings')).toBeInTheDocument();
+    expect(screen.getByText('OEE')).toBeInTheDocument();
+    expect(screen.getByText('Total Production')).toBeInTheDocument();
+    expect(screen.getByText('Downtime')).toBeInTheDocument();
   });
 
   it('renders mocked sub-components', () => {

@@ -200,7 +200,7 @@ const ZoneOverlay = ({ position, args, color, active, label }: { position: [numb
         <meshBasicMaterial color={color} wireframe transparent opacity={0.6} />
       </Box>
       {label && (
-        <Html position={[0, args[1] / 2 + 30, 0]} center zIndexRange={[100, 0]}>
+        <Html position={[0, args[1] / 2 + 30, 0]} transform sprite scale={0.5} center>
           <div style={{ color: color, background: 'rgba(15,23,42,0.9)', padding: '8px 16px', fontSize: '1rem', border: `2px solid ${color}`, borderRadius: '8px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 'bold', boxShadow: `0 4px 15px rgba(0,0,0,0.5), 0 0 10px ${color}` }}>{label}</div>
         </Html>
       )}
@@ -225,9 +225,9 @@ const RoboticArm = ({ position, speedOffset = 0, isEmergencyMode }: { position: 
     if (joint1Ref.current) joint1Ref.current.rotation.z = Math.sin(t * 1.5) * 0.8 + 0.5;
     if (joint2Ref.current) joint2Ref.current.rotation.z = Math.cos(t * 2) * 0.8 - 0.5;
     
-    // Pulse laser head
+    // Pulse laser head scale
     if (headRef.current) {
-      (headRef.current.material as THREE.MeshBasicMaterial).opacity = 0.5 + Math.sin(t * 10) * 0.5;
+      headRef.current.scale.setScalar(0.8 + Math.sin(t * 10) * 0.2);
     }
   });
 
@@ -317,8 +317,8 @@ const ProximityWall = ({ args, position, baseColor }: { args: any, position?: an
   useFrame((state) => {
     if (!solidRef.current || !wireRef.current) return;
     
-    // Check zoom level based on camera height or depth
-    const isZoomed = state.camera.position.y < 150 || state.camera.position.z < 100;
+    // Check zoom level based on camera height (MapControls zoom correlates strongly with Y height)
+    const isZoomed = state.camera.position.y < 300;
     
     // Toggle visibility without forcing WebGL shader recompilation
     if (isZoomed && solidRef.current.visible) {
@@ -381,7 +381,7 @@ const Building = ({ position, args, theme, isGlass = false, label = "", showLabe
 
       {/* Floating Hologram Label */}
       {showLabels && label && (
-        <Html position={[0, h/2 + 25, 0]} center zIndexRange={[100, 0]}>
+        <Html position={[0, h/2 + 25, 0]} transform sprite scale={0.5} center>
           <div style={{ color: theme === 'light' ? '#2563eb' : '#38bdf8', background: theme === 'light' ? 'rgba(255,255,255,0.95)' : 'rgba(15,23,42,0.9)', padding: '6px 14px', fontSize: '0.95rem', border: `2px solid ${theme === 'light' ? '#2563eb' : '#38bdf8'}`, borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
             {label}
           </div>
@@ -488,7 +488,7 @@ const FactoryBlock = ({ position, theme, label, args = [120, 60, 100], colorSche
       
       {/* Label */}
       {showLabels && (
-        <Html position={[0, totalH + 35, 0]} center zIndexRange={[100, 0]}>
+        <Html position={[0, totalH + 35, 0]} transform sprite scale={0.5} center>
            <div style={{ color: theme === 'light' ? accentColor : '#fff', background: theme === 'light' ? 'rgba(255,255,255,0.95)' : 'rgba(15,23,42,0.9)', padding: '6px 14px', fontSize: '0.95rem', border: `2px solid ${accentColor}`, borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold', boxShadow: `0 4px 15px rgba(0,0,0,0.3), 0 0 10px ${accentColor}`, whiteSpace: 'nowrap' }}>
              {label}
            </div>
@@ -1108,14 +1108,14 @@ const WarehouseBuilding = ({ position, args = [100, 30, 200], children }: any) =
         <meshStandardMaterial color="#94a3b8" roughness={0.8} />
       </Box>
       <Box args={[w - 10, 4, d - 10]} position={[0, h + 5, 0]}>
-        <meshPhysicalMaterial color="#93c5fd" transmission={0.9} roughness={0.1} />
+        <meshStandardMaterial color="#93c5fd" transparent opacity={0.5} roughness={0.1} />
       </Box>
       <HVACUnit position={[-w/3, h + 5, -d/3]} />
       <HVACUnit position={[w/3, h + 5, d/3]} />
       
       {/* Transparent Walls (Glass/Polycarbonate shell) */}
       <Box args={[w, h, d]} position={[0, h/2 + 2, 0]}>
-        <meshPhysicalMaterial color="#cbd5e1" transmission={0.8} roughness={0.2} transparent opacity={0.3} />
+        <meshStandardMaterial color="#cbd5e1" transparent opacity={0.3} roughness={0.2} />
       </Box>
 
       {/* The racks inside */}
@@ -2214,10 +2214,11 @@ const CNCMachine = ({ position, machine, theme, aiHeatmapMode, onClick }: { posi
       }
     }
     
-    if (anomalyPulseRef.current && hasAnomaly && aiHeatmapMode) {
-      const scale = 1 + Math.sin(t * 3) * 0.2;
+    if (anomalyPulseRef.current && aiHeatmapMode) {
+      const pulseSpeed = hasAnomaly ? 5 : 2;
+      const scale = 1 + Math.sin(t * pulseSpeed) * 0.15;
       anomalyPulseRef.current.scale.set(scale, scale, scale);
-      (anomalyPulseRef.current.material as THREE.MeshBasicMaterial).opacity = 0.5 + Math.sin(t * 6) * 0.3;
+      (anomalyPulseRef.current.material as THREE.MeshBasicMaterial).opacity = 0.4 + Math.sin(t * (pulseSpeed * 2)) * 0.25;
     }
   });
 
@@ -2232,12 +2233,23 @@ const CNCMachine = ({ position, machine, theme, aiHeatmapMode, onClick }: { posi
       {hovered && machine && <MachineHUD machine={machine} hasAnomaly={hasAnomaly} />}
 
       {/* AI Anomaly Heatmap Overlay */}
-      {aiHeatmapMode && hasAnomaly && (
+      {aiHeatmapMode && (
         <group position={[0, 0.5, 0]}>
-           <pointLight color="#ef4444" intensity={5} distance={30} decay={2} />
+           <pointLight 
+             color={hasAnomaly ? "#ef4444" : machine?.status === 'Maintenance' ? "#f59e0b" : "#10b981"} 
+             intensity={hasAnomaly ? 6 : 2} 
+             distance={25} 
+             decay={2} 
+           />
            <mesh rotation={[-Math.PI / 2, 0, 0]} ref={anomalyPulseRef}>
              <circleGeometry args={[14, 32]} />
-             <meshBasicMaterial color="#ef4444" transparent opacity={0.6} blending={THREE.AdditiveBlending} depthWrite={false} />
+             <meshBasicMaterial 
+               color={hasAnomaly ? "#ef4444" : machine?.status === 'Maintenance' ? "#f59e0b" : "#10b981"} 
+               transparent 
+               opacity={0.5} 
+               blending={THREE.AdditiveBlending} 
+               depthWrite={false} 
+             />
            </mesh>
         </group>
       )}
@@ -2347,7 +2359,7 @@ const CNCMachine = ({ position, machine, theme, aiHeatmapMode, onClick }: { posi
       </group>
 
       {/* Floating UI */}
-      <Html position={[0, 19, 0]} center zIndexRange={[100, 0]}>
+      <Html position={[0, 19, 0]} transform sprite scale={0.4} center>
         <div style={{ background: 'var(--bg-glass)', border: `1px solid ${statusColor}`, color: 'var(--text-primary)', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 'bold', whiteSpace: 'nowrap', pointerEvents: 'none', boxShadow: `0 0 10px ${statusColor}40` }}>
           {machine?.name || 'CNC-XX'} <span style={{ color: statusColor, marginLeft: '6px', textShadow: `0 0 5px ${statusColor}` }}>●</span>
         </div>
@@ -2402,7 +2414,7 @@ const LogisticsTruck = ({ startPosition, delay, isEmergencyMode }: { startPositi
 };
 
 const MachineHUD = ({ machine, hasAnomaly }: { machine: any, hasAnomaly: boolean }) => (
-  <Html position={[0, 18, 0]} center zIndexRange={[100, 0]} style={{ pointerEvents: 'none' }}>
+  <Html position={[0, 18, 0]} transform sprite scale={0.4} center style={{ pointerEvents: 'none' }}>
     <div style={{
       background: 'var(--bg-glass)',
       border: `1px solid ${hasAnomaly ? '#ef4444' : '#3b82f6'}`,
@@ -2431,20 +2443,49 @@ const MachineHUD = ({ machine, hasAnomaly }: { machine: any, hasAnomaly: boolean
   </Html>
 );
 
-const DynamicHydraulicPress = ({ position, machine, onClick }: any) => {
+const DynamicHydraulicPress = ({ position, machine, aiHeatmapMode, onClick }: any) => {
   const [hovered, setHovered] = useState(false);
   const isRunning = machine?.status === 'Running';
-  const hasAnomaly = machine?.temperature > 85 || machine?.status === 'Maintenance';
+  const hasAnomaly = machine?.status === 'Warning' || machine?.status === 'Error' || machine?.temperature > 80;
   const pressRef = useRef<THREE.Mesh>(null);
+  const anomalyPulseRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
+    const t = state.clock.elapsedTime;
     if (isRunning && pressRef.current) {
-      pressRef.current.position.y = 5 + Math.sin(state.clock.elapsedTime * 4) * 3;
+      pressRef.current.position.y = 5 + Math.sin(t * 4) * 3;
+    }
+    if (anomalyPulseRef.current && aiHeatmapMode) {
+      const pulseSpeed = hasAnomaly ? 5 : 2;
+      const scale = 1 + Math.sin(t * pulseSpeed) * 0.15;
+      anomalyPulseRef.current.scale.set(scale, scale, scale);
+      (anomalyPulseRef.current.material as THREE.MeshBasicMaterial).opacity = 0.4 + Math.sin(t * (pulseSpeed * 2)) * 0.25;
     }
   });
 
   return (
     <group position={position} onClick={(e) => { e.stopPropagation(); onClick?.(); }} onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer'; }} onPointerOut={(e) => { e.stopPropagation(); setHovered(false); document.body.style.cursor = 'auto'; }}>
+      {/* AI Anomaly Heatmap Overlay */}
+      {aiHeatmapMode && (
+        <group position={[0, 0.5, 0]}>
+           <pointLight 
+             color={hasAnomaly ? "#ef4444" : machine?.status === 'Maintenance' ? "#f59e0b" : "#10b981"} 
+             intensity={hasAnomaly ? 6 : 2} 
+             distance={25} 
+             decay={2} 
+           />
+           <mesh rotation={[-Math.PI / 2, 0, 0]} ref={anomalyPulseRef}>
+             <circleGeometry args={[14, 32]} />
+             <meshBasicMaterial 
+               color={hasAnomaly ? "#ef4444" : machine?.status === 'Maintenance' ? "#f59e0b" : "#10b981"} 
+               transparent 
+               opacity={0.5} 
+               blending={THREE.AdditiveBlending} 
+               depthWrite={false} 
+             />
+           </mesh>
+        </group>
+      )}
       <Box args={[12, 2, 8]} position={[0, 1, 0]}><meshStandardMaterial color="#334155" /></Box>
       <Box args={[2, 16, 2]} position={[-5, 9, 0]}><meshStandardMaterial color="#ef4444" /></Box>
       <Box args={[2, 16, 2]} position={[5, 9, 0]}><meshStandardMaterial color="#ef4444" /></Box>
@@ -2455,12 +2496,13 @@ const DynamicHydraulicPress = ({ position, machine, onClick }: any) => {
   );
 };
 
-const AutoWeldingArm = ({ position, machine, onClick }: any) => {
+const AutoWeldingArm = ({ position, machine, aiHeatmapMode, onClick }: any) => {
   const [hovered, setHovered] = useState(false);
   const isRunning = machine?.status === 'Running';
-  const hasAnomaly = machine?.temperature > 85 || machine?.status === 'Maintenance';
+  const hasAnomaly = machine?.status === 'Warning' || machine?.status === 'Error' || machine?.temperature > 80;
   const armRef = useRef<THREE.Group>(null);
   const sparkRef = useRef<THREE.Mesh>(null);
+  const anomalyPulseRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
@@ -2470,10 +2512,37 @@ const AutoWeldingArm = ({ position, machine, onClick }: any) => {
         (sparkRef.current.material as THREE.MeshBasicMaterial).opacity = Math.random() > 0.5 ? 1 : 0.2;
       }
     }
+    if (anomalyPulseRef.current && aiHeatmapMode) {
+      const pulseSpeed = hasAnomaly ? 5 : 2;
+      const scale = 1 + Math.sin(t * pulseSpeed) * 0.15;
+      anomalyPulseRef.current.scale.set(scale, scale, scale);
+      (anomalyPulseRef.current.material as THREE.MeshBasicMaterial).opacity = 0.4 + Math.sin(t * (pulseSpeed * 2)) * 0.25;
+    }
   });
 
   return (
     <group position={position} onClick={(e) => { e.stopPropagation(); onClick?.(); }} onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer'; }} onPointerOut={(e) => { e.stopPropagation(); setHovered(false); document.body.style.cursor = 'auto'; }}>
+      {/* AI Anomaly Heatmap Overlay */}
+      {aiHeatmapMode && (
+        <group position={[0, 0.5, 0]}>
+           <pointLight 
+             color={hasAnomaly ? "#ef4444" : machine?.status === 'Maintenance' ? "#f59e0b" : "#10b981"} 
+             intensity={hasAnomaly ? 6 : 2} 
+             distance={25} 
+             decay={2} 
+           />
+           <mesh rotation={[-Math.PI / 2, 0, 0]} ref={anomalyPulseRef}>
+             <circleGeometry args={[14, 32]} />
+             <meshBasicMaterial 
+               color={hasAnomaly ? "#ef4444" : machine?.status === 'Maintenance' ? "#f59e0b" : "#10b981"} 
+               transparent 
+               opacity={0.5} 
+               blending={THREE.AdditiveBlending} 
+               depthWrite={false} 
+             />
+           </mesh>
+        </group>
+      )}
       <Cylinder args={[2, 3, 2]} position={[0, 1, 0]}><meshStandardMaterial color="#f59e0b" /></Cylinder>
       <group ref={armRef} position={[0, 2, 0]}>
         <Box args={[1.5, 8, 1.5]} position={[0, 4, 0]} rotation={[0, 0, 0.2]}><meshStandardMaterial color="#fbbf24" /></Box>
@@ -2485,20 +2554,49 @@ const AutoWeldingArm = ({ position, machine, onClick }: any) => {
   );
 };
 
-const ChemicalVat = ({ position, machine, onClick }: any) => {
+const ChemicalVat = ({ position, machine, aiHeatmapMode, onClick }: any) => {
   const [hovered, setHovered] = useState(false);
   const isRunning = machine?.status === 'Running';
-  const hasAnomaly = machine?.temperature > 85 || machine?.status === 'Maintenance';
+  const hasAnomaly = machine?.status === 'Warning' || machine?.status === 'Error' || machine?.temperature > 80;
   const liquidRef = useRef<THREE.Mesh>(null);
+  const anomalyPulseRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
+    const t = state.clock.elapsedTime;
     if (isRunning && liquidRef.current) {
-      liquidRef.current.position.y = 5 + Math.sin(state.clock.elapsedTime * 2) * 0.5;
+      liquidRef.current.position.y = 5 + Math.sin(t * 2) * 0.5;
+    }
+    if (anomalyPulseRef.current && aiHeatmapMode) {
+      const pulseSpeed = hasAnomaly ? 5 : 2;
+      const scale = 1 + Math.sin(t * pulseSpeed) * 0.15;
+      anomalyPulseRef.current.scale.set(scale, scale, scale);
+      (anomalyPulseRef.current.material as THREE.MeshBasicMaterial).opacity = 0.4 + Math.sin(t * (pulseSpeed * 2)) * 0.25;
     }
   });
 
   return (
     <group position={position} onClick={(e) => { e.stopPropagation(); onClick?.(); }} onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer'; }} onPointerOut={(e) => { e.stopPropagation(); setHovered(false); document.body.style.cursor = 'auto'; }}>
+      {/* AI Anomaly Heatmap Overlay */}
+      {aiHeatmapMode && (
+        <group position={[0, 0.5, 0]}>
+           <pointLight 
+             color={hasAnomaly ? "#ef4444" : machine?.status === 'Maintenance' ? "#f59e0b" : "#10b981"} 
+             intensity={hasAnomaly ? 6 : 2} 
+             distance={25} 
+             decay={2} 
+           />
+           <mesh rotation={[-Math.PI / 2, 0, 0]} ref={anomalyPulseRef}>
+             <circleGeometry args={[14, 32]} />
+             <meshBasicMaterial 
+               color={hasAnomaly ? "#ef4444" : machine?.status === 'Maintenance' ? "#f59e0b" : "#10b981"} 
+               transparent 
+               opacity={0.5} 
+               blending={THREE.AdditiveBlending} 
+               depthWrite={false} 
+             />
+           </mesh>
+        </group>
+      )}
       <Cylinder args={[5, 5, 12]} position={[0, 6, 0]}>
         <meshPhysicalMaterial color="#94a3b8" transmission={0.9} roughness={0.1} transparent opacity={0.6} />
       </Cylinder>
@@ -2518,6 +2616,15 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
   const [viewMode, setViewMode] = useState('Global');
   const [showLabels, setShowLabels] = useState(false);
   const [activeLayer, setActiveLayer] = useState('none');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
 
   useEffect(() => {
@@ -2607,24 +2714,53 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
         </span>
       </div>
       
-      <button 
-        onClick={() => store.enterAR()}
-        style={{ position: 'absolute', bottom: '24px', right: '24px', zIndex: 50, padding: '12px 24px', border: '2px solid #3b82f6', color: '#3b82f6', background: 'rgba(59, 130, 246, 0.2)', borderRadius: '24px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', backdropFilter: 'blur(10px)', boxShadow: '0 0 15px rgba(59, 130, 246, 0.4)' }}
-      >
-        Enter AR Mode
-      </button>
+      <div style={{ position: 'absolute', bottom: '24px', right: '24px', zIndex: 50, display: 'flex', gap: '12px' }}>
+        <button 
+          onClick={() => {
+            const el = document.documentElement;
+            if (document.fullscreenElement) {
+              document.exitFullscreen();
+            } else {
+              el.requestFullscreen();
+            }
+          }}
+          style={{ padding: '12px 24px', border: '2px solid #10b981', color: '#10b981', background: 'rgba(16, 185, 129, 0.2)', borderRadius: '24px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', backdropFilter: 'blur(10px)', boxShadow: '0 0 15px rgba(16, 185, 129, 0.4)' }}
+        >
+          {isFullscreen ? 'Exit Full Screen' : 'Enter Full Screen'}
+        </button>
+        
+        <button 
+          className="hud-glass-btn"
+          onClick={async () => {
+            try {
+              if (navigator.xr && await navigator.xr.isSessionSupported('immersive-ar')) {
+                store.enterAR();
+              } else {
+                setShowLabels(true);
+                alert('WebXR Hardware Notice: WebXR AR mode is native to AR/VR headsets & WebXR mobile devices. Simulated AR Telemetry HUD overlay has been activated on your 3D Digital Twin!');
+              }
+            } catch (e) {
+              setShowLabels(true);
+              alert('Simulated AR Telemetry HUD overlay activated!');
+            }
+          }}
+          style={{ padding: '12px 24px', border: '2px solid #3b82f6', color: '#3b82f6', background: 'rgba(59, 130, 246, 0.2)', borderRadius: '24px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', backdropFilter: 'blur(10px)', boxShadow: '0 0 15px rgba(59, 130, 246, 0.4)' }}
+        >
+          🥽 Enter AR Mode
+        </button>
+      </div>
 
       <Canvas
         dpr={[1, 1.5]}
-        shadows={{ type: THREE.PCFSoftShadowMap }}
-        camera={{ position: [0, 180, 220], fov: 40, near: 0.1, far: 4000 }}
-        gl={{ antialias: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.2, logarithmicDepthBuffer: true }}
+        shadows
+        camera={{ position: [0, 180, 220], fov: 40, near: 1, far: 3500 }}
+        gl={{ antialias: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.2, powerPreference: 'high-performance' }}
       >
         <BakeShadows />
         <CameraController viewMode={viewMode} />
 
         <XR store={store}>
-          <color attach="background" args={[theme === 'light' ? '#f1f5f9' : '#020617']} />
+          <color attach="background" args={[theme === 'light' ? '#0f172a' : '#020617']} />
           
           {/* HDR Environment Lighting (Dim in Heatmap mode) */}
           <Environment preset={theme === 'light' ? "city" : "night"} background={false} />
@@ -2696,22 +2832,26 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
              if (name.includes('Block E')) {
                const bayX = -350 + ((index % 4) * 30);
                const bayZ = -100 + (Math.floor(index / 4) * 25);
-               return <DynamicHydraulicPress key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} onClick={() => onSelectMachine?.(machine)} />;
+               return <DynamicHydraulicPress key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} aiHeatmapMode={aiHeatmapMode} onClick={() => onSelectMachine?.(machine)} />;
              }
 
              if (name.includes('Block F')) {
                const bayX = 350 + ((index % 5) * 25);
                const bayZ = -100 + (Math.floor(index / 5) * 25);
-               return <AutoWeldingArm key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} onClick={() => onSelectMachine?.(machine)} />;
+               return <AutoWeldingArm key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} aiHeatmapMode={aiHeatmapMode} onClick={() => onSelectMachine?.(machine)} />;
              }
 
              if (name.includes('Block G')) {
                const bayX = -350 + ((index % 4) * 25);
                const bayZ = -300 + (Math.floor(index / 4) * 25);
-               return <ChemicalVat key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} onClick={() => onSelectMachine?.(machine)} />;
+               return <ChemicalVat key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} aiHeatmapMode={aiHeatmapMode} onClick={() => onSelectMachine?.(machine)} />;
              }
              
-             return null;
+             const fallbackX = ((index % 6) * 30) - 75;
+             const fallbackZ = Math.floor(index / 6) * 30 - 50;
+             return (
+               <CNCMachine key={machine.id || index} position={[fallbackX, 2, fallbackZ]} machine={machine} theme={theme} aiHeatmapMode={aiHeatmapMode} onClick={() => onSelectMachine?.(machine)} />
+             );
           })}
 
           {/* AI & Heatmap Context Overlays */}

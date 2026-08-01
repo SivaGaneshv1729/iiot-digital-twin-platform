@@ -32,6 +32,7 @@ export default defineConfig({
     }
   })],
   resolve: {
+    dedupe: ['three', 'react', 'react-dom'],
     alias: {
       'socket.io-client': '/src/lib/mockSocket.ts'
     }

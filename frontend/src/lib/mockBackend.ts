@@ -25,15 +25,18 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Res
       };
     }
     else if (url.includes('/api/machines') && !url.includes('/status') && !url.includes('/history')) {
-      responseData = Array.from({ length: 150 }).map((_, i) => ({
+      responseData = Array.from({ length: 16 }).map((_, i) => ({
         id: i + 1,
-        name: `CNC-${(i + 1).toString().padStart(3, '0')}`,
-        status: Math.random() > 0.05 ? 'Running' : 'Maintenance',
-        temperature: 45 + Math.random() * 40,
-        vibration: 0.1 + Math.random() * 0.5,
-        running_hours: 1000 + Math.random() * 5000,
-        power_draw: 12 + Math.random() * 8
+        name: i < 6 ? `CNC Milling ${(i + 1).toString().padStart(2, '0')}` : i < 11 ? `Stamping Press ${(i - 5).toString().padStart(2, '0')}` : `Lathe Machine ${(i - 10).toString().padStart(2, '0')}`,
+        status: i === 3 ? 'Maintenance' : i === 7 ? 'Warning' : 'Running',
+        temperature: Math.round(45 + (i * 2.5) % 35),
+        vibration: Number((0.15 + (i * 0.05) % 0.6).toFixed(2)),
+        running_hours: 1200 + i * 340,
+        power_draw: Number((12 + (i * 0.8) % 10).toFixed(1))
       }));
+    }
+    else if (url.includes('/api/ai/predict/maintenance')) {
+      responseData = { failure_probability: 14 };
     }
     else if (url.includes('/api/inventory')) {
       responseData = Array.from({ length: 20 }).map((_, i) => ({
@@ -68,13 +71,20 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Res
       };
     }
     else if (url.includes('/api/audit')) {
+      const actions = [
+        'SYSTEM_INITIALIZATION: Digital twin platform boot & telemetry sync',
+        'PREDICTIVE_MAINTENANCE: CNC Milling 01 vibration threshold adjusted',
+        'AR_INSPECTION_MODE: Activated visual telemetry overlay',
+        'QUALITY_AUDIT: Automated CV inspection passed batch #8942',
+        'MODEL_RETRAIN: XGBoost RUL prediction pipeline triggered',
+        'FIRMWARE_UPDATE: Gateway IoT sensor node updated to v2.4.1'
+      ];
       responseData = Array.from({ length: 15 }).map((_, i) => ({
         id: i + 1,
-        timestamp: new Date(Date.now() - i * 3600000).toISOString(),
-        user_name: 'Admin',
-        action: 'Settings Update',
-        details: 'Updated production target configuration',
-        ip_address: '192.168.1.100'
+        time: new Date(Date.now() - i * 3600000 * 2).toISOString(),
+        username: i % 2 === 0 ? 'tanaka_eng' : 'sato_op',
+        role: i % 3 === 0 ? 'Admin' : 'Operator',
+        action: actions[i % actions.length]
       }));
     }
     else if (url.includes('/history')) {
