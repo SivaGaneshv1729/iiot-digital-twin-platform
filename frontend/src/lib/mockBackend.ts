@@ -114,7 +114,30 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Res
       }));
     }
     else if (url.includes('/api/ai/chat')) {
-      responseData = { response: "I am SmartFactory AI. The factory is operating at 94% efficiency with no critical anomalies detected." };
+      let userQuery = '';
+      try {
+        if (init?.body) {
+          const parsed = JSON.parse(init.body.toString());
+          userQuery = (parsed.question || parsed.prompt || '').toLowerCase();
+        }
+      } catch {}
+
+      let aiResponse = "";
+      if (userQuery.includes('risk') || userQuery.includes('fail') || userQuery.includes('anomaly') || userQuery.includes('bad')) {
+        aiResponse = "⚠️ **High-Risk Machinery Telemetry Alert:**\n\n• **Stamping Press 04 (Block B)**: Temperature **89.4°C** (Normal < 70°C). Vibration amplitude **0.84 mm/s** (Threshold 0.50). Estimated Remaining Useful Life (RUL): **48 Hours**.\n• **CNC Milling 02 (Block A)**: Minor bearing spall detected. Vibration **0.52 mm/s**.\n\n**Recommendation**: Schedule preventive lubrication & bearing replacement during the 18:00 shift change.";
+      } else if (userQuery.includes('temp') || userQuery.includes('heat') || userQuery.includes('thermal') || userQuery.includes('hot')) {
+        aiResponse = "🌡️ **Thermal Telemetry Scan Results:**\n\n• **Max Temperature**: 89.4°C on *Stamping Press 04* (Block B)\n• **Plant Average Temp**: 48.2°C across 16 active units\n• **Cooling Loops**: Chiller Line #2 operating at 98% load.\n\n*AI Thermal Heatmap visual mode is recommended to highlight thermal gradient boundaries in 3D.*";
+      } else if (userQuery.includes('oee') || userQuery.includes('output') || userQuery.includes('production') || userQuery.includes('efficiency')) {
+        aiResponse = "📊 **Live Production & OEE Summary:**\n\n• **Overall Plant Efficiency (OEE)**: **94.2%** (+1.2% vs yesterday target)\n• **Shift Units Completed**: **18,634** / 20,000 Target (93.17% quota fulfilled)\n• **Active Operational Machines**: **135 / 140** Units\n• **Target Completion ETA**: **16:45 PM** today.";
+      } else if (userQuery.includes('quality') || userQuery.includes('defect') || userQuery.includes('fpy') || userQuery.includes('yield')) {
+        aiResponse = "🛡️ **Quality Assurance & CV Inspection Telemetry:**\n\n• **First Pass Yield (FPY)**: **96.59%**\n• **Live CCTV Vision (YOLO-v8x)**: Scanning Assembly Floor (Cam L-102)\n• **Top Defect Category**: Micro-fractures on hydraulic cylinder sleeves (8 instances today).\n• **Automated E-Stop**: Armed and linked to real-time CV vision failure trigger.";
+      } else if (userQuery.includes('part') || userQuery.includes('inventory') || userQuery.includes('stock') || userQuery.includes('spare')) {
+        aiResponse = "📦 **Inventory & Spares Telemetry:**\n\n• **Low Stock Alert**: Hydraulic Seal Kits (`PRT-1002`) down to **12 units** in Zone C (Minimum threshold 50).\n• **Automated Order**: Reorder ticket #8941 dispatched to supplier.\n• **Stock Health**: 19 / 20 SKUs within safe operating stock limits.";
+      } else {
+        aiResponse = `🤖 **SmartFactory AI Operations Intelligence:**\n\nAnalyzed query: "${userQuery || 'General Status'}"\n\n• **Factory Health**: 78% Overall Plant Health (128 Healthy, 18 At Risk, 6 Maintenance)\n• **Active Telemetry**: 16 IoT Node Clusters streaming @ 100ms intervals\n• **Status**: All critical safety interlocks and 3D digital twin overlays active. Ask me about **machines**, **risk**, **OEE**, **temperature**, or **quality**!`;
+      }
+
+      responseData = { response: aiResponse, answer: aiResponse };
     }
     else if (url.includes('/api/push/vapidPublicKey')) {
       responseData = { publicKey: "mock-vapid-public-key" };

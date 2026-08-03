@@ -155,7 +155,7 @@ export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalP
   const [currentMachineStatus, setCurrentMachineStatus] = useState<string>('Running');
 
   // Resolve ID & object if passed as object, number, or string
-  const resolvedId = typeof machineId === 'object' && machineId !== null ? machineId.id : (typeof machineId === 'number' ? machineId : (typeof machineId === 'string' ? parseInt(machineId, 10) || machineId : null));
+  const resolvedId = typeof machineId === 'object' && machineId !== null ? (machineId.id || 1) : (typeof machineId === 'number' ? machineId : (typeof machineId === 'string' ? (parseInt(machineId, 10) || 1) : 1));
   const machineObj = typeof machineId === 'object' && machineId !== null ? machineId : null;
   const machineName = machineObj?.name || (resolvedId ? `Machine #${resolvedId}` : 'Equipment Unit');
 
@@ -270,7 +270,7 @@ export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalP
     }
   };
 
-  if (!resolvedId) return null;
+  if (machineId === null || machineId === undefined) return null;
 
   const latestData = history.length > 0 ? history.find(d => d.temperature !== undefined) || history[0] : null;
   const currentTemp = latestData?.temperature || machineObj?.temperature || 48.5;
