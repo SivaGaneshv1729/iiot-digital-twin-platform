@@ -109,6 +109,20 @@ function makeGratingTexture(): THREE.CanvasTexture {
   return tex;
 }
 
+function makeHeatmapGradientTexture(): THREE.CanvasTexture {
+  const size = 128;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  const grad = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+  grad.addColorStop(0, 'rgba(255,255,255,1)');
+  grad.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, size, size);
+  const tex = new THREE.CanvasTexture(canvas);
+  return tex;
+}
+
 const _textureCache: Record<string, THREE.CanvasTexture> = {};
 const getCachedTexture = (name: string, generator: () => THREE.CanvasTexture) => {
   if (!_textureCache[name]) _textureCache[name] = generator();
@@ -132,6 +146,7 @@ const SHARED = {
   hvacFanMat: new THREE.MeshStandardMaterial({ color: "#1e293b" }),
   hvacBoxGeo: new THREE.BoxGeometry(1, 3, 1),
   hvacBoxMat: new THREE.MeshStandardMaterial({ color: "#475569" }),
+  heatmapGeo: new THREE.PlaneGeometry(160, 160),
 };
 
 interface Machine {
@@ -2262,12 +2277,12 @@ const CNCMachine = ({ position, machine, theme, aiHeatmapMode, onClick }: { posi
              distance={25} 
              decay={2} 
            />
-           <mesh rotation={[-Math.PI / 2, 0, 0]} ref={anomalyPulseRef}>
-             <circleGeometry args={[14, 32]} />
+           <mesh rotation={[-Math.PI / 2, 0, 0]} ref={anomalyPulseRef} geometry={SHARED.heatmapGeo}>
              <meshBasicMaterial 
                color={hasAnomaly ? "#ef4444" : machine?.status === 'Maintenance' ? "#f59e0b" : "#10b981"} 
                transparent 
-               opacity={0.5} 
+               opacity={0.5}
+               map={getCachedTexture('heatmap', makeHeatmapGradientTexture)}
                blending={THREE.AdditiveBlending} 
                depthWrite={false} 
              />
@@ -2495,12 +2510,12 @@ const DynamicHydraulicPress = ({ position, machine, aiHeatmapMode, onClick }: an
              distance={25} 
              decay={2} 
            />
-           <mesh rotation={[-Math.PI / 2, 0, 0]} ref={anomalyPulseRef}>
-             <circleGeometry args={[14, 32]} />
+           <mesh rotation={[-Math.PI / 2, 0, 0]} ref={anomalyPulseRef} geometry={SHARED.heatmapGeo}>
              <meshBasicMaterial 
                color={hasAnomaly ? "#ef4444" : machine?.status === 'Maintenance' ? "#f59e0b" : "#10b981"} 
                transparent 
-               opacity={0.5} 
+               opacity={0.5}
+               map={getCachedTexture('heatmap', makeHeatmapGradientTexture)}
                blending={THREE.AdditiveBlending} 
                depthWrite={false} 
              />
@@ -2552,12 +2567,12 @@ const AutoWeldingArm = ({ position, machine, aiHeatmapMode, onClick }: any) => {
              distance={25} 
              decay={2} 
            />
-           <mesh rotation={[-Math.PI / 2, 0, 0]} ref={anomalyPulseRef}>
-             <circleGeometry args={[14, 32]} />
+           <mesh rotation={[-Math.PI / 2, 0, 0]} ref={anomalyPulseRef} geometry={SHARED.heatmapGeo}>
              <meshBasicMaterial 
                color={hasAnomaly ? "#ef4444" : machine?.status === 'Maintenance' ? "#f59e0b" : "#10b981"} 
                transparent 
-               opacity={0.5} 
+               opacity={0.5}
+               map={getCachedTexture('heatmap', makeHeatmapGradientTexture)}
                blending={THREE.AdditiveBlending} 
                depthWrite={false} 
              />
@@ -2606,12 +2621,12 @@ const ChemicalVat = ({ position, machine, aiHeatmapMode, onClick }: any) => {
              distance={25} 
              decay={2} 
            />
-           <mesh rotation={[-Math.PI / 2, 0, 0]} ref={anomalyPulseRef}>
-             <circleGeometry args={[14, 32]} />
+           <mesh rotation={[-Math.PI / 2, 0, 0]} ref={anomalyPulseRef} geometry={SHARED.heatmapGeo}>
              <meshBasicMaterial 
                color={hasAnomaly ? "#ef4444" : machine?.status === 'Maintenance' ? "#f59e0b" : "#10b981"} 
                transparent 
-               opacity={0.5} 
+               opacity={0.5}
+               map={getCachedTexture('heatmap', makeHeatmapGradientTexture)}
                blending={THREE.AdditiveBlending} 
                depthWrite={false} 
              />
@@ -2781,7 +2796,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
         <CameraController viewMode={viewMode} />
 
         <XR store={store}>
-          <color attach="background" args={[theme === 'light' ? '#0f172a' : '#020617']} />
+          <color attach="background" args={[theme === 'light' ? '#ffffff' : '#020617']} />
           
           {/* HDR Environment Lighting (Dim in Heatmap mode) */}
           <Environment preset={theme === 'light' ? "city" : "night"} background={false} />
