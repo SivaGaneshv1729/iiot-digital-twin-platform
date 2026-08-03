@@ -109,6 +109,31 @@ function makeGratingTexture(): THREE.CanvasTexture {
   return tex;
 }
 
+const _textureCache: Record<string, THREE.CanvasTexture> = {};
+const getCachedTexture = (name: string, generator: () => THREE.CanvasTexture) => {
+  if (!_textureCache[name]) _textureCache[name] = generator();
+  return _textureCache[name];
+};
+
+// --- GLOBAL GEOMETRIES & MATERIALS FOR OPTIMIZATION ---
+const SHARED = {
+  treeTrunkGeo: new THREE.CylinderGeometry(0.5, 0.8, 4, 8),
+  treeTrunkMat: new THREE.MeshStandardMaterial({ color: "#5d4037", roughness: 0.9 }),
+  treeConeGeo1: new THREE.ConeGeometry(3, 5, 8),
+  treeConeMat1: new THREE.MeshStandardMaterial({ color: "#2e7d32", roughness: 0.8 }),
+  treeConeGeo2: new THREE.ConeGeometry(2.5, 4, 8),
+  treeConeMat2: new THREE.MeshStandardMaterial({ color: "#388e3c", roughness: 0.8 }),
+  treeConeGeo3: new THREE.ConeGeometry(1.5, 3, 8),
+  treeConeMat3: new THREE.MeshStandardMaterial({ color: "#4caf50", roughness: 0.8 }),
+  smokeGeo: new THREE.BoxGeometry(8, 8, 8),
+  hvacBaseGeo: new THREE.BoxGeometry(6, 4, 8),
+  hvacBaseMat: new THREE.MeshStandardMaterial({ color: "#94a3b8", metalness: 0.6 }),
+  hvacFanGeo: new THREE.CylinderGeometry(1.5, 1.5, 0.5, 12),
+  hvacFanMat: new THREE.MeshStandardMaterial({ color: "#1e293b" }),
+  hvacBoxGeo: new THREE.BoxGeometry(1, 3, 1),
+  hvacBoxMat: new THREE.MeshStandardMaterial({ color: "#475569" }),
+};
+
 interface Machine {
   id: number;
   name: string;
@@ -211,7 +236,7 @@ const ZoneOverlay = ({ position, args, color, active, label }: { position: [numb
 // --------------------------------------------------------------------------
 // Robotic Arm Component (Articulated Kinematics)
 // --------------------------------------------------------------------------
-const RoboticArm = ({ position, speedOffset = 0, isEmergencyMode }: { position: [number, number, number], speedOffset?: number, isEmergencyMode?: boolean }) => {
+const RoboticArm = ({ position, speedOffset = 0, isEmergencyMode, onClick }: { position: [number, number, number], speedOffset?: number, isEmergencyMode?: boolean, onClick?: () => void }) => {
   const baseRef = useRef<THREE.Group>(null);
   const joint1Ref = useRef<THREE.Group>(null);
   const joint2Ref = useRef<THREE.Group>(null);
@@ -232,7 +257,12 @@ const RoboticArm = ({ position, speedOffset = 0, isEmergencyMode }: { position: 
   });
 
   return (
-    <group position={position}>
+    <group 
+      position={position}
+      onClick={(e) => { e.stopPropagation(); onClick?.(); }}
+      onPointerOver={(e) => { if (onClick) { e.stopPropagation(); document.body.style.cursor = 'pointer'; } }}
+      onPointerOut={(e) => { if (onClick) { e.stopPropagation(); document.body.style.cursor = 'auto'; } }}
+    >
       <group scale={4}>
         {/* Base Pedestal */}
         <Cylinder args={[0.4, 0.5, 0.4]} position={[0, 0.2, 0]} castShadow>
@@ -501,7 +531,7 @@ const FactoryBlock = ({ position, theme, label, args = [120, 60, 100], colorSche
 // --------------------------------------------------------------------------
 // L-Shaped Factory Mega-Block
 // --------------------------------------------------------------------------
-const LShapedFactory = ({ position, theme, isEmergencyMode }: any) => {
+const LShapedFactory = ({ position, theme, isEmergencyMode, onSelectMachine }: any) => {
   const isLight = theme === 'light';
   const concreteColor = isLight ? "#c8cfd8" : "#9ea8b3";
   
@@ -536,8 +566,8 @@ const LShapedFactory = ({ position, theme, isEmergencyMode }: any) => {
             <group position={[0, floorY - floorH/2 + 2, 0]}>
               {Array.from({ length: 4 }).map((_, i) => (
                 <group key={`mw-mach-${i}`} position={[-100 + (i * 70), 0, 0]}>
-                  <CNCMachine position={[0, 0, -20]} machine={mockMachine} theme={theme} />
-                  <RoboticArm position={[0, 0, 15]} speedOffset={i} isEmergencyMode={isEmergencyMode} />
+                  <CNCMachine position={[0, 0, -20]} machine={mockMachine} theme={theme} onClick={() => onSelectMachine?.(mockMachine)} />
+                  <RoboticArm position={[0, 0, 15]} speedOffset={i} isEmergencyMode={isEmergencyMode} onClick={() => onSelectMachine?.(mockMachine)} />
                   {isEmergencyMode && i === 2 && <SmokeParticles position={[0, 15, 0]} />}
                 </group>
               ))}
@@ -547,8 +577,8 @@ const LShapedFactory = ({ position, theme, isEmergencyMode }: any) => {
             <group position={[-(mainWing.w/2) + (subWing.w/2), floorY - floorH/2 + 2, -(mainWing.d/2) - (subWing.d/2) + 5]}>
               {Array.from({ length: 3 }).map((_, i) => (
                 <group key={`sw-mach-${i}`} position={[0, 0, -40 + (i * 70)]}>
-                  <CNCMachine position={[20, 0, 0]} machine={mockMachine} theme={theme} />
-                  <RoboticArm position={[-15, 0, 0]} speedOffset={i*2} isEmergencyMode={isEmergencyMode} />
+                  <CNCMachine position={[20, 0, 0]} machine={mockMachine} theme={theme} onClick={() => onSelectMachine?.(mockMachine)} />
+                  <RoboticArm position={[-15, 0, 0]} speedOffset={i*2} isEmergencyMode={isEmergencyMode} onClick={() => onSelectMachine?.(mockMachine)} />
                 </group>
               ))}
             </group>
@@ -609,18 +639,10 @@ const LShapedFactory = ({ position, theme, isEmergencyMode }: any) => {
 // --------------------------------------------------------------------------
 const HVACUnit = ({ position }: { position: [number, number, number] }) => (
   <group position={position}>
-    <Box args={[6, 4, 8]} position={[0, 2, 0]} castShadow>
-      <meshStandardMaterial color="#94a3b8" metalness={0.6} />
-    </Box>
-    <Cylinder args={[1.5, 1.5, 0.5]} position={[0, 4.25, 2]} rotation={[0, 0, 0]}>
-      <meshStandardMaterial color="#1e293b" />
-    </Cylinder>
-    <Cylinder args={[1.5, 1.5, 0.5]} position={[0, 4.25, -2]} rotation={[0, 0, 0]}>
-      <meshStandardMaterial color="#1e293b" />
-    </Cylinder>
-    <Box args={[1, 3, 1]} position={[3.5, 1.5, 0]}>
-      <meshStandardMaterial color="#475569" />
-    </Box>
+    <mesh geometry={SHARED.hvacBaseGeo} material={SHARED.hvacBaseMat} position={[0, 2, 0]} castShadow />
+    <mesh geometry={SHARED.hvacFanGeo} material={SHARED.hvacFanMat} position={[0, 4.25, 2]} />
+    <mesh geometry={SHARED.hvacFanGeo} material={SHARED.hvacFanMat} position={[0, 4.25, -2]} />
+    <mesh geometry={SHARED.hvacBoxGeo} material={SHARED.hvacBoxMat} position={[3.5, 1.5, 0]} />
   </group>
 );
 
@@ -796,7 +818,7 @@ const QCInspectionFrame = ({ position }: { position: [number, number, number] })
 
 // Loading Dock: raised concrete platform with access ramp
 const LoadingDock = ({ position }: { position: [number, number, number] }) => {
-  const gratingTex = useMemo(() => makeGratingTexture(), []);
+  const gratingTex = getCachedTexture('grating', makeGratingTexture);
   return (
     <group position={position}>
       {/* Raised concrete platform with metal grating top */}
@@ -1166,7 +1188,7 @@ const ConveyorLine = ({ position, length }: { position: [number, number, number]
 // Massive Transformer
 // --------------------------------------------------------------------------
 const MassiveTransformer = ({ position }: { position: [number, number, number] }) => {
-  const metalTex = useMemo(() => makeBrushedMetalTexture(), []);
+  const metalTex = getCachedTexture('metal', makeBrushedMetalTexture);
   return (
     <group position={position}>
       <Box args={[30, 25, 20]} position={[0, 12.5, 0]} castShadow>
@@ -1275,7 +1297,7 @@ const WaterTreatmentPlant = ({ position }: { position: [number, number, number] 
 // Hydraulic Press: massive frame with animated ram and textured base
 const HydraulicPress = ({ position }: { position: [number, number, number] }) => {
   const ramRef = useRef<THREE.Mesh>(null);
-  const metalTex = useMemo(() => makeBrushedMetalTexture(), []);
+  const metalTex = getCachedTexture('metal', makeBrushedMetalTexture);
   useFrame((state) => {
     if (ramRef.current) {
       ramRef.current.position.y = 6 - Math.abs(Math.sin(state.clock.elapsedTime * 0.8)) * 8;
@@ -1309,7 +1331,7 @@ const HydraulicPress = ({ position }: { position: [number, number, number] }) =>
       </mesh>
       {/* Red warning stripe on base */}
       <Box args={[21, 0.4, 19]} position={[0, 4.2, 0]}>
-        <meshStandardMaterial map={useMemo(() => makeHazardStripeTexture(), [])} />
+        <meshStandardMaterial map={getCachedTexture('stripe', makeHazardStripeTexture)} />
       </Box>
     </group>
   );
@@ -1317,7 +1339,7 @@ const HydraulicPress = ({ position }: { position: [number, number, number] }) =>
 
 // Air Compressor: cylindrical tank + motor housing
 const AirCompressor = ({ position }: { position: [number, number, number] }) => {
-  const metalTex = useMemo(() => makeBrushedMetalTexture(), []);
+  const metalTex = getCachedTexture('metal', makeBrushedMetalTexture);
   return (
     <group position={position}>
       {/* Pressure tank - horizontal */}
@@ -1549,7 +1571,7 @@ const SecurityGate = ({ position, rotation = [0, 0, 0] }: { position: [number, n
 
 // Fuel Station for campus logistics vehicles
 const FuelStation = ({ position }: { position: [number, number, number] }) => {
-  const stripeTex = useMemo(() => makeHazardStripeTexture(), []);
+  const stripeTex = getCachedTexture('stripe', makeHazardStripeTexture);
   return (
     <group position={position}>
       {/* Base platform */}
@@ -1644,7 +1666,7 @@ const PowerFlowLine = ({ start, end, active }: { start: [number, number, number]
     }
   });
 
-  const dashTex = useMemo(() => makeHazardStripeTexture(), []);
+  const dashTex = getCachedTexture('stripe', makeHazardStripeTexture);
 
   return (
     <mesh>
@@ -1667,10 +1689,10 @@ const PowerFlowLine = ({ start, end, active }: { start: [number, number, number]
 // --------------------------------------------------------------------------
 const PineTree = ({ position, scale = 1 }: { position: [number, number, number], scale?: number }) => (
   <group position={position} scale={scale}>
-    <Cylinder args={[0.5, 0.8, 4]} position={[0, 2, 0]} castShadow><meshStandardMaterial color="#5d4037" roughness={0.9} /></Cylinder>
-    <Cone args={[3, 5]} position={[0, 6, 0]} castShadow><meshStandardMaterial color="#2e7d32" roughness={0.8} /></Cone>
-    <Cone args={[2.5, 4]} position={[0, 8.5, 0]} castShadow><meshStandardMaterial color="#388e3c" roughness={0.8} /></Cone>
-    <Cone args={[1.5, 3]} position={[0, 11, 0]} castShadow><meshStandardMaterial color="#4caf50" roughness={0.8} /></Cone>
+    <mesh geometry={SHARED.treeTrunkGeo} material={SHARED.treeTrunkMat} position={[0, 2, 0]} castShadow />
+    <mesh geometry={SHARED.treeConeGeo1} material={SHARED.treeConeMat1} position={[0, 6, 0]} castShadow />
+    <mesh geometry={SHARED.treeConeGeo2} material={SHARED.treeConeMat2} position={[0, 8.5, 0]} castShadow />
+    <mesh geometry={SHARED.treeConeGeo3} material={SHARED.treeConeMat3} position={[0, 11, 0]} castShadow />
   </group>
 );
 
@@ -1739,8 +1761,8 @@ const EntryArchway = ({ position, rotation = [0,0,0] }: { position: [number, num
 // --------------------------------------------------------------------------
 // Campus Environment (Dense 4x Scale with Layers)
 // --------------------------------------------------------------------------
-const CampusEnvironment = ({ theme, showLabels, activeLayer, isEmergencyMode }: { theme: string, showLabels: boolean, activeLayer: string, isEmergencyMode?: boolean }) => {
-  const concreteTex = useMemo(() => makeConcreteTexture(), []);
+const CampusEnvironment = ({ theme, showLabels, activeLayer, isEmergencyMode, onSelectMachine }: { theme: string, showLabels: boolean, activeLayer: string, isEmergencyMode?: boolean, onSelectMachine?: (machine: any) => void }) => {
+  const concreteTex = getCachedTexture('concrete', makeConcreteTexture);
   
   const isAnyLayerActive = activeLayer !== 'none';
   const groundColor = isAnyLayerActive ? (theme === 'light' ? '#64748b' : '#1e293b') : (theme === 'light' ? "#b0b8c4" : "#5a6270");
@@ -1844,7 +1866,7 @@ const CampusEnvironment = ({ theme, showLabels, activeLayer, isEmergencyMode }: 
 
       {/* === MAIN L-SHAPED MEGA-BLOCK (Merged Blocks A, B, E) === */}
       <DimLayerGroup dimmed={isAnyLayerActive && activeLayer !== 'manufacturing'}>
-        <LShapedFactory position={[-50, 0, -100]} theme={theme} isEmergencyMode={isEmergencyMode} />
+        <LShapedFactory position={[-50, 0, -100]} theme={theme} isEmergencyMode={isEmergencyMode} onSelectMachine={onSelectMachine} />
         
         {/* === BLOCK F: AUTOMOTIVE BODY ASSEMBLY (NEW) === */}
         <FactoryBlock position={[350, 0, -100]} theme={theme} label="Block F: Auto Body Assembly" colorScheme={activeLayer === 'manufacturing' ? 'orange' : 'blue'} args={[180, 60, 130]} showLabels={showLabels} />
@@ -1865,8 +1887,8 @@ const CampusEnvironment = ({ theme, showLabels, activeLayer, isEmergencyMode }: 
         {/* Additional Outdoor Machinery / Storage in Manufacturing */}
         <MiniBlock position={[-200, 0, -250]} theme={theme} />
         <MiniBlock position={[-160, 0, -250]} theme={theme} />
-        <CNCMachine position={[250, 0, -200]} machine={{status: 'running', name: 'EXT-1'}} theme={theme} />
-        <RoboticArm position={[220, 0, -200]} speedOffset={2} isEmergencyMode={isEmergencyMode} />
+        <CNCMachine position={[250, 0, -200]} machine={{status: 'running', name: 'EXT-1'}} theme={theme} onClick={() => onSelectMachine?.({status: 'running', name: 'EXT-1', id: 2})} />
+        <RoboticArm position={[220, 0, -200]} speedOffset={2} isEmergencyMode={isEmergencyMode} onClick={() => onSelectMachine?.({status: 'running', name: 'EXT-Arm', id: 2})} />
         <MiniBlock position={[230, 0, -250]} theme={theme} />
       </DimLayerGroup>
       
@@ -1997,8 +2019,7 @@ const SmokeParticles = ({ position }: { position: [number, number, number] }) =>
   return (
     <group position={position} ref={groupRef}>
       {Array.from({ length: 20 }).map((_, i) => (
-        <mesh key={i} position={[(Math.random() - 0.5) * 5, Math.random() * 20, (Math.random() - 0.5) * 5]} rotation={[Math.random() * Math.PI, Math.random() * Math.PI, 0]}>
-          <boxGeometry args={[8, 8, 8]} />
+        <mesh key={i} geometry={SHARED.smokeGeo} position={[(Math.random() - 0.5) * 5, Math.random() * 20, (Math.random() - 0.5) * 5]} rotation={[Math.random() * Math.PI, Math.random() * Math.PI, 0]}>
           <meshBasicMaterial color="#1e293b" transparent opacity={0.5 + Math.random() * 0.3} depthWrite={false} />
         </mesh>
       ))}
@@ -2751,7 +2772,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
       </div>
 
       <Canvas
-        dpr={[1, 1.5]}
+        dpr={[1, 1]}
         shadows
         camera={{ position: [0, 180, 220], fov: 40, near: 1, far: 3500 }}
         gl={{ antialias: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.2, powerPreference: 'high-performance' }}
@@ -2773,7 +2794,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
             intensity={isEmergencyMode ? 2 : aiHeatmapMode ? 0.2 : theme === 'light' ? 2 : 1.5}
             color={isEmergencyMode ? "#ef4444" : theme === 'light' ? "#ffffff" : "#60a5fa"}
             castShadow 
-            shadow-mapSize={[2048, 2048]}
+            shadow-mapSize={[1024, 1024]}
             shadow-camera-left={-100}
             shadow-camera-right={100}
             shadow-camera-top={100}
@@ -2801,7 +2822,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
           )}
 
           {/* Core Terrain and Campus Buildings */}
-          <CampusEnvironment theme={theme} showLabels={showLabels} activeLayer={activeLayer} isEmergencyMode={isEmergencyMode} />
+          <CampusEnvironment theme={theme} showLabels={showLabels} activeLayer={activeLayer} isEmergencyMode={isEmergencyMode} onSelectMachine={onSelectMachine} />
 
           {/* Dynamic Machinery Seeding from Database */}
           {machines && machines.map((machine: any, index: number) => {
@@ -2813,7 +2834,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
                return (
                  <group key={machine.id || index} position={[bayX, 2, bayZ]}>
                    <CNCMachine position={[0, 0, 0]} machine={machine} theme={theme} aiHeatmapMode={aiHeatmapMode} onClick={() => { setViewMode('BlockA'); onSelectMachine?.(machine); }} />
-                   <RoboticArm position={[8, 0, 15]} speedOffset={index*0.5} isEmergencyMode={isEmergencyMode} />
+                   <RoboticArm position={[8, 0, 15]} speedOffset={index*0.5} isEmergencyMode={isEmergencyMode} onClick={() => { setViewMode('BlockA'); onSelectMachine?.(machine); }} />
                    {isEmergencyMode && (machine.status === 'down' || index % 3 === 0) && (
                      <SmokeParticles position={[0, 20, 0]} />
                    )}

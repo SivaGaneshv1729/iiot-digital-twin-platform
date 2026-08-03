@@ -65,38 +65,12 @@ export const FactoryAssistant = () => {
     setInput('');
     setIsLoading(true);
 
-    try {
-      const token = localStorage.getItem('token');
-      const apiUrl = import.meta.env.VITE_API_URL || '';
-      const response = await fetch(`${apiUrl}/api/ai/chat`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          question: queryText,
-          context: context
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const text = data.response || data.answer || data.error;
-        if (text) {
-          setMessages(prev => [...prev, { role: 'assistant', content: text }]);
-          return;
-        }
-      }
-      // In-code dynamic AI fallback
-      const fallbackText = getDynamicAIResponse(queryText);
-      setMessages(prev => [...prev, { role: 'assistant', content: fallbackText }]);
-    } catch {
-      const fallbackText = getDynamicAIResponse(queryText);
-      setMessages(prev => [...prev, { role: 'assistant', content: fallbackText }]);
-    } finally {
+    // Simulate AI thinking delay for better UX
+    setTimeout(() => {
+      const responseText = getDynamicAIResponse(queryText);
+      setMessages(prev => [...prev, { role: 'assistant', content: responseText }]);
       setIsLoading(false);
-    }
+    }, 600);
   };
 
   return (

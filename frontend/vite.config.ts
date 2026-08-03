@@ -1,56 +1,68 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const useMocks = env.VITE_USE_MOCKS === 'true';
 
-
-export default defineConfig({
-  plugins: [react(), VitePWA({
-    strategies: 'injectManifest',
-    srcDir: 'src',
-    filename: 'sw.ts',
-    registerType: 'autoUpdate',
-    includeAssets: ['logo.svg'],
-    manifest: {
-      name: 'SmartFactory AI Command Center',
-      short_name: 'SmartFactory',
-      description: 'Enterprise IIoT Digital Twin and AI Command Center',
-      theme_color: '#0a0a0f',
-      background_color: '#0a0a0f',
-      display: 'standalone',
-      icons: [
-        {
-          src: 'logo.svg',
-          sizes: '192x192 512x512',
-          type: 'image/svg+xml',
-          purpose: 'any maskable'
-        }
-      ]
-    },
-    injectManifest: {
-      maximumFileSizeToCacheInBytes: 15 * 1024 * 1024 // 15 MB
-    }
-  })],
-  resolve: {
-    dedupe: ['three', 'react', 'react-dom'],
-    alias: {
-      'socket.io-client': '/src/lib/mockSocket.ts'
-    }
-  },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) return 'vendor';
-            if (id.includes('three') || id.includes('@react-three')) return 'three';
-            if (id.includes('recharts')) return 'charts';
-            if (id.includes('lucide-react')) return 'icons';
-            return 'vendor-misc';
+  return {
+    plugins: [react(), VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
+      registerType: 'autoUpdate',
+      includeAssets: ['logo.svg'],
+      manifest: {
+        name: 'SmartFactory AI Command Center',
+        short_name: 'SmartFactory',
+        description: 'Enterprise IIoT Digital Twin and AI Command Center',
+        theme_color: '#0a0a0f',
+        background_color: '#0a0a0f',
+        display: 'standalone',
+        icons: [
+          {
+            src: 'logo.svg',
+            sizes: '192x192 512x512',
+            type: 'image/svg+xml',
+            purpose: 'any maskable'
           }
+        ]
+      },
+      injectManifest: {
+        maximumFileSizeToCacheInBytes: 15 * 1024 * 1024 // 15 MB
+      }
+    })],
+    server: {
+      proxy: {
+        '/api': 'http://localhost:4000',
+        '/socket.io': {
+          target: 'http://localhost:4000',
+          ws: true
         }
       }
     },
-    chunkSizeWarningLimit: 1000
-  }
-})
+    resolve: {
+      dedupe: ['three', 'react', 'react-dom'],
+      alias: useMocks ? {
+        'socket.io-client': '/src/lib/mockSocket.ts'
+      } : {}
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) return 'vendor';
+              if (id.includes('three') || id.includes('@react-three')) return 'three';
+              if (id.includes('recharts')) return 'charts';
+              if (id.includes('lucide-react')) return 'icons';
+              return 'vendor-misc';
+            }
+          }
+        }
+      },
+      chunkSizeWarningLimit: 1000
+    }
+  };
+});
