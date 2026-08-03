@@ -6,7 +6,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Box, Environment, ContactShadows } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
-import { getApiUrl } from '../lib/api';
+import { getApiUrl, DEFAULT_MACHINES } from '../lib/api';
 import './MachineHistoryModal.css';
 
 export interface HistoryPoint {
@@ -156,7 +156,7 @@ export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalP
 
   // Resolve ID & object if passed as object, number, or string
   const resolvedId = typeof machineId === 'object' && machineId !== null ? (machineId.id ?? 1) : (typeof machineId === 'number' ? machineId : (typeof machineId === 'string' ? (parseInt(machineId, 10) || null) : null));
-  const machineObj = typeof machineId === 'object' && machineId !== null ? machineId : (resolvedId ? DEFAULT_MACHINES.find(m => m.id === resolvedId) || null : null);
+  const machineObj = typeof machineId === 'object' && machineId !== null ? machineId : (resolvedId ? DEFAULT_MACHINES.find((m: any) => m.id === resolvedId) || null : null);
   const machineName = machineObj?.name || (resolvedId ? `Machine #${resolvedId}` : 'Equipment Unit');
 
   useEffect(() => {

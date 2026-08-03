@@ -52,15 +52,7 @@ const INITIAL_ACTIONS: PrescriptiveAction[] = [
   { id: 3, time: '12 mins ago', title: 'Trigger Predictive Maintenance', description: 'Robot Arm #3 showing abnormal vibration frequency. Recommend scheduling maintenance for 3rd shift.', priority: 'high', status: 'pending' },
 ];
 
-const DEFAULT_MACHINES = Array.from({ length: 16 }).map((_, i) => ({
-  id: i + 1,
-  name: i < 6 ? `CNC Milling ${(i + 1).toString().padStart(2, '0')}` : i < 11 ? `Stamping Press ${(i - 5).toString().padStart(2, '0')}` : `Lathe Machine ${(i - 10).toString().padStart(2, '0')}`,
-  status: i === 3 ? 'Maintenance' : i === 7 ? 'Warning' : 'Running',
-  temperature: Math.round(45 + (i * 2.5) % 35),
-  vibration: Number((0.15 + (i * 0.05) % 0.6).toFixed(2)),
-  running_hours: 1200 + i * 340,
-  power_draw: Number((12 + (i * 0.8) % 10).toFixed(1))
-}));
+
 
 export const Dashboard = () => {
   const { t } = useTranslation();
