@@ -155,12 +155,12 @@ export const MachineHistoryModal = ({ machineId, onClose }: MachineHistoryModalP
   const [currentMachineStatus, setCurrentMachineStatus] = useState<string>('Running');
 
   // Resolve ID & object if passed as object, number, or string
-  const resolvedId = typeof machineId === 'object' && machineId !== null ? (machineId.id || 1) : (typeof machineId === 'number' ? machineId : (typeof machineId === 'string' ? (parseInt(machineId, 10) || 1) : 1));
-  const machineObj = typeof machineId === 'object' && machineId !== null ? machineId : null;
+  const resolvedId = typeof machineId === 'object' && machineId !== null ? (machineId.id ?? 1) : (typeof machineId === 'number' ? machineId : (typeof machineId === 'string' ? (parseInt(machineId, 10) || null) : null));
+  const machineObj = typeof machineId === 'object' && machineId !== null ? machineId : (resolvedId ? DEFAULT_MACHINES.find(m => m.id === resolvedId) || null : null);
   const machineName = machineObj?.name || (resolvedId ? `Machine #${resolvedId}` : 'Equipment Unit');
 
   useEffect(() => {
-    if (machineId === null || machineId === undefined) return;
+    if (!resolvedId) return;
 
     setLoading(true);
     const token = localStorage.getItem('token');
