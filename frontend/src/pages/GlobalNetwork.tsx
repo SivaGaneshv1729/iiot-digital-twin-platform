@@ -9,12 +9,37 @@ import * as THREE from 'three';
 // Generate Satellites data
 const NUM_SATELLITES = 45;
 const satellitesData = [...Array(NUM_SATELLITES).keys()].map(() => ({
+  type: 'satellite',
   lat: (Math.random() - 0.5) * 180,
   lng: (Math.random() - 0.5) * 360,
   alt: Math.random() * 0.4 + 0.1, // Altitude
   speed: Math.random() * 0.5 + 0.1, // Orbit speed
   color: ['#38bdf8', '#c084fc', '#f472b6', '#10b981'][Math.floor(Math.random() * 4)]
 }));
+
+// Generate active shipments
+const ACTIVE_SHIPMENTS = 12;
+const shipmentsData = [...Array(ACTIVE_SHIPMENTS).keys()].map((_, i) => {
+  // Pick random origin and destination from hubs
+  const origin = [
+    {lat: 35.6762, lng: 139.6503}, {lat: 52.5200, lng: 13.4050}, {lat: 40.7128, lng: -74.0060}, {lat: 1.3521, lng: 103.8198}
+  ][i % 4];
+  const dest = [
+    {lat: 51.5074, lng: -0.1278}, {lat: -23.5505, lng: -46.6333}, {lat: 19.0760, lng: 72.8777}, {lat: -33.8688, lng: 151.2093}, {lat: 34.0522, lng: -118.2437}
+  ][i % 5];
+  
+  return {
+    type: 'shipment',
+    startLat: origin.lat,
+    startLng: origin.lng,
+    endLat: dest.lat,
+    endLng: dest.lng,
+    progress: Math.random(), // Random start progress
+    speed: Math.random() * 0.002 + 0.001,
+    color: '#f97316' // Orange for logistics
+  };
+});
+
 
 export const GlobalNetwork = () => {
   const { t } = useTranslation('translation');
@@ -146,6 +171,23 @@ export const GlobalNetwork = () => {
         </div>
       </div>
 
+      {/* Logistics Fleet Panel */}
+      <div style={{ position: 'absolute', bottom: 20, left: 20, zIndex: 10, background: 'var(--bg-glass)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)', backdropFilter: 'blur(8px)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <h3 style={{ margin: 0, fontSize: '0.9rem', color: '#f97316' }}>Active Logistics Fleet</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', gap: '24px' }}>
+          <span>In-Transit Shipments:</span>
+          <span style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{ACTIVE_SHIPMENTS}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+          <span>Global Freight:</span>
+          <span style={{ color: '#10b981', fontWeight: 'bold' }}>12,450 Tons</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+          <span>Fleet Health:</span>
+          <span style={{ color: '#10b981', fontWeight: 'bold' }}>Optimal</span>
+        </div>
+      </div>
+
       {/* Globe — centered absolutely behind overlay panels */}
       <div style={{
         position: 'absolute',
@@ -190,22 +232,47 @@ export const GlobalNetwork = () => {
           onPointClick={(point: any) => navigate(`/?factory=${encodeURIComponent(point.name)}`)}
           pointLabel="name"
           
-          customLayerData={satellitesData}
+          customLayerData={[...satellitesData, ...shipmentsData]}
           customThreeObject={(d: any) => {
             const group = new THREE.Group();
-            const geometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
-            const material = new THREE.MeshBasicMaterial({ color: d.color });
-            const mesh = new THREE.Mesh(geometry, material);
-            group.add(mesh);
+            if (d.type === 'satellite') {
+              const geometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+              const material = new THREE.MeshBasicMaterial({ color: d.color });
+              const mesh = new THREE.Mesh(geometry, material);
+              group.add(mesh);
+            } else if (d.type === 'shipment') {
+              const geometry = new THREE.OctahedronGeometry(1.2);
+              const material = new THREE.MeshBasicMaterial({ color: d.color, wireframe: true });
+              const mesh = new THREE.Mesh(geometry, material);
+              group.add(mesh);
+            }
             return group;
           }}
           customThreeObjectUpdate={(obj: any, d: any) => {
             if (globeEl.current) {
-              // Move satellite
-              d.lng += d.speed;
-              if (d.lng > 180) d.lng -= 360;
-              // Update 3D position
-              Object.assign(obj.position, globeEl.current.getCoords(d.lat, d.lng, d.alt));
+              if (d.type === 'satellite') {
+                d.lng += d.speed;
+                if (d.lng > 180) d.lng -= 360;
+                Object.assign(obj.position, globeEl.current.getCoords(d.lat, d.lng, d.alt));
+              } else if (d.type === 'shipment') {
+                d.progress += d.speed;
+                if (d.progress > 1) d.progress = 0; // loop delivery
+                
+                // Spherical interpolation for shipment path
+                const p0 = new THREE.Vector3().copy(globeEl.current.getCoords(d.startLat, d.startLng, 0));
+                const p1 = new THREE.Vector3().copy(globeEl.current.getCoords(d.endLat, d.endLng, 0));
+                const earthRadius = p0.length();
+                p0.normalize();
+                p1.normalize();
+                
+                const pos = p0.clone().lerp(p1, d.progress).normalize();
+                const altitude = 0.02 + Math.sin(d.progress * Math.PI) * 0.15; // arc height
+                pos.multiplyScalar(earthRadius * (1 + altitude));
+                
+                Object.assign(obj.position, pos);
+                obj.rotation.x += 0.05;
+                obj.rotation.y += 0.05;
+              }
             }
           }}
         />

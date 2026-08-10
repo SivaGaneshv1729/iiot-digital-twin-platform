@@ -32,7 +32,7 @@ export const exportToExcel = (data: any[], columns: ExportColumn[], filename: st
   const worksheet = XLSX.utils.aoa_to_sheet(wsData);
 
   // 2. Auto-size columns based on the largest content
-  const colWidths = columns.map((col, index) => {
+  const colWidths = columns.map((col) => {
     let max = col.label.length;
     data.forEach(row => {
       const val = String(row[col.key] || '');
@@ -110,7 +110,7 @@ export const exportToPDF = (data: any[], columns: ExportColumn[], filename: stri
     },
     didDrawPage: function (data) {
       // Footer
-      const str = "Page " + doc.internal.getNumberOfPages();
+      const str = "Page " + (doc as any).internal.getNumberOfPages();
       doc.setFontSize(8);
       doc.setTextColor(150);
       const pageSize = doc.internal.pageSize;
