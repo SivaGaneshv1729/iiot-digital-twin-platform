@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { 
   Package, AlertTriangle, ArrowDownToLine, 
-  DollarSign, BrainCircuit, BarChart2, Briefcase, Box, ChevronRight
+  DollarSign, BrainCircuit, BarChart2, Briefcase, Box, ChevronRight, Download
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { 
   Treemap, ResponsiveContainer, Tooltip 
 } from 'recharts';
 import { DataTable, type Column } from '../components/DataTable';
+import { exportToExcel, exportToPDF } from '../utils/exportUtils';
 import './Inventory.css';
 
 interface InventoryItem {
@@ -173,9 +174,25 @@ export const Inventory = () => {
 
   return (
     <div className="inventory-container">
-      <div className="inventory-header">
-        <h1>Enterprise ERP & Supply Chain</h1>
-        <p className="subtitle">Real-time capital valuation, manufacturing orders, and bill of materials</p>
+      <div className="inventory-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1>Enterprise ERP & Supply Chain</h1>
+          <p className="subtitle">Real-time capital valuation, manufacturing orders, and bill of materials</p>
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button 
+            onClick={() => exportToPDF(inventory, ledgerColumns.filter(c => c.key !== 'actions').map(c => ({ key: c.key, label: c.label })), 'Inventory_Ledger_Report', 'Enterprise ERP Inventory Ledger')}
+            style={{ padding: '6px 12px', background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <Download size={14} /> PDF
+          </button>
+          <button 
+            onClick={() => exportToExcel(inventory, ledgerColumns.filter(c => c.key !== 'actions').map(c => ({ key: c.key, label: c.label })), 'Inventory_Ledger_Report')}
+            style={{ padding: '6px 12px', background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <Download size={14} /> Excel
+          </button>
+        </div>
       </div>
 
       <div className="inventory-analytics-grid">

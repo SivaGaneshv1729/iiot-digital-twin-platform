@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { 
   Activity, Clock, AlertTriangle, Wifi,
-  Settings, Zap, BarChart2, Server, LayoutGrid, List
+  Settings, Zap, BarChart2, Server, LayoutGrid, List, Download
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { MachineHistoryModal } from '../components/MachineHistoryModal';
 import { DataTable, type Column } from '../components/DataTable';
+import { exportToExcel, exportToPDF } from '../utils/exportUtils';
 import './Machines.css';
 
 interface Machine {
@@ -241,6 +242,20 @@ export const Machines = () => {
           <p className="subtitle">Global equipment effectiveness and predictive AI node analytics</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button 
+              onClick={() => exportToPDF(machines, columns.filter(c => c.key !== 'actions').map(c => ({ key: c.key, label: c.label })), 'OEE_Fleet_Report', 'OEE & Fleet Command Report')}
+              style={{ padding: '6px 12px', background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Download size={14} /> PDF
+            </button>
+            <button 
+              onClick={() => exportToExcel(machines, columns.filter(c => c.key !== 'actions').map(c => ({ key: c.key, label: c.label })), 'OEE_Fleet_Report')}
+              style={{ padding: '6px 12px', background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Download size={14} /> Excel
+            </button>
+          </div>
           <div className="view-toggles" style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', padding: '4px', borderRadius: '8px', border: "1px solid var(--border-color)" }}>
             <button 
               onClick={() => setViewMode('grid')}
