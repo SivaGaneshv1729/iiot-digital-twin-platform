@@ -1,0 +1,17 @@
+C:\Users\sivag\OneDrive\Documents\Projects\iiot-digital-twin-platform\api-gateway\src\main\java\com\smartfactory\apigateway\ApiGatewayApplication.java
+C:\Users\sivag\OneDrive\Documents\Projects\iiot-digital-twin-platform\api-gateway\src\main\java\com\smartfactory\apigateway\model\Machine.java
+C:\Users\sivag\OneDrive\Documents\Projects\iiot-digital-twin-platform\api-gateway\src\main\java\com\smartfactory\apigateway\config\SocketIOConfig.java
+C:\Users\sivag\OneDrive\Documents\Projects\iiot-digital-twin-platform\api-gateway\src\main\java\com\smartfactory\apigateway\model\User.java
+C:\Users\sivag\OneDrive\Documents\Projects\iiot-digital-twin-platform\api-gateway\src\main\java\com\smartfactory\apigateway\config\SecurityConfig.java
+C:\Users\sivag\OneDrive\Documents\Projects\iiot-digital-twin-platform\api-gateway\src\main\java\com\smartfactory\apigateway\repository\MachineRepository.java
+C:\Users\sivag\OneDrive\Documents\Projects\iiot-digital-twin-platform\api-gateway\src\main\java\com\smartfactory\apigateway\security\JwtAuthenticationFilter.java
+C:\Users\sivag\OneDrive\Documents\Projects\iiot-digital-twin-platform\api-gateway\src\main\java\com\smartfactory\apigateway\service\TelemetrySimulator.java
+C:\Users\sivag\OneDrive\Documents\Projects\iiot-digital-twin-platform\api-gateway\src\main\java\com\smartfactory\apigateway\config\RedisConfig.java
+C:\Users\sivag\OneDrive\Documents\Projects\iiot-digital-twin-platform\api-gateway\src\main\java\com\smartfactory\apigateway\repository\UserRepository.java
+C:\Users\sivag\OneDrive\Documents\Projects\iiot-digital-twin-platform\api-gateway\src\main\java\com\smartfactory\apigateway\service\RedisSubscriber.java
+C:\Users\sivag\OneDrive\Documents\Projects\iiot-digital-twin-platform\api-gateway\src\main\java\com\smartfactory\apigateway\security\JwtUtils.java
+C:\Users\sivag\OneDrive\Documents\Projects\iiot-digital-twin-platform\api-gateway\src\main\java\com\smartfactory\apigateway\controller\MachineController.java
+C:\Users\sivag\OneDrive\Documents\Projects\iiot-digital-twin-platform\api-gateway\src\main\java\com\smartfactory\apigateway\dto\LoginRequest.java
+C:\Users\sivag\OneDrive\Documents\Projects\iiot-digital-twin-platform\api-gateway\src\main\java\com\smartfactory\apigateway\dto\AuthResponse.java
+C:\Users\sivag\OneDrive\Documents\Projects\iiot-digital-twin-platform\api-gateway\src\main\java\com\smartfactory\apigateway\security\UserDetailsServiceImpl.java
+C:\Users\sivag\OneDrive\Documents\Projects\iiot-digital-twin-platform\api-gateway\src\main\java\com\smartfactory\apigateway\controller\AuthController.java

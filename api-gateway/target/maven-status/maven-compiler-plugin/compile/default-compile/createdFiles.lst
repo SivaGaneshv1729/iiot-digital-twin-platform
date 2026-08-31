@@ -1,0 +1,17 @@
+com\smartfactory\apigateway\model\Machine.class
+com\smartfactory\apigateway\repository\UserRepository.class
+com\smartfactory\apigateway\security\JwtUtils.class
+com\smartfactory\apigateway\model\User.class
+com\smartfactory\apigateway\controller\MachineController.class
+com\smartfactory\apigateway\service\RedisSubscriber.class
+com\smartfactory\apigateway\dto\AuthResponse.class
+com\smartfactory\apigateway\security\UserDetailsServiceImpl.class
+com\smartfactory\apigateway\service\TelemetrySimulator.class
+com\smartfactory\apigateway\config\RedisConfig.class
+com\smartfactory\apigateway\config\SecurityConfig.class
+com\smartfactory\apigateway\dto\LoginRequest.class
+com\smartfactory\apigateway\controller\AuthController.class
+com\smartfactory\apigateway\repository\MachineRepository.class
+com\smartfactory\apigateway\security\JwtAuthenticationFilter.class
+com\smartfactory\apigateway\ApiGatewayApplication.class
+com\smartfactory\apigateway\config\SocketIOConfig.class
