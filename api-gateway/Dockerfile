@@ -1,19 +1,17 @@
-FROM node:20-alpine
-
+# Stage 1: Build the application using Maven
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
+COPY pom.xml .
+# Download dependencies
+RUN mvn dependency:go-offline -B
+COPY src ./src
+# Build the application
+RUN mvn clean package -DskipTests
 
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm ci
-
-# Copy the rest of the application
-COPY . .
-
-# Build the TypeScript code
-RUN npm run build
-
-# Expose port
+# Stage 2: Run the application
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+COPY --from=build /app/target/api-gateway-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 4000
-
-# Run the compiled javascript
-CMD ["node", "dist/index.js"]
+EXPOSE 4001
+ENTRYPOINT ["java", "-jar", "app.jar"]
