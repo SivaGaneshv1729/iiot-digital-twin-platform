@@ -110,7 +110,6 @@ export const DemoSimulator = () => {
   const [log, setLog] = useState<string[]>([]);
   const [showNotes, setShowNotes] = useState(true);
   const [activeStep, setActiveStep] = useState<number | null>(null);
-  const [recoveryIdx, setRecoveryIdx] = useState<number>(0);
   const recoveryRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const statsRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -277,9 +276,6 @@ export const DemoSimulator = () => {
   };
 
   const dirtyCount = Object.values(edits).filter(e => e.dirty).length;
-
-  const getStatusColor = (s: string) =>
-    s === 'Running' ? '#10b981' : s === 'Maintenance' ? '#f59e0b' : '#ef4444';
 
   const getTempColor = (t: number) =>
     t >= 95 ? '#ef4444' : t >= 75 ? '#f59e0b' : '#10b981';
