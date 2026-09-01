@@ -52,7 +52,6 @@ export const FactoryAssistant = () => {
         headers: { 'Authorization': `Bearer ${token}` }
       })
         .then(res => res.json())
-        .then(data => setContext(data))
         .catch(() => {});
     }
   }, [isOpen]);
