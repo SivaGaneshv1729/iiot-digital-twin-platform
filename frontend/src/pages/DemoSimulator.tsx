@@ -423,35 +423,66 @@ export const DemoSimulator = () => {
       </div>
 
       {/* ── Live KPI Banner ── */}
-      <div className="fleet-kpi-grid" style={{ gridTemplateColumns: 'repeat(6, 1fr)', marginBottom: '20px' }}>
-        <div className="fleet-kpi-card glass-panel">
-          <Gauge size={26} className="text-accent" />
-          <div className="fleet-kpi-info">
+      <div className="demo-kpi-grid">
+        <div className="demo-kpi-card glass-panel">
+          <div className="kpi-icon-wrap" style={{ background: 'rgba(59,130,246,0.12)', color: '#60a5fa' }}>
+            <Gauge size={22} />
+          </div>
+          <div className="demo-kpi-info">
             <h3>Fleet OEE</h3>
             <span style={{ color: oeeNum >= 80 ? '#10b981' : oeeNum >= 60 ? '#f59e0b' : '#ef4444' }}>
               {liveStats.oee}<small>%</small>
             </span>
           </div>
         </div>
-        <div className="fleet-kpi-card glass-panel">
-          <Activity size={26} className="text-success" />
-          <div className="fleet-kpi-info"><h3>Running</h3><span>{liveStats.running}<small>/{liveStats.total}</small></span></div>
+        <div className="demo-kpi-card glass-panel">
+          <div className="kpi-icon-wrap" style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981' }}>
+            <Activity size={22} />
+          </div>
+          <div className="demo-kpi-info">
+            <h3>Running</h3>
+            <span style={{ color: '#10b981' }}>
+              {liveStats.running}<small>/{liveStats.total}</small>
+            </span>
+          </div>
         </div>
-        <div className="fleet-kpi-card glass-panel">
-          <TrendingUp size={26} style={{ color: '#ef4444' }} />
-          <div className="fleet-kpi-info"><h3>Idle</h3><span style={{ color: '#ef4444' }}>{liveStats.idle}</span></div>
+        <div className="demo-kpi-card glass-panel">
+          <div className="kpi-icon-wrap" style={{ background: 'rgba(239,68,68,0.12)', color: '#ef4444' }}>
+            <TrendingUp size={22} />
+          </div>
+          <div className="demo-kpi-info">
+            <h3>Idle</h3>
+            <span style={{ color: '#ef4444' }}>{liveStats.idle}</span>
+          </div>
         </div>
-        <div className="fleet-kpi-card glass-panel">
-          <Settings size={26} className="text-warning" />
-          <div className="fleet-kpi-info"><h3>Maintenance</h3><span style={{ color: '#f59e0b' }}>{liveStats.maintenance}</span></div>
+        <div className="demo-kpi-card glass-panel">
+          <div className="kpi-icon-wrap" style={{ background: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}>
+            <Settings size={22} />
+          </div>
+          <div className="demo-kpi-info">
+            <h3>Maintenance</h3>
+            <span style={{ color: '#f59e0b' }}>{liveStats.maintenance}</span>
+          </div>
         </div>
-        <div className="fleet-kpi-card glass-panel">
-          <Thermometer size={26} style={{ color: '#8b5cf6' }} />
-          <div className="fleet-kpi-info"><h3>Avg Temp</h3><span style={{ color: '#a78bfa' }}>{liveStats.avgTemp}<small>°C</small></span></div>
+        <div className="demo-kpi-card glass-panel">
+          <div className="kpi-icon-wrap" style={{ background: 'rgba(139,92,246,0.12)', color: '#a78bfa' }}>
+            <Thermometer size={22} />
+          </div>
+          <div className="demo-kpi-info">
+            <h3>Avg Temp</h3>
+            <span style={{ color: '#a78bfa' }}>
+              {liveStats.avgTemp}<small>°C</small>
+            </span>
+          </div>
         </div>
-        <div className="fleet-kpi-card glass-panel">
-          <Server size={26} style={{ color: '#94a3b8' }} />
-          <div className="fleet-kpi-info"><h3>Total Nodes</h3><span style={{ color: '#94a3b8' }}>{liveStats.total}</span></div>
+        <div className="demo-kpi-card glass-panel">
+          <div className="kpi-icon-wrap" style={{ background: 'rgba(148,163,184,0.12)', color: '#94a3b8' }}>
+            <Server size={22} />
+          </div>
+          <div className="demo-kpi-info">
+            <h3>Total Nodes</h3>
+            <span style={{ color: '#94a3b8' }}>{liveStats.total}</span>
+          </div>
         </div>
       </div>
 
