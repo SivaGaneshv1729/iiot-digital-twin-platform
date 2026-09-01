@@ -44,9 +44,9 @@ export default defineConfig(({ mode }) => {
     },
     resolve: {
       dedupe: ['three', 'react', 'react-dom'],
-      alias: useMocks ? {
-        'socket.io-client': '/src/lib/mockSocket.ts'
-      } : {}
+      alias: {
+        ...(useMocks ? { 'socket.io-client': '/src/lib/mockSocket.ts' } : {})
+      }
     },
     build: {
       rollupOptions: {
