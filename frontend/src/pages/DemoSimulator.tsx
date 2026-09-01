@@ -3,7 +3,7 @@ import {
   Zap, Flame, Settings, AlertTriangle, RefreshCw,
   CheckCircle, Play, RotateCcw, Activity, Cpu,
   Thermometer, Clock, Server, ChevronDown, ChevronRight,
-  BookOpen, Target, Wifi, WifiOff, Sliders, Filter,
+  BookOpen, Wifi, WifiOff, Sliders,
   TrendingUp, Shield, Gauge, BarChart2
 } from 'lucide-react';
 import './DemoSimulator.css';
