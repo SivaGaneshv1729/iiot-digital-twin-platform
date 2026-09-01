@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Server, Settings, Bell, Search, Package, LogOut, ScanEye, Globe, ClipboardList, Cpu, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, Server, Settings, Bell, Search, LogOut, ScanEye, Globe, ClipboardList, Cpu, Sun, Moon, Gamepad2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { FactoryAssistant } from './FactoryAssistant';
 import { CommandPalette } from './CommandPalette';
@@ -54,9 +54,9 @@ export const Layout = () => {
             <Server size={20} />
             <span>Machines</span>
           </NavLink>
-          <NavLink to="/inventory" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
-            <Package size={20} />
-            <span>Inventory</span>
+          <NavLink to="/demo" className={({isActive}) => isActive ? "nav-item active" : "nav-item"} style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.12), rgba(6,182,212,0.08))', border: '1px solid rgba(168,85,247,0.3)', borderRadius: '8px', marginBottom: '4px' }}>
+            <Gamepad2 size={20} style={{ color: '#c084fc' }} />
+            <span style={{ color: '#c084fc', fontWeight: 700 }}>Demo Mode 🎮</span>
           </NavLink>
           <NavLink to="/quality" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
             <ScanEye size={20} />
