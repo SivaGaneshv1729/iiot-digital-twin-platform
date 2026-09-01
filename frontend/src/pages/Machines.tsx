@@ -186,14 +186,19 @@ export const Machines = () => {
 
   // Calculate Fleet KPIs
   const totalMachines = machines.length;
-  const runningMachines = machines.filter(m => m.status === 'Running').length;
+  
+  // Remove 'Maintenance' machines from OEE calculation as they are planned downtime
+  const oeeMachines = machines.filter(m => m.status !== 'Maintenance');
+  const totalOeeMachines = oeeMachines.length;
+  const runningMachines = oeeMachines.filter(m => m.status === 'Running').length;
+  
   const avgTemp = totalMachines > 0 
-    ? (machines.reduce((acc, m) => acc + (typeof m.temperature === 'number' ? m.temperature : parseFloat(m.temperature)), 0) / totalMachines).toFixed(1)
+    ? (machines.reduce((acc, m) => acc + (typeof m.temperature === 'number' ? m.temperature : parseFloat(m.temperature as any)), 0) / totalMachines).toFixed(1)
     : 0;
   
   // Mock OEE calculation for presentation: (Running / Total) * 0.95 (Performance) * 0.99 (Quality)
-  const oee = totalMachines > 0 
-    ? ((runningMachines / totalMachines) * 0.95 * 0.99 * 100).toFixed(1) 
+  const oee = totalOeeMachines > 0 
+    ? ((runningMachines / totalOeeMachines) * 0.95 * 0.99 * 100).toFixed(1) 
     : 0;
 
   const updateMachineStatus = async (machineId: number, status: string) => {
