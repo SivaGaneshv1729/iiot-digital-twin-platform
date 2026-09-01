@@ -2,24 +2,43 @@ package com.smartfactory.apigateway.config;
 
 import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketIOServer;
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.annotation.PreDestroy;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 
+@Slf4j
 @org.springframework.context.annotation.Configuration
 public class SocketIOConfig {
 
-    @Value("${server.port:4000}")
-    private int port;
+    private SocketIOServer server;
 
     @Bean
     public SocketIOServer socketIOServer() {
         Configuration config = new Configuration();
-        // Run socket.io on a different port than the main Spring Tomcat server 
-        // to avoid conflicts, or we can configure it to run on the same port but Netty usually wants its own
-        // Let's use 4001 for WebSockets
-        config.setHostname("localhost");
+        config.setHostname("0.0.0.0");
         config.setPort(4001); 
         config.setOrigin("*");
-        return new SocketIOServer(config);
+        this.server = new SocketIOServer(config);
+        return this.server;
+    }
+
+    @Bean
+    public CommandLineRunner socketRunner(SocketIOServer server) {
+        return args -> {
+            try {
+                server.start();
+                log.info("Netty Socket.IO Server successfully started on 0.0.0.0:4001");
+            } catch (Exception e) {
+                log.error("Failed to start Netty Socket.IO server: {}", e.getMessage());
+            }
+        };
+    }
+
+    @PreDestroy
+    public void stopServer() {
+        if (server != null) {
+            server.stop();
+        }
     }
 }

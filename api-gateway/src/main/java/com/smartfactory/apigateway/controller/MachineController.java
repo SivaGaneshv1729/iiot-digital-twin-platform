@@ -19,6 +19,7 @@ import java.util.Optional;
 public class MachineController {
 
     private final MachineRepository machineRepository;
+    private final com.smartfactory.apigateway.service.TelemetrySimulator telemetrySimulator;
 
     @GetMapping
     public ResponseEntity<List<Machine>> getAllMachines() {
@@ -62,6 +63,7 @@ public class MachineController {
         if (payload.getTemperature() != null)  m.setTemperature(BigDecimal.valueOf(payload.getTemperature()));
         if (payload.getRunningHours() != null) m.setRunningHours(payload.getRunningHours());
         machineRepository.save(m);
+        telemetrySimulator.broadcast(machineRepository.findAll());
         return ResponseEntity.ok(m);
     }
 
@@ -86,6 +88,7 @@ public class MachineController {
             if (payload.getRunningHours() != null) m.setRunningHours(payload.getRunningHours());
         }
         machineRepository.saveAll(machines);
+        telemetrySimulator.broadcast(machineRepository.findAll());
         return ResponseEntity.ok(Map.of("updated", machines.size()));
     }
 
@@ -133,6 +136,7 @@ public class MachineController {
         }
 
         machineRepository.saveAll(all);
+        telemetrySimulator.broadcast(all);
         return ResponseEntity.ok(Map.of("scenario", scenario, "machinesAffected", all.size()));
     }
 }

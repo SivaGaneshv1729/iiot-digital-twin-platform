@@ -192,24 +192,39 @@ export const Dashboard = () => {
       .then(data => setSummary(data))
       .catch(err => console.warn('Using default production summary:', err));
 
-    fetch(getApiUrl('/api/machines'), {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => setLiveMachines(Array.isArray(data) && data.length > 0 ? data : DEFAULT_MACHINES))
-      .catch(err => {
-        console.warn('Using default live machines telemetry:', err);
-        setLiveMachines(DEFAULT_MACHINES);
-      });
+    const loadDashboardData = () => {
+      fetch(getApiUrl('/api/machines'), {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setLiveMachines(data);
+            const active = data.filter(m => m.status === 'Running').length;
+            setSummary(prev => ({ ...prev, active_machines: active }));
+          }
+        })
+        .catch(err => {
+          console.warn('Machines poll error:', err);
+        });
+    };
 
-    const socket = io(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}`);
+    loadDashboardData();
+    const interval = setInterval(loadDashboardData, 2500);
+
+    const socket = io();
     socket.on('connect', () => setIsConnected(true));
     socket.on('disconnect', () => setIsConnected(false));
-    socket.on('telemetry_update', (machines: any[]) => {
-      if (Array.isArray(machines)) {
-        setLiveMachines(machines);
-        const active = machines.filter(m => m.status === 'Running').length;
-        setSummary(prev => ({ ...prev, active_machines: active }));
+    socket.on('telemetry_update', (raw: any) => {
+      try {
+        const machines = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (Array.isArray(machines)) {
+          setLiveMachines(machines);
+          const active = machines.filter(m => m.status === 'Running').length;
+          setSummary(prev => ({ ...prev, active_machines: active }));
+        }
+      } catch (e) {
+        console.error('telemetry parse error', e);
       }
     });
     
@@ -224,7 +239,10 @@ export const Dashboard = () => {
       setLiveMachines(prev => prev.map(m => ({ ...m, status: 'Running' })));
     });
 
-    return () => { socket.disconnect(); };
+    return () => { 
+      clearInterval(interval);
+      socket.disconnect(); 
+    };
   }, []);
 
   const handleAction = (id: number, status: 'approved' | 'dismissed') => {

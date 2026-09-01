@@ -7,6 +7,7 @@ import { io } from 'socket.io-client';
 import { MachineHistoryModal } from '../components/MachineHistoryModal';
 import { DataTable, type Column } from '../components/DataTable';
 import { exportToExcel, exportToPDF } from '../utils/exportUtils';
+import { getApiUrl } from '../lib/api';
 import './Machines.css';
 
 interface Machine {
@@ -158,28 +159,46 @@ export const Machines = () => {
   const isAdmin = userRole === 'Admin';
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    // Initial fetch
-    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/machines`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => setMachines(Array.isArray(data) ? data : []))
-      .catch(err => console.error(err));
+    const fetchMachinesData = () => {
+      const token = localStorage.getItem('token');
+      fetch(getApiUrl('/api/machines'), {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setMachines(data);
+            setIsConnected(true);
+          }
+        })
+        .catch(err => {
+          console.error('Machines fetch error:', err);
+        });
+    };
+
+    // Initial load and fast 2.5s auto-polling
+    fetchMachinesData();
+    const interval = setInterval(fetchMachinesData, 2500);
 
     // Connect WebSocket
-    const socket = io(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}`);
-    
+    const socket = io();
     socket.on('connect', () => setIsConnected(true));
     socket.on('disconnect', () => setIsConnected(false));
     
-    socket.on('telemetry_update', (liveMachines: Machine[]) => {
-      if (Array.isArray(liveMachines)) {
-        setMachines(liveMachines);
+    socket.on('telemetry_update', (raw: any) => {
+      try {
+        const liveMachines = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (Array.isArray(liveMachines) && liveMachines.length > 0) {
+          setMachines(liveMachines);
+          setIsConnected(true);
+        }
+      } catch (e) {
+        console.error('Failed to parse telemetry update:', e);
       }
     });
 
     return () => {
+      clearInterval(interval);
       socket.disconnect();
     };
   }, []);
