@@ -3,10 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
 import { Machines } from './pages/Machines';
-import { Quality } from './pages/Quality';
 import { AuditLogs } from './pages/AuditLogs';
 import { MLOps } from './pages/MLOps';
-import { GlobalNetwork } from './pages/GlobalNetwork';
 import { Security } from './pages/Security';
 import { Login } from './pages/Login';
 import { DemoSimulator } from './pages/DemoSimulator';
@@ -32,10 +30,8 @@ function App() {
         }>
           <Route index element={<Dashboard />} />
           <Route path="machines" element={<Machines />} />
-          <Route path="quality" element={<Quality />} />
           <Route path="audit" element={<AuditLogs />} />
           <Route path="mlops" element={<MLOps />} />
-          <Route path="global" element={<GlobalNetwork />} />
           <Route path="security" element={<Security />} />
           <Route path="demo" element={<DemoSimulator />} />
         </Route>

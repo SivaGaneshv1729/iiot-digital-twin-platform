@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Server, Settings, Bell, Search, LogOut, ScanEye, Globe, ClipboardList, Cpu, Sun, Moon, Gamepad2 } from 'lucide-react';
+import { LayoutDashboard, Server, Settings, Bell, Search, LogOut, ClipboardList, Cpu, Sun, Moon, Gamepad2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { FactoryAssistant } from './FactoryAssistant';
 import { CommandPalette } from './CommandPalette';
@@ -58,15 +58,6 @@ export const Layout = () => {
             <Gamepad2 size={20} style={{ color: '#c084fc' }} />
             <span style={{ color: '#c084fc', fontWeight: 700 }}>Demo Mode 🎮</span>
           </NavLink>
-          <NavLink to="/quality" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
-            <ScanEye size={20} />
-            <span>Quality Control</span>
-          </NavLink>
-          <NavLink to="/global" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
-            <Globe size={20} />
-            <span>Global Network</span>
-          </NavLink>
-
           <NavLink to="/audit" className={({isActive}) => isActive ? "nav-item active" : "nav-item"}>
             <ClipboardList size={20} />
             <span>Audit Logs</span>
