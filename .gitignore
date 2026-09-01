@@ -3,3 +3,17 @@ node_modules/
 dist/
 __pycache__/
 *.pyc
+
+# Java / Maven build artifacts
+target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.DS_Store
