@@ -14,7 +14,6 @@ export const FactoryAssistant = () => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [context, setContext] = useState({});
 
   // Quick action prompts
   const QUICK_PROMPTS = [

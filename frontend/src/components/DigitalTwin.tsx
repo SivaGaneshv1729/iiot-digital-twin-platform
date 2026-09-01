@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { MapControls, Grid, Box, Cylinder, Cone, FlyControls, Environment, Html, BakeShadows } from '@react-three/drei';
+import { MapControls, Grid, Box, Cylinder, FlyControls, Environment, Html, BakeShadows } from '@react-three/drei';
 import { XR, createXRStore } from '@react-three/xr';
 // import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
