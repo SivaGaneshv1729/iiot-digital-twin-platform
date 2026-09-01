@@ -139,4 +139,26 @@ public class MachineController {
         telemetrySimulator.broadcast(all);
         return ResponseEntity.ok(Map.of("scenario", scenario, "machinesAffected", all.size()));
     }
+
+    @PostMapping("/emergency-stop")
+    public ResponseEntity<?> emergencyStop() {
+        List<Machine> all = machineRepository.findAll();
+        for (Machine m : all) {
+            m.setStatus("Maintenance");
+        }
+        machineRepository.saveAll(all);
+        telemetrySimulator.broadcast(all);
+        return ResponseEntity.ok(Map.of("message", "EMERGENCY_STOP_ACTIVATED"));
+    }
+
+    @PostMapping("/emergency-revoke")
+    public ResponseEntity<?> emergencyRevoke() {
+        List<Machine> all = machineRepository.findAll();
+        for (Machine m : all) {
+            m.setStatus("Running");
+        }
+        machineRepository.saveAll(all);
+        telemetrySimulator.broadcast(all);
+        return ResponseEntity.ok(Map.of("message", "EMERGENCY_STOP_REVOKED"));
+    }
 }

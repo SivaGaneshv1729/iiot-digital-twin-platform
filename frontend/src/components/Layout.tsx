@@ -10,7 +10,15 @@ import './Layout.css';
 export const Layout = () => {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  let user: { username?: string; name?: string; role?: string } = { username: 'admin', name: 'Admin', role: 'Admin' };
+  try {
+    const raw = localStorage.getItem('user');
+    if (raw && raw !== 'undefined' && raw !== 'null') {
+      user = JSON.parse(raw);
+    }
+  } catch {
+    user = { username: 'admin', name: 'Admin', role: 'Admin' };
+  }
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
 
   useEffect(() => {

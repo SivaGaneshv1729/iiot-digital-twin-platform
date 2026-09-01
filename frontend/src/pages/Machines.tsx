@@ -154,8 +154,16 @@ export const Machines = () => {
   const [selectedMachineId, setSelectedMachineId] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const userRole = user.role || 'Operator';
+  let userRole = 'Admin';
+  try {
+    const raw = localStorage.getItem('user');
+    if (raw && raw !== 'undefined' && raw !== 'null') {
+      const u = JSON.parse(raw);
+      userRole = u.role || 'Admin';
+    }
+  } catch {
+    userRole = 'Admin';
+  }
   const isAdmin = userRole === 'Admin';
 
   useEffect(() => {

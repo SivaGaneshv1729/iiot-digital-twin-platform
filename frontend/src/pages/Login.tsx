@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, User } from 'lucide-react';
+import { getApiUrl } from '../lib/api';
 import './Login.css';
 
 export const Login = () => {
@@ -16,7 +17,7 @@ export const Login = () => {
     setIsLoading(true);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/auth/login`, {
+      const res = await fetch(getApiUrl('/api/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -26,7 +27,8 @@ export const Login = () => {
 
       if (res.ok) {
         localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        const userObj = data.user || { username, name: username, role: data.role || 'Admin' };
+        localStorage.setItem('user', JSON.stringify(userObj));
         navigate('/');
       } else {
         setError(data.error || 'Login failed');

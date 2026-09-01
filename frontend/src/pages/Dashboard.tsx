@@ -254,7 +254,7 @@ export const Dashboard = () => {
     
     try {
       const token = localStorage.getItem('token');
-      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/machines/emergency-stop`, {
+      await fetch(getApiUrl('/api/machines/emergency-stop'), {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -272,7 +272,7 @@ export const Dashboard = () => {
     
     try {
       const token = localStorage.getItem('token');
-      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/machines/emergency-revoke`, {
+      await fetch(getApiUrl('/api/machines/emergency-revoke'), {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${token}`,

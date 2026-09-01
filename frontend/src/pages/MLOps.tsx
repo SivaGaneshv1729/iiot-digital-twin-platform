@@ -8,6 +8,7 @@ import {
   RadarChart, PolarGrid, PolarAngleAxis, Radar, Legend
 } from 'recharts';
 import { DataTable, type Column } from '../components/DataTable';
+import { getApiUrl } from '../lib/api';
 import './MLOps.css';
 
 interface AIModelMetric {
@@ -53,7 +54,7 @@ export const MLOps = () => {
   const fetchMetrics = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/ai/metrics`, {
+      const res = await fetch(getApiUrl('/api/ai/metrics'), {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -82,7 +83,7 @@ export const MLOps = () => {
     setTraining(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/ai/train`, {
+      const res = await fetch(getApiUrl('/api/ai/train'), {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });

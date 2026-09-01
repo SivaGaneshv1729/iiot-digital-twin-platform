@@ -8,6 +8,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, L
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import { getApiUrl } from '../lib/api';
 import { DataTable, type Column } from '../components/DataTable';
 import './AuditLogs.css';
 
@@ -34,7 +35,7 @@ export const AuditLogs = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api/audit`, {
+    fetch(getApiUrl('/api/audit'), {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => {
