@@ -1,10 +1,10 @@
 export const getApiUrl = (endpoint: string): string => {
+  const ep = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   const baseUrl = import.meta.env.VITE_API_URL;
-  if (!baseUrl || baseUrl === 'http://localhost:4000') {
-    // Return relative path to prevent Mixed Content (HTTP/HTTPS) issues on Cloudflare / Vercel
-    return endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  if (baseUrl && baseUrl !== 'http://localhost:4000' && baseUrl !== '') {
+    return `${baseUrl.replace(/\/$/, '')}${ep}`;
   }
-  return `${baseUrl.replace(/\/$/, '')}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+  return ep;
 };
 
 export const DEFAULT_MACHINES = Array.from({ length: 16 }).map((_, i) => ({

@@ -6,9 +6,8 @@ import {
   BookOpen, Wifi, WifiOff, Sliders,
   TrendingUp, Shield, Gauge, BarChart2
 } from 'lucide-react';
+import { getApiUrl } from '../lib/api';
 import './DemoSimulator.css';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
 interface Machine {
   id: number;
@@ -153,7 +152,7 @@ export const DemoSimulator = () => {
 
   const fetchMachines = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/api/machines`, {
+      const res = await fetch(getApiUrl('/api/machines'), {
         headers: { Authorization: `Bearer ${getToken()}` }
       });
       if (!res.ok) throw new Error('api error');
@@ -199,7 +198,7 @@ export const DemoSimulator = () => {
   const applySingle = async (id: number) => {
     const e = edits[id];
     if (!e) return;
-    await fetch(`${API_URL}/api/machines/${id}/simulate`, {
+    await fetch(getApiUrl(`/api/machines/${id}/simulate`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
       body: JSON.stringify({ status: e.status, temperature: e.temperature, runningHours: e.runningHours })
@@ -215,7 +214,7 @@ export const DemoSimulator = () => {
     setIsLoading(true);
     addLog(`📝 Pushing ${dirty.length} overrides to Spring Boot...`);
     await Promise.all(dirty.map(([id, e]) =>
-      fetch(`${API_URL}/api/machines/${id}/simulate`, {
+      fetch(getApiUrl(`/api/machines/${id}/simulate`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({ status: e.status, temperature: e.temperature, runningHours: e.runningHours })
@@ -239,7 +238,7 @@ export const DemoSimulator = () => {
     if (!targets.length) { addLog('⚠️ No machines match the batch target.'); return; }
     setIsLoading(true);
     addLog(`📦 Batch override: ${targets.length} machines → ${batchStatus}, ${batchTemp}°C, ${batchHours}h`);
-    await fetch(`${API_URL}/api/machines/simulate/bulk`, {
+    await fetch(getApiUrl('/api/machines/simulate/bulk'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
       body: JSON.stringify({ ids: targets.map(m => m.id), status: batchStatus, temperature: batchTemp, runningHours: batchHours })
@@ -257,7 +256,7 @@ export const DemoSimulator = () => {
     setActiveScenario(id);
     addLog(`▶ Scenario: ${SCENARIOS.find(s => s.id === id)?.emoji} ${SCENARIOS.find(s => s.id === id)?.label}`);
     try {
-      const res = await fetch(`${API_URL}/api/machines/simulate/scenario`, {
+      const res = await fetch(getApiUrl('/api/machines/simulate/scenario'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({ scenario: id })
