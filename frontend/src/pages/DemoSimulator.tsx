@@ -114,7 +114,8 @@ export const DemoSimulator = () => {
   const [batchVibration, setBatchVibration] = useState(8.5);
   const [batchPressure, setBatchPressure] = useState(90);
   const [batchHours] = useState(15000);
-  const [batchTarget, setBatchTarget] = useState<'all' | 'running' | 'idle' | 'maintenance'>('all');
+  const [batchTarget, setBatchTarget] = useState<'all' | 'running' | 'idle' | 'maintenance' | 'specific'>('all');
+  const [batchMachineId, setBatchMachineId] = useState('');
   const statsRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
 
@@ -244,6 +245,7 @@ export const DemoSimulator = () => {
   const applyBatchOverride = async () => {
     const targets = machines.filter(m => {
       if (batchTarget === 'all') return true;
+      if (batchTarget === 'specific') return m.id.toString() === batchMachineId;
       return m.status.toLowerCase() === batchTarget;
     });
     if (!targets.length) { addLog('⚠️ No machines match the batch target.'); return; }
@@ -480,7 +482,18 @@ export const DemoSimulator = () => {
                     <option value="running">Running Only</option>
                     <option value="idle">Idle Only</option>
                     <option value="maintenance">Maintenance</option>
+                    <option value="specific">Specific Machine</option>
                   </select>
+                  {batchTarget === 'specific' && (
+                    <input 
+                      type="text" 
+                      placeholder="Machine ID..." 
+                      className="demo-select toolbar-input" 
+                      style={{ width: '100px' }} 
+                      value={batchMachineId} 
+                      onChange={e => setBatchMachineId(e.target.value)} 
+                    />
+                  )}
                   <select className={`demo-select toolbar-input status-select-${batchStatus.toLowerCase()}`} value={batchStatus} onChange={e => setBatchStatus(e.target.value)}>
                     <option value="Running">Running</option>
                     <option value="Idle">Idle</option>
