@@ -25,9 +25,18 @@ public class Machine {
     @Column(precision = 5, scale = 2)
     private BigDecimal temperature;
 
+    @Column(precision = 5, scale = 2)
+    private BigDecimal vibration;
+
+    @Column(precision = 5, scale = 2)
+    private BigDecimal pressure;
+
     @Column(name = "running_hours")
     private Integer runningHours = 0;
 
     @Column(name = "last_maintenance")
     private Timestamp lastMaintenance;
+
+    @Transient
+    private Double anomalyScore;
 }

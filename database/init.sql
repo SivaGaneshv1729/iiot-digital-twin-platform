@@ -13,6 +13,8 @@ CREATE TABLE machines (
     name VARCHAR(100) NOT NULL,
     status VARCHAR(20) NOT NULL,
     temperature DECIMAL(5,2),
+    vibration DECIMAL(5,2) DEFAULT 0.0,
+    pressure DECIMAL(5,2) DEFAULT 0.0,
     running_hours INTEGER DEFAULT 0,
     last_maintenance TIMESTAMP
 );

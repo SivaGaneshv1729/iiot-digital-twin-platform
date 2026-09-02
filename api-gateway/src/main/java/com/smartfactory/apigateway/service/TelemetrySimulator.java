@@ -16,6 +16,9 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.Random;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.client.RestTemplate;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -26,6 +29,29 @@ public class TelemetrySimulator {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Random random = new Random();
 
+    @Value("${ML_ENGINE_URL:http://ml-engine:8000}")
+    private String mlEngineUrl;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    public static class MachineState {
+        public Long id;
+        public String status;
+        public double temperature;
+        public double vibration;
+        public double pressure;
+        public int running_hours;
+    }
+
+    public static class PredictionResult {
+        public Long id;
+        public double predicted_temperature;
+        public double predicted_vibration;
+        public double predicted_pressure;
+        public double anomaly_score;
+        public int running_hours;
+    }
+
     @Scheduled(fixedRate = 2000)
     @Transactional
     public void simulateTelemetry() {
@@ -33,24 +59,37 @@ public class TelemetrySimulator {
             List<Machine> machines = machineRepository.findAll();
             if (machines.isEmpty()) return;
 
-            for (Machine m : machines) {
-                if ("Running".equals(m.getStatus())) {
-                    // Realistic gentle flutter (±0.4°C) around existing temperature
-                    double fluctuation = (random.nextDouble() - 0.5) * 0.8;
-                    double currentTemp = m.getTemperature() != null ? m.getTemperature().doubleValue() : 60.0;
-                    double newTemp = Math.max(20.0, Math.min(135.0, currentTemp + fluctuation));
-                    m.setTemperature(BigDecimal.valueOf(newTemp).setScale(2, RoundingMode.HALF_UP));
+            // Prepare payload for ML Engine
+            List<MachineState> payload = machines.stream().map(m -> {
+                MachineState state = new MachineState();
+                state.id = m.getId();
+                state.status = m.getStatus();
+                state.temperature = m.getTemperature() != null ? m.getTemperature().doubleValue() : 60.0;
+                state.vibration = m.getVibration() != null ? m.getVibration().doubleValue() : 2.5;
+                state.pressure = m.getPressure() != null ? m.getPressure().doubleValue() : 50.0;
+                state.running_hours = m.getRunningHours() != null ? m.getRunningHours() : 0;
+                return state;
+            }).toList();
 
-                    // Increment running hours occasionally
-                    if (random.nextDouble() < 0.2) {
-                        m.setRunningHours((m.getRunningHours() != null ? m.getRunningHours() : 0) + 1);
-                    }
-                } else if ("Idle".equals(m.getStatus())) {
-                    // Idle machines slowly cool down towards 30°C
-                    double currentTemp = m.getTemperature() != null ? m.getTemperature().doubleValue() : 35.0;
-                    if (currentTemp > 32.0) {
-                        m.setTemperature(BigDecimal.valueOf(currentTemp - 0.3).setScale(2, RoundingMode.HALF_UP));
-                    }
+            // Call ML Engine
+            PredictionResult[] results = restTemplate.postForObject(
+                    mlEngineUrl + "/predict/batch",
+                    payload,
+                    PredictionResult[].class
+            );
+
+            if (results != null) {
+                for (PredictionResult result : results) {
+                    machines.stream()
+                            .filter(m -> m.getId().equals(result.id))
+                            .findFirst()
+                            .ifPresent(m -> {
+                                m.setTemperature(BigDecimal.valueOf(result.predicted_temperature).setScale(2, RoundingMode.HALF_UP));
+                                m.setVibration(BigDecimal.valueOf(result.predicted_vibration).setScale(2, RoundingMode.HALF_UP));
+                                m.setPressure(BigDecimal.valueOf(result.predicted_pressure).setScale(2, RoundingMode.HALF_UP));
+                                m.setRunningHours(result.running_hours);
+                                m.setAnomalyScore(result.anomaly_score);
+                            });
                 }
             }
 
@@ -58,7 +97,7 @@ public class TelemetrySimulator {
             broadcast(machines);
 
         } catch (Exception e) {
-            log.error("Telemetry simulation error: {}", e.getMessage());
+            log.error("ML Telemetry simulation error (falling back to standby): {}", e.getMessage());
         }
     }
 

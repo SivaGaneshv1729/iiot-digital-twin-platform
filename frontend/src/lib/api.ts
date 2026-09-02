@@ -16,3 +16,18 @@ export const DEFAULT_MACHINES = Array.from({ length: 16 }).map((_, i) => ({
   running_hours: 1200 + i * 340,
   power_draw: Number((12 + (i * 0.8) % 10).toFixed(1))
 }));
+
+export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+  const token = localStorage.getItem('token');
+  const headers = new Headers(options.headers || {});
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+  const res = await fetch(getApiUrl(url), { ...options, headers });
+  if (res.status === 401 || res.status === 403) {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+    throw new Error('Unauthorized');
+  }
+  return res;
+};

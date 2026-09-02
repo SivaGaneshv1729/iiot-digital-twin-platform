@@ -41,9 +41,20 @@ services:
       - DB_PASSWORD=password123
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - ML_ENGINE_URL=http://ml-engine:8000
     depends_on:
       - db
       - redis
+      - ml-engine
+
+  ml-engine:
+    build:
+      context: ./ml-engine
+      dockerfile: Dockerfile
+    container_name: smartfactory-ml-engine
+    restart: always
+    ports:
+      - "8000:8000"
 
   frontend:
     build:

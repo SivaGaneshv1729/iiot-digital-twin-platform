@@ -154,7 +154,10 @@ interface Machine {
   name: string;
   status: string;
   temperature: number;
+  vibration: number;
+  pressure: number;
   running_hours: number;
+  anomalyScore?: number;
 }
 
 interface DigitalTwinProps {
@@ -2470,6 +2473,23 @@ const MachineHUD = ({ machine, hasAnomaly }: { machine: any, hasAnomaly: boolean
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
         <span style={{ color: 'var(--text-secondary)' }}>TEMP:</span>
         <span style={{ color: machine.temperature > 85 ? '#ef4444' : '#fff' }}>{machine.temperature}°C</span>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+        <span style={{ color: '#94a3b8' }}>Vibration:</span>
+        <span style={{ color: machine.vibration > 8.0 ? '#f59e0b' : '#fff' }}>{machine.vibration} mm/s</span>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+        <span style={{ color: '#94a3b8' }}>Pressure:</span>
+        <span style={{ color: machine.pressure > 120.0 ? '#f59e0b' : '#fff' }}>{machine.pressure} PSI</span>
+      </div>
+      <div className="tooltip-row">
+        <span className="tooltip-label">Anomaly Score:</span>
+        <span className="tooltip-value" style={{ 
+        color: (machine.anomalyScore || 0) > 75 ? '#ef4444' : (machine.anomalyScore || 0) > 40 ? '#f59e0b' : '#10b981',
+        fontWeight: 'bold' 
+      }}>
+        {machine.anomalyScore !== undefined ? machine.anomalyScore.toFixed(1) + '%' : '-'}
+      </span>
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span style={{ color: 'var(--text-secondary)' }}>UPTIME:</span>

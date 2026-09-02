@@ -51,6 +51,8 @@ public class MachineController {
     static class SimulatorPayload {
         private String status;
         private Double temperature;
+        private Double vibration;
+        private Double pressure;
         private Integer runningHours;
     }
 
@@ -61,6 +63,8 @@ public class MachineController {
         Machine m = opt.get();
         if (payload.getStatus() != null)       m.setStatus(payload.getStatus());
         if (payload.getTemperature() != null)  m.setTemperature(BigDecimal.valueOf(payload.getTemperature()));
+        if (payload.getVibration() != null)    m.setVibration(BigDecimal.valueOf(payload.getVibration()));
+        if (payload.getPressure() != null)     m.setPressure(BigDecimal.valueOf(payload.getPressure()));
         if (payload.getRunningHours() != null) m.setRunningHours(payload.getRunningHours());
         machineRepository.save(m);
         telemetrySimulator.broadcast(machineRepository.findAll());
@@ -73,6 +77,8 @@ public class MachineController {
         private List<Long> ids;
         private String status;
         private Double temperature;
+        private Double vibration;
+        private Double pressure;
         private Integer runningHours;
     }
 
@@ -85,6 +91,8 @@ public class MachineController {
         for (Machine m : machines) {
             if (payload.getStatus() != null)       m.setStatus(payload.getStatus());
             if (payload.getTemperature() != null)  m.setTemperature(BigDecimal.valueOf(payload.getTemperature()));
+            if (payload.getVibration() != null)    m.setVibration(BigDecimal.valueOf(payload.getVibration()));
+            if (payload.getPressure() != null)     m.setPressure(BigDecimal.valueOf(payload.getPressure()));
             if (payload.getRunningHours() != null) m.setRunningHours(payload.getRunningHours());
         }
         machineRepository.saveAll(machines);

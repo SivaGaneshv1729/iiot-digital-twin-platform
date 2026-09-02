@@ -327,10 +327,17 @@ export const Dashboard = () => {
     }
   };
 
-  const revenueAtRisk = liveMachines.filter(m => m.status === 'Error' || m.status === 'Maintenance').length * 4500;
+  const revenueAtRisk = liveMachines.filter(m => m.status === 'Error' || m.status === 'Maintenance' || (m.anomalyScore !== undefined && m.anomalyScore > 75)).length * 4500;
+  const hasCriticalMachine = liveMachines.some(m => (m.anomalyScore !== undefined ? m.anomalyScore : 0) > 75 || (m.temperature !== undefined && m.temperature >= 100) || (m.vibration !== undefined && m.vibration >= 8.0));
 
   return (
-    <div className={`dashboard-container ${isEmergencyMode ? 'emergency-mode-active' : ''}`}>
+    <div className={`dashboard-container ${isEmergencyMode ? 'emergency-mode-active' : ''} ${hasCriticalMachine && !isEmergencyMode ? 'critical-mode-active' : ''}`}>
+      {hasCriticalMachine && !isEmergencyMode && (
+        <div className="critical-global-banner">
+          <AlertOctagon size={20} className="pulse-icon" />
+          <span><strong>AI PREDICTION ALERT:</strong> One or more machines are in critical condition (Anomaly Score &gt; 75%). Isolate the red nodes on the 3D map.</span>
+        </div>
+      )}
       {isEmergencyMode && (
         <div style={{ backgroundColor: '#dc2626', color: 'white', padding: '12px', textAlign: 'center', fontWeight: 'bold', fontSize: '1.1rem', borderRadius: '8px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', animation: 'pulse 2s infinite' }}>
           <AlertOctagon size={24} /> CRITICAL ALERT: GLOBAL EMERGENCY STOP ACTIVATED. ALL MACHINES HALTED.
