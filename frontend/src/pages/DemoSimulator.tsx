@@ -118,6 +118,27 @@ export const DemoSimulator = () => {
   const [batchMachineId, setBatchMachineId] = useState('');
   const statsRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // AI Model Metrics
+  const [modelMetrics, setModelMetrics] = useState<any>(null);
+  const [metricsError, setMetricsError] = useState(false);
+
+  const fetchModelMetrics = useCallback(async () => {
+    try {
+      const res = await fetchWithAuth('/api/ai/model/metrics');
+      if (!res.ok) throw new Error('metrics fetch failed');
+      const data = await res.json();
+      if (data && data.accuracy !== undefined) {
+        setModelMetrics(data);
+        setMetricsError(false);
+      }
+    } catch {
+      setMetricsError(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchModelMetrics();
+  }, [fetchModelMetrics]);
 
 
   const addLog = useCallback((msg: string) => {
@@ -245,8 +266,8 @@ export const DemoSimulator = () => {
   const applyBatchOverride = async () => {
     const targets = machines.filter(m => {
       if (batchTarget === 'all') return true;
-      if (batchTarget === 'specific') return m.id.toString() === batchMachineId;
-      return m.status.toLowerCase() === batchTarget;
+      if (batchTarget === 'specific') return m.id?.toString() === batchMachineId;
+      return m.status?.toLowerCase() === batchTarget;
     });
     if (!targets.length) { addLog('⚠️ No machines match the batch target.'); return; }
     setIsLoading(true);
@@ -328,7 +349,7 @@ export const DemoSimulator = () => {
   const dirtyCount = Object.values(edits).filter(e => e.dirty).length;
 
   const filteredMachines = machines
-    .filter(m => !searchQuery || m.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter(m => !searchQuery || m.name?.toLowerCase().includes(searchQuery.toLowerCase()))
     .slice(0, 50);
 
   const oeeNum = parseFloat(liveStats.oee);
@@ -425,6 +446,84 @@ export const DemoSimulator = () => {
         </div>
       </div>
 
+      {/* ── AI Model Accuracy Panel ── */}
+      <div className="glass-panel" style={{ padding: '20px 24px', marginBottom: '16px' }}>
+        <div className="demo-card-header" style={{ marginBottom: '16px' }}>
+          <Shield size={18} className="text-accent" />
+          <h2>AI Model Evaluation — Genuine Metrics</h2>
+          <span className="demo-pill" style={{ background: modelMetrics ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)', color: modelMetrics ? '#10b981' : '#ef4444' }}>
+            {modelMetrics ? 'Evaluated on Labeled Test Set' : metricsError ? 'ML Engine Offline' : 'Loading...'}
+          </span>
+          <button className="btn-secondary" onClick={fetchModelMetrics} style={{ marginLeft: 'auto', padding: '6px 12px', fontSize: '0.8rem' }}>
+            <RefreshCw size={13} /> Refresh
+          </button>
+        </div>
+
+        {modelMetrics ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+            {/* Metric Cards */}
+            {[
+              { label: 'Accuracy', value: (modelMetrics.accuracy * 100).toFixed(1) + '%', color: modelMetrics.accuracy > 0.9 ? '#10b981' : '#f59e0b', icon: '🎯' },
+              { label: 'Precision', value: (modelMetrics.precision * 100).toFixed(1) + '%', color: modelMetrics.precision > 0.9 ? '#10b981' : '#f59e0b', icon: '🔬' },
+              { label: 'Recall', value: (modelMetrics.recall * 100).toFixed(1) + '%', color: modelMetrics.recall > 0.9 ? '#10b981' : '#f59e0b', icon: '📡' },
+              { label: 'F1 Score', value: (modelMetrics.f1_score * 100).toFixed(1) + '%', color: modelMetrics.f1_score > 0.9 ? '#10b981' : '#f59e0b', icon: '⚖️' },
+              { label: 'ROC AUC', value: modelMetrics.roc_auc.toFixed(4), color: modelMetrics.roc_auc > 0.95 ? '#10b981' : '#f59e0b', icon: '📈' },
+              { label: 'Threshold', value: modelMetrics.threshold.toFixed(6), color: '#38bdf8', icon: '📏' },
+            ].map(m => (
+              <div key={m.label} style={{
+                background: 'var(--bg-tertiary)', borderRadius: '10px', padding: '14px 16px',
+                border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '12px'
+              }}>
+                <span style={{ fontSize: '1.5rem' }}>{m.icon}</span>
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{m.label}</div>
+                  <div style={{ fontSize: '1.3rem', fontWeight: 700, color: m.color, fontFamily: 'monospace' }}>{m.value}</div>
+                </div>
+              </div>
+            ))}
+
+            {/* Confusion Matrix */}
+            <div style={{
+              background: 'var(--bg-tertiary)', borderRadius: '10px', padding: '14px 16px',
+              border: '1px solid var(--border-color)', gridColumn: 'span 2'
+            }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Confusion Matrix (Test Set: {modelMetrics.training?.test_samples} samples)</div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', fontFamily: 'monospace' }}>
+                <thead>
+                  <tr>
+                    <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-color)' }}></th>
+                    <th style={{ padding: '6px 8px', textAlign: 'center', color: '#10b981', borderBottom: '1px solid var(--border-color)' }}>Pred. Healthy</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'center', color: '#ef4444', borderBottom: '1px solid var(--border-color)' }}>Pred. Anomaly</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style={{ padding: '6px 8px', fontWeight: 600, color: '#10b981' }}>Actual Healthy</td>
+                    <td style={{ padding: '6px 8px', textAlign: 'center', fontWeight: 700, color: '#10b981', fontSize: '1.1rem' }}>{modelMetrics.confusion_matrix?.true_negatives ?? '-'}</td>
+                    <td style={{ padding: '6px 8px', textAlign: 'center', fontWeight: 700, color: '#f59e0b', fontSize: '1.1rem' }}>{modelMetrics.confusion_matrix?.false_positives ?? '-'}</td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: '6px 8px', fontWeight: 600, color: '#ef4444' }}>Actual Anomaly</td>
+                    <td style={{ padding: '6px 8px', textAlign: 'center', fontWeight: 700, color: '#f59e0b', fontSize: '1.1rem' }}>{modelMetrics.confusion_matrix?.false_negatives ?? '-'}</td>
+                    <td style={{ padding: '6px 8px', textAlign: 'center', fontWeight: 700, color: '#ef4444', fontSize: '1.1rem' }}>{modelMetrics.confusion_matrix?.true_positives ?? '-'}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style={{ marginTop: '8px', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                Training: {modelMetrics.training?.epochs} epochs on {modelMetrics.training?.train_samples} healthy samples |
+                Train Loss: {modelMetrics.training?.final_train_loss?.toFixed(6)} |
+                Val Loss: {modelMetrics.training?.final_val_loss?.toFixed(6)}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '24px', color: 'var(--text-secondary)' }}>
+            <Cpu size={32} style={{ opacity: 0.4, marginBottom: '8px' }} />
+            <p>{metricsError ? 'ML Engine is offline. Start Docker containers to see metrics.' : 'Loading model metrics...'}</p>
+          </div>
+        )}
+      </div>
+
       <div className="demo-layout-wrapper">
         {/* ════ HERO ROW: SCENARIO TRIGGERS ════ */}
         <div className="glass-panel demo-section-card mb-4">
@@ -494,7 +593,7 @@ export const DemoSimulator = () => {
                       onChange={e => setBatchMachineId(e.target.value)} 
                     />
                   )}
-                  <select className={`demo-select toolbar-input status-select-${batchStatus.toLowerCase()}`} value={batchStatus} onChange={e => setBatchStatus(e.target.value)}>
+                  <select className={`demo-select toolbar-input status-select-${(batchStatus || 'Running').toLowerCase()}`} value={batchStatus} onChange={e => setBatchStatus(e.target.value)}>
                     <option value="Running">Running</option>
                     <option value="Idle">Idle</option>
                     <option value="Maintenance">Maintenance</option>
@@ -551,9 +650,9 @@ export const DemoSimulator = () => {
                   const e = edits[m.id] || { status: m.status, temperature: Number(m.temperature || 60), vibration: Number(m.vibration || 1.5), pressure: Number(m.pressure || 100), runningHours: m.runningHours || 0, dirty: false };
                   return (
                     <div key={m.id} className={`mt-row ${e.dirty ? 'mt-dirty' : ''}`}>
-                      <span className="mt-name"><Server size={12} style={{ color: '#64748b' }} />{m.name}</span>
+                      <span className="mt-name"><Server size={12} style={{ color: '#64748b' }} />{m.name || 'Unknown'}</span>
                       <span>
-                        <select className={`mt-select mt-status-${e.status.toLowerCase()}`} value={e.status}
+                        <select className={`mt-select mt-status-${(e.status || 'Running').toLowerCase()}`} value={e.status || 'Running'}
                           onChange={ev => updateEdit(m.id, { status: ev.target.value })}>
                           <option value="Running">Running</option>
                           <option value="Idle">Idle</option>
@@ -583,7 +682,7 @@ export const DemoSimulator = () => {
                           border: `1px solid ${(m.anomalyScore || 0) > 75 ? 'rgba(239, 68, 68, 0.3)' : (m.anomalyScore || 0) > 40 ? 'rgba(245, 158, 11, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
                           padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold'
                         }}>
-                          {m.anomalyScore !== undefined ? m.anomalyScore.toFixed(1) + '%' : '-'}
+                          {m.anomalyScore != null ? Number(m.anomalyScore).toFixed(1) + '%' : '-'}
                         </span>
                       </span>
                       <span>

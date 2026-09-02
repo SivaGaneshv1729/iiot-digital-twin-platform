@@ -2295,8 +2295,16 @@ const CNCMachine = ({ position, machine, theme, aiHeatmapMode, onClick }: { posi
 
       {/* Main Heavy Base */}
       <Box args={[12, 4, 8]} position={[0, 2, 0]}>
-        <meshStandardMaterial color={theme === 'light' ? "#cbd5e1" : "#1e293b"} metalness={0.8} roughness={0.2} />
+        <meshStandardMaterial color={hasAnomaly ? '#ef4444' : (theme === 'light' ? "#cbd5e1" : "#1e293b")} metalness={0.8} roughness={0.2} />
       </Box>
+      {/* Persistent Machine Label */}
+      {machine && (
+        <Html position={[0, 25, 0]} transform sprite scale={0.5} center style={{ pointerEvents: 'none' }}>
+          <div style={{ background: hasAnomaly ? 'rgba(239, 68, 68, 0.8)' : 'rgba(15, 23, 42, 0.7)', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '1rem', fontWeight: 'bold', border: `1px solid ${hasAnomaly ? '#fca5a5' : '#38bdf8'}` }}>
+            {machine.name || `M-${machine.id}`}
+          </div>
+        </Html>
+      )}
       
       {/* Control Panel Console */}
       <group position={[4, 5, 4.2]} rotation={[-0.3, 0, 0]}>
@@ -2542,7 +2550,15 @@ const DynamicHydraulicPress = ({ position, machine, aiHeatmapMode, onClick }: an
            </mesh>
         </group>
       )}
-      <Box args={[12, 2, 8]} position={[0, 1, 0]}><meshStandardMaterial color="#334155" /></Box>
+      <Box args={[12, 2, 8]} position={[0, 1, 0]}><meshStandardMaterial color={hasAnomaly ? '#ef4444' : "#334155"} /></Box>
+      {/* Persistent Machine Label */}
+      {machine && (
+        <Html position={[0, 26, 0]} transform sprite scale={0.5} center style={{ pointerEvents: 'none' }}>
+          <div style={{ background: hasAnomaly ? 'rgba(239, 68, 68, 0.8)' : 'rgba(15, 23, 42, 0.7)', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '1rem', fontWeight: 'bold', border: `1px solid ${hasAnomaly ? '#fca5a5' : '#38bdf8'}` }}>
+            {machine.name || `M-${machine.id}`}
+          </div>
+        </Html>
+      )}
       <Box args={[2, 16, 2]} position={[-5, 9, 0]}><meshStandardMaterial color="#ef4444" /></Box>
       <Box args={[2, 16, 2]} position={[5, 9, 0]}><meshStandardMaterial color="#ef4444" /></Box>
       <Box args={[14, 4, 10]} position={[0, 19, 0]}><meshStandardMaterial color="#1e293b" /></Box>
@@ -2599,7 +2615,15 @@ const AutoWeldingArm = ({ position, machine, aiHeatmapMode, onClick }: any) => {
            </mesh>
         </group>
       )}
-      <Cylinder args={[2, 3, 2]} position={[0, 1, 0]}><meshStandardMaterial color="#f59e0b" /></Cylinder>
+      <Cylinder args={[2, 3, 2]} position={[0, 1, 0]}><meshStandardMaterial color={hasAnomaly ? '#ef4444' : "#f59e0b"} /></Cylinder>
+      {/* Persistent Machine Label */}
+      {machine && (
+        <Html position={[0, 15, 0]} transform sprite scale={0.5} center style={{ pointerEvents: 'none' }}>
+          <div style={{ background: hasAnomaly ? 'rgba(239, 68, 68, 0.8)' : 'rgba(15, 23, 42, 0.7)', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '1rem', fontWeight: 'bold', border: `1px solid ${hasAnomaly ? '#fca5a5' : '#38bdf8'}` }}>
+            {machine.name || `M-${machine.id}`}
+          </div>
+        </Html>
+      )}
       <group ref={armRef} position={[0, 2, 0]}>
         <Box args={[1.5, 8, 1.5]} position={[0, 4, 0]} rotation={[0, 0, 0.2]}><meshStandardMaterial color="#fbbf24" /></Box>
         <Box args={[1, 6, 1]} position={[1.5, 9, 0]} rotation={[0, 0, -1]}><meshStandardMaterial color="#f59e0b" /></Box>
@@ -2613,7 +2637,7 @@ const AutoWeldingArm = ({ position, machine, aiHeatmapMode, onClick }: any) => {
 const ChemicalVat = ({ position, machine, aiHeatmapMode, onClick }: any) => {
   const [hovered, setHovered] = useState(false);
   const isRunning = machine?.status === 'Running';
-  const hasAnomaly = machine?.status === 'Warning' || machine?.status === 'Error' || machine?.temperature > 80;
+  const hasAnomaly = machine?.status === 'Warning' || machine?.status === 'Error' || machine?.temperature > 80 || (machine?.anomalyScore || 0) > 75;
   const liquidRef = useRef<THREE.Mesh>(null);
   const anomalyPulseRef = useRef<THREE.Mesh>(null);
 
@@ -2657,7 +2681,15 @@ const ChemicalVat = ({ position, machine, aiHeatmapMode, onClick }: any) => {
         <meshPhysicalMaterial color="#94a3b8" transmission={0.9} roughness={0.1} transparent opacity={0.6} />
       </Cylinder>
       <Cylinder ref={liquidRef as any} args={[4.8, 4.8, 10]} position={[0, 5, 0]}><meshStandardMaterial color={hasAnomaly ? "#ef4444" : "#10b981"} /></Cylinder>
-      <Box args={[12, 1, 12]} position={[0, 0.5, 0]}><meshStandardMaterial color="#475569" /></Box>
+      <Box args={[12, 1, 12]} position={[0, 0.5, 0]}><meshStandardMaterial color={hasAnomaly ? '#ef4444' : "#475569"} /></Box>
+      {/* Persistent Machine Label */}
+      {machine && (
+        <Html position={[0, 18, 0]} transform sprite scale={0.5} center style={{ pointerEvents: 'none' }}>
+          <div style={{ background: hasAnomaly ? 'rgba(239, 68, 68, 0.8)' : 'rgba(15, 23, 42, 0.7)', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '1rem', fontWeight: 'bold', border: `1px solid ${hasAnomaly ? '#fca5a5' : '#38bdf8'}` }}>
+            {machine.name || `M-${machine.id}`}
+          </div>
+        </Html>
+      )}
       {hovered && machine && <MachineHUD machine={machine} hasAnomaly={hasAnomaly} />}
     </group>
   );

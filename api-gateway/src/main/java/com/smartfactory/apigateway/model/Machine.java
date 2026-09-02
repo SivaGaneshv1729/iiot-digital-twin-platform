@@ -37,6 +37,6 @@ public class Machine {
     @Column(name = "last_maintenance")
     private Timestamp lastMaintenance;
 
-    @Transient
+    @Column(name = "anomaly_score")
     private Double anomalyScore;
 }
