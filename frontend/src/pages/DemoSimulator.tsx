@@ -106,7 +106,6 @@ export const DemoSimulator = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [log, setLog] = useState<string[]>([]);
-  const [filterStatus, setFilterStatus] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
   
   // Global batch controls
@@ -327,7 +326,6 @@ export const DemoSimulator = () => {
   const dirtyCount = Object.values(edits).filter(e => e.dirty).length;
 
   const filteredMachines = machines
-    .filter(m => filterStatus === 'All' || m.status === filterStatus)
     .filter(m => !searchQuery || m.name.toLowerCase().includes(searchQuery.toLowerCase()))
     .slice(0, 50);
 
@@ -523,12 +521,6 @@ export const DemoSimulator = () => {
                   onChange={e => setSearchQuery(e.target.value)}
                   className="filter-input"
                 />
-                <div className="filter-tabs">
-                  {['All', 'Running', 'Idle', 'Maintenance'].map(f => (
-                    <button key={f} className={`filter-tab ${filterStatus === f ? 'active' : ''}`}
-                      onClick={() => setFilterStatus(f)}>{f}</button>
-                  ))}
-                </div>
               </div>
 
               <div className="machine-table-wrap">

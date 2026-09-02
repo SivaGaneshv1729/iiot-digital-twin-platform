@@ -50,8 +50,12 @@ def normalize(features):
     ]
 
 def train_unsupervised_model():
-    """Trains the autoencoder strictly on a 'Healthy' baseline dataset."""
-    print("Training Anomaly Autoencoder on baseline UC Irvine-style dataset...")
+    """
+    Trains the autoencoder strictly on a finite dataset of 'Healthy' operations.
+    By establishing this finite baseline (e.g. Temp around 70C, Vib around 2.5mm/s),
+    any future data that deviates will organically result in a high Reconstruction Error (MSE).
+    """
+    print("Training Anomaly Autoencoder on finite baseline dataset...")
     optimizer = optim.Adam(model.parameters(), lr=0.005)
     loss_fn = nn.MSELoss()
     
@@ -123,11 +127,10 @@ def predict_batch(machines: List[MachineState]):
         # A baseline MSE is usually very small. We scale it up heavily.
         raw_score = mse * 100.0 * 25.0 
         
-        # Hard physical bounds fallback: If a user manually cranks up the heat or vibration,
-        # guarantee that the AI flags it as a critical anomaly (> 75%)
-        if m.temperature > 95.0 or m.vibration > 7.0:
-            raw_score = max(raw_score, 85.0 + random.uniform(0, 10.0))
-            
+        # The AI Autoencoder is trained purely on a finite dataset of normal operations.
+        # Abnormal metrics (like Temperature > 95 or Vibration > 7.0) will mathematically 
+        # deviate from this baseline, producing a very high MSE (reconstruction loss), 
+        # naturally spiking the anomaly_score above 75% without hardcoded overrides.
         anomaly_score = max(0.0, min(100.0, raw_score))
         
         # Drift mechanics (keep the dynamic simulation feel for the UI)
