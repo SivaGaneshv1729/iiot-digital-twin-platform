@@ -2226,7 +2226,7 @@ const CNCMachine = ({ position, machine, theme, aiHeatmapMode, onClick }: { posi
   
   const isRunning = machine?.status === 'Running';
   const isWarning = machine?.status === 'Maintenance' || machine?.status === 'Offline';
-  const hasAnomaly = isWarning || machine?.temperature > 85;
+  const hasAnomaly = isWarning || (machine?.anomalyScore || 0) > 75;
   
   const statusColor = isRunning ? '#10b981' : isWarning ? '#ef4444' : '#f59e0b';
   
@@ -2502,7 +2502,7 @@ const MachineHUD = ({ machine, hasAnomaly }: { machine: any, hasAnomaly: boolean
 const DynamicHydraulicPress = ({ position, machine, aiHeatmapMode, onClick }: any) => {
   const [hovered, setHovered] = useState(false);
   const isRunning = machine?.status === 'Running';
-  const hasAnomaly = machine?.status === 'Warning' || machine?.status === 'Error' || machine?.temperature > 80;
+  const hasAnomaly = machine?.status === 'Warning' || machine?.status === 'Error' || (machine?.anomalyScore || 0) > 75;
   const pressRef = useRef<THREE.Mesh>(null);
   const anomalyPulseRef = useRef<THREE.Mesh>(null);
 
@@ -2555,7 +2555,7 @@ const DynamicHydraulicPress = ({ position, machine, aiHeatmapMode, onClick }: an
 const AutoWeldingArm = ({ position, machine, aiHeatmapMode, onClick }: any) => {
   const [hovered, setHovered] = useState(false);
   const isRunning = machine?.status === 'Running';
-  const hasAnomaly = machine?.status === 'Warning' || machine?.status === 'Error' || machine?.temperature > 80;
+  const hasAnomaly = machine?.status === 'Warning' || machine?.status === 'Error' || (machine?.anomalyScore || 0) > 75;
   const armRef = useRef<THREE.Group>(null);
   const sparkRef = useRef<THREE.Mesh>(null);
   const anomalyPulseRef = useRef<THREE.Mesh>(null);
