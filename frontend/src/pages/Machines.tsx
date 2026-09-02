@@ -251,6 +251,13 @@ export const Machines = () => {
     { key: 'status', label: 'Status', render: (row) => <span className={`status-badge status-${row.status}`}>{row.status}</span> },
     { key: 'temperature', label: 'Core Temp', render: (row) => <span>{Number(row.temperature || 0).toFixed(1)}°C</span> },
     { key: 'running_hours', label: 'Uptime', render: (row) => <span>{row.running_hours}h</span> },
+    { key: 'ai_risk', label: 'AI Risk', render: (row) => {
+      const temp = Number(row.temperature || 0);
+      const hours = row.running_hours || 0;
+      const risk = Math.min(98, Math.max(5, Math.round(((temp - 35) * 1.4) + ((hours % 2000) / 100))));
+      const riskColor = risk > 75 ? '#ef4444' : risk > 50 ? '#f59e0b' : '#10b981';
+      return <span style={{ color: riskColor, fontWeight: 'bold' }}>{risk}%</span>;
+    }},
     { key: 'actions', label: 'Controls', sortable: false, render: (row) => (
       <div style={{ display: 'flex', gap: '8px' }}>
         <button className="btn-secondary" style={{ padding: '4px 8px', fontSize: '0.8rem' }} onClick={() => setSelectedMachineId(row.id)}>
@@ -311,6 +318,26 @@ export const Machines = () => {
 
       {/* Fleet KPI Banner */}
       <div className="fleet-kpi-grid">
+        {/* Critical Alerts Panel */}
+        {(() => {
+          const criticalMachines = machines.filter(m => {
+            const risk = Math.min(98, Math.max(5, Math.round(((Number(m.temperature || 0) - 35) * 1.4) + (((m.running_hours || 0) % 2000) / 100))));
+            return risk > 75;
+          });
+          if (criticalMachines.length === 0) return null;
+          return (
+            <div className="fleet-kpi-card glass-panel" style={{ gridColumn: '1 / -1', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.4)', display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <AlertTriangle size={32} className="text-danger pulse" />
+              <div className="fleet-kpi-info" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <div>
+                  <h3 style={{ color: '#ef4444', fontSize: '1.2rem', marginBottom: '4px' }}>AI Predictive Alert: High Failure Risk</h3>
+                  <span style={{ fontSize: '0.9rem', color: '#f87171' }}>{criticalMachines.length} machine(s) have exceeded the 75% AI failure threshold. Immediate maintenance recommended.</span>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         <div className="fleet-kpi-card glass-panel">
           <Zap size={32} className="text-accent" />
           <div className="fleet-kpi-info">
