@@ -60,6 +60,7 @@ export const Dashboard = () => {
   const [isConnected, setIsConnected] = useState(true);
   const [liveMachines, setLiveMachines] = useState<any[]>(DEFAULT_MACHINES);
   const [selectedMachineId, setSelectedMachineId] = useState<number | null>(null);
+  const [focusedMachineId, setFocusedMachineId] = useState<number | null>(null);
   const [dvrTime, setDvrTime] = useState<number>(0);
   const [isEmergencyMode, setIsEmergencyMode] = useState(false);
   const [thermalMode, setThermalMode] = useState(false);
@@ -328,14 +329,37 @@ export const Dashboard = () => {
   };
 
   const revenueAtRisk = liveMachines.filter(m => m.status === 'Error' || m.status === 'Maintenance' || (m.anomalyScore !== undefined && m.anomalyScore > 75)).length * 4500;
-  const hasCriticalMachine = liveMachines.some(m => (m.anomalyScore !== undefined ? m.anomalyScore : 0) > 75 || (m.temperature !== undefined && m.temperature >= 100) || (m.vibration !== undefined && m.vibration >= 8.0));
+  const criticalMachinesList = liveMachines.filter(m => (m.anomalyScore !== undefined ? m.anomalyScore : 0) > 75 || (m.temperature !== undefined && m.temperature >= 100) || (m.vibration !== undefined && m.vibration >= 8.0));
+  const hasCriticalMachine = criticalMachinesList.length > 0;
 
   return (
     <div className={`dashboard-container ${isEmergencyMode ? 'emergency-mode-active' : ''} ${hasCriticalMachine && !isEmergencyMode ? 'critical-mode-active' : ''}`}>
       {hasCriticalMachine && !isEmergencyMode && (
-        <div className="critical-global-banner">
-          <AlertOctagon size={20} className="pulse-icon" />
-          <span><strong>AI PREDICTION ALERT:</strong> One or more machines are in critical condition (Anomaly Score &gt; 75%). Isolate the red nodes on the 3D map.</span>
+        <div className="critical-global-banner" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <AlertOctagon size={20} className="pulse-icon" />
+            <span><strong>AI PREDICTION ALERT:</strong> {criticalMachinesList.length} machine(s) in critical condition (Anomaly Score &gt; 75%).</span>
+          </div>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            {criticalMachinesList.map(m => (
+              <div key={m.id} style={{ background: 'rgba(0,0,0,0.2)', padding: '8px 12px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <span style={{ fontWeight: 'bold' }}>{m.name} <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem' }}>#{m.id}</span></span>
+                <span style={{ color: '#fca5a5', fontSize: '0.9rem' }}>Score: {m.anomalyScore?.toFixed(1) || '> 75'}%</span>
+                <button 
+                  onClick={() => {
+                    setFocusedMachineId(m.id);
+                    // Reset selected machine so focus stands out
+                    setSelectedMachineId(null);
+                    // Scroll to top where the 3D map is
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  style={{ background: '#ef4444', color: 'white', border: 'none', padding: '4px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}
+                >
+                  <Target size={12} style={{ display: 'inline', marginRight: '4px' }} /> Locate on Map
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
       {isEmergencyMode && (
@@ -455,7 +479,7 @@ export const Dashboard = () => {
         {/* Center Main Area */}
         <div className="dashboard-main-center">
           <ErrorBoundary>
-            <DigitalTwin machines={liveMachines} onSelectMachine={(m: any) => setSelectedMachineId(typeof m === 'object' && m !== null ? (m.id || 1) : m)} thermalMode={thermalMode} isEmergencyMode={isEmergencyMode} aiHeatmapMode={aiHeatmapMode} />
+            <DigitalTwin machines={liveMachines} onSelectMachine={(m: any) => setSelectedMachineId(typeof m === 'object' && m !== null ? (m.id || 1) : m)} thermalMode={thermalMode} isEmergencyMode={isEmergencyMode} aiHeatmapMode={aiHeatmapMode} focusedMachineId={focusedMachineId} />
           </ErrorBoundary>
           
           <div className="kpi-grid">

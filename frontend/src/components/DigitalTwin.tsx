@@ -166,7 +166,31 @@ interface DigitalTwinProps {
   thermalMode?: boolean;
   isEmergencyMode?: boolean;
   aiHeatmapMode?: boolean;
+  focusedMachineId?: number | null;
 }
+
+// --------------------------------------------------------------------------
+// Machine Positioning Logic (Used by renderer and camera controller)
+// --------------------------------------------------------------------------
+export const getMachinePosition = (machine: Machine, index: number): [number, number, number] => {
+  const name = machine.name || '';
+  if (name.includes('Block A') || (!name.includes('Block') && index < 5)) {
+    return [-150 + ((index % 5) * 25), 2, -100 + (Math.floor(index / 5) * 20)];
+  }
+  if (name.includes('Block B') || (!name.includes('Block') && index >= 5 && index < 10)) {
+    return [150 + ((index % 5) * 25), 2, -100 + (Math.floor(index / 5) * 20)];
+  }
+  if (name.includes('Block E')) {
+    return [-350 + ((index % 4) * 30), 0, -100 + (Math.floor(index / 4) * 25)];
+  }
+  if (name.includes('Block F')) {
+    return [350 + ((index % 5) * 25), 0, -100 + (Math.floor(index / 5) * 25)];
+  }
+  if (name.includes('Block G')) {
+    return [-350 + ((index % 4) * 25), 0, -300 + (Math.floor(index / 4) * 25)];
+  }
+  return [((index % 6) * 30) - 75, 2, Math.floor(index / 6) * 30 - 50];
+};
 
 // --------------------------------------------------------------------------
 // Dim Layer Group (Fades inactive elements into background)
@@ -2162,7 +2186,7 @@ const AGV3D = ({ waypoints, speed, isEmergencyMode }: { waypoints: [number, numb
 // --------------------------------------------------------------------------
 // Cinematic Camera Controller
 // --------------------------------------------------------------------------
-const CameraController = ({ viewMode }: { viewMode: string }) => {
+const CameraController = ({ viewMode, focusedMachineId, machines }: { viewMode: string, focusedMachineId?: number | null, machines?: Machine[] }) => {
   const { controls } = useThree();
   const targetPos = useRef(new THREE.Vector3(0, 150, 180));
   const targetLookAt = useRef(new THREE.Vector3(0, 0, 0));
@@ -2171,6 +2195,18 @@ const CameraController = ({ viewMode }: { viewMode: string }) => {
   useEffect(() => {
     if (viewMode === 'Drone') return;
     isTransitioning.current = true;
+    
+    // Override standard views if a specific machine is focused
+    if (focusedMachineId && machines) {
+      const idx = machines.findIndex(m => m.id === focusedMachineId);
+      if (idx >= 0) {
+        const pos = getMachinePosition(machines[idx], idx);
+        // Position camera slightly above and pulled back from the target machine
+        targetPos.current.set(pos[0], pos[1] + 60, pos[2] + 90);
+        targetLookAt.current.set(pos[0], pos[1] + 10, pos[2]);
+        return;
+      }
+    }
     
     switch (viewMode) {
       case 'Unit1':
@@ -2191,7 +2227,7 @@ const CameraController = ({ viewMode }: { viewMode: string }) => {
         targetLookAt.current.set(0, 0, 0);
         break;
     }
-  }, [viewMode]);
+  }, [viewMode, focusedMachineId, machines]);
 
   useFrame((state, delta) => {
     if (viewMode === 'Drone' || !isTransitioning.current) return;
@@ -2473,7 +2509,7 @@ const MachineHUD = ({ machine, hasAnomaly }: { machine: any, hasAnomaly: boolean
       boxShadow: hasAnomaly ? '0 0 20px rgba(239, 68, 68, 0.4)' : '0 4px 6px rgba(0,0,0,0.3)',
       fontFamily: 'monospace'
     }}>
-      <h4 style={{ margin: '0 0 8px 0', borderBottom: '1px solid #334155', paddingBottom: '4px', color: '#38bdf8' }}>{machine.name}</h4>
+      <h4 style={{ margin: '0 0 8px 0', borderBottom: '1px solid #334155', paddingBottom: '4px', color: '#38bdf8' }}>{machine.name} <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>(ID: {machine.id})</span></h4>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
         <span style={{ color: 'var(--text-secondary)' }}>STATUS:</span>
         <span style={{ color: machine.status === 'Running' ? '#10b981' : machine.status === 'Idle' ? '#f59e0b' : '#ef4444', fontWeight: 'bold' }}>{machine.status.toUpperCase()}</span>
@@ -2698,7 +2734,7 @@ const ChemicalVat = ({ position, machine, aiHeatmapMode, onClick }: any) => {
 // --------------------------------------------------------------------------
 // Main Composition
 // --------------------------------------------------------------------------
-export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergencyMode, aiHeatmapMode }: DigitalTwinProps) => {
+export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergencyMode, aiHeatmapMode, focusedMachineId }: DigitalTwinProps) => {
   const [store] = useState(() => createXRStore());
   const [theme, setTheme] = useState(document.documentElement.getAttribute('data-theme') || 'dark');
   const [viewMode, setViewMode] = useState('Global');
@@ -2845,7 +2881,7 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
         gl={{ antialias: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.2, powerPreference: 'high-performance' }}
       >
         <BakeShadows />
-        <CameraController viewMode={viewMode} />
+        <CameraController viewMode={viewMode} focusedMachineId={focusedMachineId} machines={machines} />
 
         <XR store={store}>
           <color attach="background" args={[theme === 'light' ? '#ffffff' : '#020617']} />
@@ -2891,15 +2927,35 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
           {/* Core Terrain and Campus Buildings */}
           <CampusEnvironment theme={theme} showLabels={showLabels} activeLayer={activeLayer} isEmergencyMode={isEmergencyMode} onSelectMachine={onSelectMachine} />
 
+          {/* Target Location Beacon */}
+          {focusedMachineId && (() => {
+            const idx = machines.findIndex(m => m.id === focusedMachineId);
+            if (idx >= 0) {
+              const pos = getMachinePosition(machines[idx], idx);
+              return (
+                <group position={[pos[0], pos[1], pos[2]]}>
+                  <mesh position={[0, 40, 0]}>
+                    <cylinderGeometry args={[2, 2, 80, 16]} />
+                    <meshBasicMaterial color="#ef4444" transparent opacity={0.6} side={THREE.DoubleSide} />
+                  </mesh>
+                  <mesh position={[0, 80, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                    <ringGeometry args={[10, 14, 32]} />
+                    <meshBasicMaterial color="#ef4444" transparent opacity={0.9} side={THREE.DoubleSide} />
+                  </mesh>
+                </group>
+              );
+            }
+            return null;
+          })()}
+
           {/* Dynamic Machinery Seeding from Database */}
           {machines && machines.map((machine: any, index: number) => {
              const name = machine.name || '';
+             const pos = getMachinePosition(machine, index);
              
              if (name.includes('Block A') || (!name.includes('Block') && index < 5)) {
-               const bayX = -150 + ((index % 5) * 25);
-               const bayZ = -100 + (Math.floor(index / 5) * 20);
                return (
-                 <group key={machine.id || index} position={[bayX, 2, bayZ]}>
+                 <group key={machine.id || index} position={pos}>
                    <CNCMachine position={[0, 0, 0]} machine={machine} theme={theme} aiHeatmapMode={aiHeatmapMode} onClick={() => { setViewMode('BlockA'); onSelectMachine?.(machine); }} />
                    <RoboticArm position={[8, 0, 15]} speedOffset={index*0.5} isEmergencyMode={isEmergencyMode} onClick={() => { setViewMode('BlockA'); onSelectMachine?.(machine); }} />
                    {isEmergencyMode && (machine.status === 'down' || index % 3 === 0) && (
@@ -2910,35 +2966,25 @@ export const DigitalTwin = ({ machines, onSelectMachine, thermalMode, isEmergenc
              }
              
              if (name.includes('Block B') || (!name.includes('Block') && index >= 5 && index < 10)) {
-               const bayX = 150 + ((index % 5) * 25);
-               const bayZ = -100 + (Math.floor(index / 5) * 20);
                return (
-                 <CNCMachine key={machine.id || index} position={[bayX, 2, bayZ]} machine={machine} theme={theme} aiHeatmapMode={aiHeatmapMode} onClick={() => { setViewMode('BlockB'); onSelectMachine?.(machine); }} />
+                 <CNCMachine key={machine.id || index} position={pos} machine={machine} theme={theme} aiHeatmapMode={aiHeatmapMode} onClick={() => { setViewMode('BlockB'); onSelectMachine?.(machine); }} />
                );
              }
 
              if (name.includes('Block E')) {
-               const bayX = -350 + ((index % 4) * 30);
-               const bayZ = -100 + (Math.floor(index / 4) * 25);
-               return <DynamicHydraulicPress key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} aiHeatmapMode={aiHeatmapMode} onClick={() => onSelectMachine?.(machine)} />;
+               return <DynamicHydraulicPress key={machine.id || index} position={pos} machine={machine} aiHeatmapMode={aiHeatmapMode} onClick={() => onSelectMachine?.(machine)} />;
              }
 
              if (name.includes('Block F')) {
-               const bayX = 350 + ((index % 5) * 25);
-               const bayZ = -100 + (Math.floor(index / 5) * 25);
-               return <AutoWeldingArm key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} aiHeatmapMode={aiHeatmapMode} onClick={() => onSelectMachine?.(machine)} />;
+               return <AutoWeldingArm key={machine.id || index} position={pos} machine={machine} aiHeatmapMode={aiHeatmapMode} onClick={() => onSelectMachine?.(machine)} />;
              }
 
              if (name.includes('Block G')) {
-               const bayX = -350 + ((index % 4) * 25);
-               const bayZ = -300 + (Math.floor(index / 4) * 25);
-               return <ChemicalVat key={machine.id || index} position={[bayX, 0, bayZ]} machine={machine} aiHeatmapMode={aiHeatmapMode} onClick={() => onSelectMachine?.(machine)} />;
+               return <ChemicalVat key={machine.id || index} position={pos} machine={machine} aiHeatmapMode={aiHeatmapMode} onClick={() => onSelectMachine?.(machine)} />;
              }
              
-             const fallbackX = ((index % 6) * 30) - 75;
-             const fallbackZ = Math.floor(index / 6) * 30 - 50;
              return (
-               <CNCMachine key={machine.id || index} position={[fallbackX, 2, fallbackZ]} machine={machine} theme={theme} aiHeatmapMode={aiHeatmapMode} onClick={() => onSelectMachine?.(machine)} />
+               <CNCMachine key={machine.id || index} position={pos} machine={machine} theme={theme} aiHeatmapMode={aiHeatmapMode} onClick={() => onSelectMachine?.(machine)} />
              );
           })}
 

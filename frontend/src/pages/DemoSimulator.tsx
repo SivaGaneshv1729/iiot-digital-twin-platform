@@ -650,7 +650,7 @@ export const DemoSimulator = () => {
                   const e = edits[m.id] || { status: m.status, temperature: Number(m.temperature || 60), vibration: Number(m.vibration || 1.5), pressure: Number(m.pressure || 100), runningHours: m.runningHours || 0, dirty: false };
                   return (
                     <div key={m.id} className={`mt-row ${e.dirty ? 'mt-dirty' : ''}`}>
-                      <span className="mt-name"><Server size={12} style={{ color: '#64748b' }} />{m.name || 'Unknown'}</span>
+                      <span className="mt-name"><Server size={12} style={{ color: '#64748b' }} />{m.name || 'Unknown'} <span style={{ color: '#94a3b8', fontSize: '0.8rem', marginLeft: '4px' }}>#{m.id}</span></span>
                       <span>
                         <select className={`mt-select mt-status-${(e.status || 'Running').toLowerCase()}`} value={e.status || 'Running'}
                           onChange={ev => updateEdit(m.id, { status: ev.target.value })}>

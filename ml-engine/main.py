@@ -40,7 +40,8 @@ class AnomalyAutoencoder(nn.Module):
             nn.Linear(32, 16),
             nn.LeakyReLU(0.1),
             nn.BatchNorm1d(16),
-            nn.Linear(16, 3)  # Latent space
+            nn.Linear(16, 3),  # Latent space
+            nn.Tanh()          # Bound latent space to [-1, 1] to prevent perfectly reconstructing extreme outliers
         )
         self.decoder = nn.Sequential(
             nn.Linear(3, 16),
@@ -92,10 +93,16 @@ def normalize(features: list) -> list:
 # Dataset Generation
 # ══════════════════════════════════════════════════════════════════════════════
 def generate_healthy_sample() -> list:
-    """Generate a single sample from the healthy operating distribution."""
-    temp = random.gauss(65.0, 8.0)         # 65°C ± 8
-    vib = abs(random.gauss(2.5, 0.8))      # 2.5 mm/s ± 0.8
-    press = random.gauss(100.0, 8.0)       # 100 PSI ± 8
+    """Generate a single sample from the healthy operating distribution, introducing physical correlations."""
+    # Base load factor (0.0 to 1.0) representing how hard the machine is working
+    load = random.uniform(0.1, 0.9)
+    
+    # Features naturally correlate with the machine's load
+    temp = 50.0 + (load * 30.0) + random.gauss(0, 3.0)      # 50°C to 80°C based on load
+    vib = 1.0 + (load * 3.0) + random.gauss(0, 0.4)         # 1.0 to 4.0 mm/s based on load
+    vib = abs(vib)
+    press = 90.0 + (load * 20.0) + random.gauss(0, 4.0)     # 90 to 110 PSI based on load
+    
     hours = random.uniform(0.0, 15000.0)
     is_running = 1.0
     return [temp, vib, press, hours, is_running]
